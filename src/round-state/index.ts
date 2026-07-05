@@ -1,0 +1,14 @@
+export {
+  completeRound,
+  createInitialRoundState,
+  createRoundState,
+  difficultyForGridIndex,
+  expireRound,
+  maskingPolicyForGridIndex,
+  skipGrid,
+  startRound,
+  submitSwipe,
+  tickTimer,
+  type RoundState,
+  type SubmitSwipeResult,
+} from './round-state-manager.js';
