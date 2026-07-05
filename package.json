@@ -9,7 +9,9 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prototype:dev": "npm run dev --prefix prototype",
+    "prototype:build": "npm run build --prefix prototype"
   },
   "devDependencies": {
     "typescript": "^5.8.3",
