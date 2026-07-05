@@ -52,27 +52,3 @@ export function getReviewWordColor(word: PlacedWord, wordIndex: number): string 
 
   return getWordHighlightColor(wordIndex % WORDS_PER_GRID);
 }
-
-export function getReviewCellColors(
-  grid: GridData,
-): Map<string, { color: string; wordId: string }> {
-  const colors = new Map<string, { color: string; wordId: string }>();
-
-  grid.placedWords.forEach((word, wordIndex) => {
-    const color = getReviewWordColor(word, wordIndex);
-    for (const cell of word.cells) {
-      colors.set(cellKey(cell.row, cell.col), { color, wordId: word.id });
-    }
-  });
-
-  return colors;
-}
-
-/** @deprecated Use {@link getFoundCellColorIndexes} */
-export function getFoundCellColors(grid: GridData): Map<string, string> {
-  const colors = new Map<string, string>();
-  for (const [key, colorIndex] of getFoundCellColorIndexes(grid)) {
-    colors.set(key, wordColorVar(colorIndex));
-  }
-  return colors;
-}

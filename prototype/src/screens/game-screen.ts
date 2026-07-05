@@ -1,10 +1,6 @@
-import {
-  GAME_CONFIG,
-  type Coordinate,
-  type RoundState,
-} from '@spott/engine';
+import { type Coordinate, type RoundState } from '@spott/engine';
 
-import { buildClueListHtml, renderClueList } from '../components/clue-list.js';
+import { buildClueListHtml, renderClueList, type ClueListOptions } from '../components/clue-list.js';
 import { buildGaugeHtml, renderGauge } from '../components/word-gauge.js';
 import { attachGridSwipe } from '../interaction/grid-swipe.js';
 import { buildLetterGridHtml } from '../utils/grid-display.js';
@@ -19,14 +15,20 @@ import { injectWordColorVars } from '../utils/word-colors.js';
 
 const SKIP_TRANSITION_MS = 200;
 
+export interface GameScreenViewOptions {
+  clueListOptions?: ClueListOptions;
+  timerPaused?: boolean;
+}
+
 export interface GameScreenOptions {
   roundState: RoundState;
+  getViewOptions?: () => GameScreenViewOptions;
   onSkip: () => void;
   onSubmitSwipe: (coordinates: Coordinate[]) => boolean;
 }
 
 export interface GameScreenHandle {
-  updateTimer: (remainingSeconds: number) => void;
+  updateTimer: (remainingSeconds: number, timerPaused?: boolean) => void;
   updateFromRoundState: (roundState: RoundState) => void;
   playSkipTransition: () => void;
   destroy: () => void;
@@ -37,7 +39,10 @@ export function mountGameScreen(
   options: GameScreenOptions,
 ): GameScreenHandle {
   injectWordColorVars(container);
-  container.innerHTML = buildGameScreenHtml(options.roundState);
+
+  const getViewOptions = (): GameScreenViewOptions => options.getViewOptions?.() ?? {};
+
+  container.innerHTML = buildGameScreenHtml(options.roundState, getViewOptions());
 
   let swipeHandle = attachGridSwipe(
     container.querySelector<HTMLElement>('[data-letter-grid]')!,
@@ -71,16 +76,22 @@ export function mountGameScreen(
     }, SKIP_TRANSITION_MS);
   };
 
+  const updateTimerDisplay = (remainingSeconds: number, timerPaused = false): void => {
+    const timerEl = container.querySelector<HTMLElement>('[data-timer]');
+    if (!timerEl) {
+      return;
+    }
+
+    timerEl.textContent = formatRemainingTime(remainingSeconds);
+    timerEl.classList.toggle('game-stat__value--urgent', !timerPaused && isTimerUrgent(remainingSeconds));
+    timerEl.classList.toggle('game-stat__value--paused', timerPaused);
+    timerEl.setAttribute('aria-label', timerPaused ? 'Timer paused' : 'Time remaining');
+  };
+
   return {
-    updateTimer: (remainingSeconds) => {
-      const timerEl = container.querySelector<HTMLElement>('[data-timer]');
-      if (timerEl) {
-        timerEl.textContent = formatRemainingTime(remainingSeconds);
-        timerEl.classList.toggle('game-stat__value--urgent', isTimerUrgent(remainingSeconds));
-      }
-    },
+    updateTimer: updateTimerDisplay,
     updateFromRoundState: (roundState) => {
-      updateGameScreenDom(container, roundState);
+      updateGameScreenDom(container, roundState, getViewOptions());
     },
     playSkipTransition,
     destroy: () => {
@@ -92,12 +103,15 @@ export function mountGameScreen(
   };
 }
 
-function updateGameScreenDom(container: HTMLElement, roundState: RoundState): void {
+function updateGameScreenDom(
+  container: HTMLElement,
+  roundState: RoundState,
+  viewOptions: GameScreenViewOptions,
+): void {
   const grid = roundState.round.grids[roundState.currentGridIndex];
+  const timerPaused = viewOptions.timerPaused ?? false;
 
-  container.querySelector<HTMLElement>('[data-score]')!.textContent = String(
-    roundState.score.total,
-  );
+  container.querySelector<HTMLElement>('[data-score]')!.textContent = String(roundState.score.total);
   container.querySelector<HTMLElement>('[data-current-grid]')!.dataset.currentGrid = String(
     roundState.currentGridIndex,
   );
@@ -111,7 +125,7 @@ function updateGameScreenDom(container: HTMLElement, roundState: RoundState): vo
 
   const clueList = container.querySelector<HTMLElement>('[data-clue-list]');
   if (clueList) {
-    renderClueList(clueList, grid);
+    renderClueList(clueList, grid, viewOptions.clueListOptions);
   }
 
   const theme = container.querySelector<HTMLElement>('[data-theme-label]');
@@ -125,19 +139,20 @@ function updateGameScreenDom(container: HTMLElement, roundState: RoundState): vo
   if (letterGrid) {
     letterGrid.innerHTML = buildLetterGridHtml(grid);
   }
+
+  const timerEl = container.querySelector<HTMLElement>('[data-timer]');
+  if (timerEl) {
+    timerEl.textContent = formatRemainingTime(roundState.remainingSeconds);
+    timerEl.classList.toggle('game-stat__value--urgent', !timerPaused && isTimerUrgent(roundState.remainingSeconds));
+    timerEl.classList.toggle('game-stat__value--paused', timerPaused);
+  }
 }
 
 function updateGridNavigation(container: HTMLElement, roundState: RoundState): void {
-  const gridNumberEl = container.querySelector<HTMLElement>('[data-grid-number]');
-  const gridHintEl = container.querySelector<HTMLElement>('[data-grid-hint]');
-
-  if (gridNumberEl) {
-    gridNumberEl.textContent = getGridDisplayLabel(roundState);
-  }
-
-  if (gridHintEl) {
-    gridHintEl.textContent = getGridNavigationHint(roundState);
-  }
+  container.querySelector<HTMLElement>('[data-grid-number]')!.textContent =
+    getGridDisplayLabel(roundState);
+  container.querySelector<HTMLElement>('[data-grid-hint]')!.textContent =
+    getGridNavigationHint(roundState);
 }
 
 function updateSkipButton(container: HTMLElement, roundState: RoundState): void {
@@ -154,9 +169,13 @@ function updateSkipButton(container: HTMLElement, roundState: RoundState): void 
   );
 }
 
-function buildGameScreenHtml(roundState: RoundState): string {
+function buildGameScreenHtml(
+  roundState: RoundState,
+  viewOptions: GameScreenViewOptions,
+): string {
   const grid = roundState.round.grids[roundState.currentGridIndex];
   const skippable = canSkipGrid(roundState);
+  const timerPaused = viewOptions.timerPaused ?? false;
   const foundOnGrid = grid.placedWords.filter((word) => word.found).length;
 
   return `
@@ -173,7 +192,7 @@ function buildGameScreenHtml(roundState: RoundState): string {
         </div>
         <div class="game-stat">
           <span class="game-stat__label">Time</span>
-          <span class="game-stat__value${isTimerUrgent(roundState.remainingSeconds) ? ' game-stat__value--urgent' : ''}" data-timer aria-live="polite">${formatRemainingTime(roundState.remainingSeconds)}</span>
+          <span class="game-stat__value${!timerPaused && isTimerUrgent(roundState.remainingSeconds) ? ' game-stat__value--urgent' : ''}${timerPaused ? ' game-stat__value--paused' : ''}" data-timer aria-live="polite" aria-label="${timerPaused ? 'Timer paused' : 'Time remaining'}">${formatRemainingTime(roundState.remainingSeconds)}</span>
         </div>
         <div class="game-stat">
           <span class="game-stat__label">Score</span>
@@ -192,7 +211,7 @@ function buildGameScreenHtml(roundState: RoundState): string {
       </div>
 
       <ul class="clue-list" data-clue-list aria-label="Clues">
-        ${buildClueListHtml(grid)}
+        ${buildClueListHtml(grid, viewOptions.clueListOptions)}
       </ul>
 
       <button

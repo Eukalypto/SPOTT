@@ -1,40 +1,59 @@
 import { getDisplayedClue, type GridData, type PlacedWord } from '@spott/engine';
 
+import { revealWordText } from './grid-review.js';
 import { escapeHtml } from '../utils/html.js';
 
-export function buildClueListHtml(grid: GridData): string {
+export interface ClueListOptions {
+  /** Dev-only visual aid: show full target words instead of masked clues. */
+  revealWords?: boolean;
+}
+
+export function buildClueListHtml(grid: GridData, options: ClueListOptions = {}): string {
   const activeWords = grid.placedWords.filter((word) => !word.found);
   const foundWords = grid.placedWords.filter((word) => word.found);
 
   const activeSection =
     activeWords.length > 0
-      ? activeWords.map((word) => buildClueItemHtml(word)).join('')
+      ? activeWords.map((word) => buildClueItemHtml(word, options)).join('')
       : '<li class="clue-item clue-item--empty">All words found on this grid</li>';
 
-  const foundSection = foundWords.map((word) => buildClueItemHtml(word)).join('');
+  const foundSection = foundWords.map((word) => buildClueItemHtml(word, options)).join('');
 
   return `${activeSection}${foundSection}`;
 }
 
-export function renderClueList(container: HTMLElement, grid: GridData): void {
-  container.innerHTML = buildClueListHtml(grid);
+export function renderClueList(
+  container: HTMLElement,
+  grid: GridData,
+  options: ClueListOptions = {},
+): void {
+  container.innerHTML = buildClueListHtml(grid, options);
   container.dataset.activeCount = String(grid.placedWords.filter((word) => !word.found).length);
 }
 
-function buildClueItemHtml(word: PlacedWord): string {
-  const clue = getDisplayedClue(word);
+function getClueText(word: PlacedWord, options: ClueListOptions): string {
+  if (word.found || !options.revealWords) {
+    return getDisplayedClue(word);
+  }
+
+  return revealWordText(word);
+}
+
+function buildClueItemHtml(word: PlacedWord, options: ClueListOptions): string {
+  const clue = getClueText(word, options);
   const foundClass = word.found ? ' clue-item--found' : '';
+  const revealedClass = options.revealWords && !word.found ? ' clue-item--revealed' : '';
   const colorIndex = word.colorIndex ?? null;
   const colorStyle =
     word.found && colorIndex !== null
       ? ` style="--clue-accent: var(--word-color-${colorIndex}); border-left-color: var(--word-color-${colorIndex})"`
       : '';
-  const statusLabel = word.found ? 'Found' : 'Clue';
+  const statusLabel = word.found ? 'Found' : options.revealWords ? 'Revealed' : 'Clue';
   const ariaLabel = word.found ? `${clue}, found` : clue;
 
   return `
     <li
-      class="clue-item${foundClass}"
+      class="clue-item${foundClass}${revealedClass}"
       data-word-id="${escapeHtml(word.id)}"
       aria-label="${escapeHtml(ariaLabel)}"
       ${colorStyle}

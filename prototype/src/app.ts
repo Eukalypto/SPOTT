@@ -1,17 +1,13 @@
-import {
-  createInitialRoundState,
-  createSeededRandom,
-  generateRound,
-  skipGrid,
-  startRound,
-  submitSwipe,
-} from '@spott/engine';
+import { skipGrid, submitSwipe } from '@spott/engine';
 
-import { PROTOTYPE_LANGUAGE } from './constants.js';
+import { completeCurrentGridViaEngine, logRoundState } from './debug/debug-actions.js';
+import { mountDebugPanel, updateDebugPanelView } from './debug/debug-panel.js';
+import { IS_DEV } from './env.js';
 import { renderEndScreen } from './screens/end-screen.js';
 import { mountGameScreen, type GameScreenHandle } from './screens/game-screen.js';
 import { renderReviewScreen } from './screens/review-screen.js';
 import { renderStartScreen } from './screens/start-screen.js';
+import { startPracticeRoundState } from './utils/round-setup.js';
 import {
   createRoundTimerController,
   isRoundFinished,
@@ -23,10 +19,12 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
   let state = createInitialAppState();
   let gameScreenHandle: GameScreenHandle | null = null;
   let roundTimer: RoundTimerController | null = null;
+  let debugPanelRoot: HTMLElement | null = null;
 
   const destroyGameScreen = (): void => {
     gameScreenHandle?.destroy();
     gameScreenHandle = null;
+    debugPanelRoot = null;
   };
 
   const stopRoundTimer = (): void => {
@@ -40,13 +38,14 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
       ...state,
       roundState,
       screen: 'end',
+      timerPaused: false,
     };
     render();
   };
 
   const applyRoundState = (
     roundState: NonNullable<AppState['roundState']>,
-    options: { fromSwipe?: boolean; fromSkip?: boolean } = {},
+    options: { fromSwipe?: boolean; fromSkip?: boolean; fromDebug?: boolean } = {},
   ): void => {
     state = {
       ...state,
@@ -59,8 +58,9 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     }
 
     if (state.screen === 'game') {
-      if (options.fromSwipe || options.fromSkip) {
+      if (options.fromSwipe || options.fromSkip || options.fromDebug) {
         gameScreenHandle?.updateFromRoundState(roundState);
+        updateDebugPanel();
         if (options.fromSkip) {
           gameScreenHandle?.playSkipTransition();
         }
@@ -71,12 +71,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
   };
 
   const startPracticeRound = (): void => {
-    const roundId = `practice-${Date.now()}`;
-    const result = generateRound({
-      id: roundId,
-      language: PROTOTYPE_LANGUAGE,
-      random: createSeededRandom(roundId),
-    });
+    const result = startPracticeRoundState();
 
     if (!result.success) {
       state = {
@@ -90,11 +85,93 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
 
     state = {
       screen: 'game',
-      roundState: startRound(createInitialRoundState(result.round), Date.now()),
+      roundState: result.roundState,
       errorMessage: null,
       reviewGridIndex: 0,
+      debugRevealWords: false,
+      timerPaused: false,
     };
     render();
+  };
+
+  const getGameViewOptions = () => ({
+    clueListOptions: { revealWords: state.debugRevealWords },
+    timerPaused: state.timerPaused,
+  });
+
+  const updateDebugPanel = (): void => {
+    if (!IS_DEV || !debugPanelRoot) {
+      return;
+    }
+
+    updateDebugPanelView(debugPanelRoot, {
+      revealWords: state.debugRevealWords,
+      timerPaused: state.timerPaused,
+    });
+  };
+
+  const mountDevTools = (shell: HTMLElement): void => {
+    if (!IS_DEV || state.screen !== 'game') {
+      return;
+    }
+
+    debugPanelRoot = document.createElement('div');
+    debugPanelRoot.className = 'debug-panel-root';
+    shell.appendChild(debugPanelRoot);
+
+    mountDebugPanel(
+      debugPanelRoot,
+      {
+        revealWords: state.debugRevealWords,
+        timerPaused: state.timerPaused,
+      },
+      {
+        onRevealWords: () => {
+          state = {
+            ...state,
+            debugRevealWords: !state.debugRevealWords,
+          };
+          if (state.roundState) {
+            gameScreenHandle?.updateFromRoundState(state.roundState);
+          }
+          updateDebugPanel();
+        },
+        onCompleteGrid: () => {
+          if (!state.roundState) {
+            return;
+          }
+          applyRoundState(completeCurrentGridViaEngine(state.roundState), { fromDebug: true });
+        },
+        onToggleTimerPause: () => {
+          state = {
+            ...state,
+            timerPaused: !state.timerPaused,
+          };
+
+          if (state.timerPaused) {
+            roundTimer?.pause();
+          } else {
+            roundTimer?.resume();
+          }
+
+          if (state.roundState) {
+            gameScreenHandle?.updateTimer(
+              state.roundState.remainingSeconds,
+              state.timerPaused,
+            );
+          }
+          updateDebugPanel();
+        },
+        onRegenerateRound: () => {
+          startPracticeRound();
+        },
+        onLogState: () => {
+          if (state.roundState) {
+            logRoundState(state.roundState);
+          }
+        },
+      },
+    );
   };
 
   const render = (): void => {
@@ -121,6 +198,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
         }
         gameScreenHandle = mountGameScreen(shell, {
           roundState: state.roundState,
+          getViewOptions: getGameViewOptions,
           onSkip: () => {
             if (!state.roundState) {
               return;
@@ -143,6 +221,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
             return true;
           },
         });
+        mountDevTools(shell);
         startRoundTimer();
         break;
       case 'end':
@@ -196,18 +275,23 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     roundTimer = createRoundTimerController({
       getRoundState: () => state.roundState,
       isGameScreenActive: () => state.screen === 'game',
+      isPaused: () => state.timerPaused,
       onTick: (roundState) => {
         state = {
           ...state,
           roundState,
         };
-        gameScreenHandle?.updateTimer(roundState.remainingSeconds);
+        gameScreenHandle?.updateTimer(roundState.remainingSeconds, state.timerPaused);
       },
       onRoundEnded: (roundState) => {
         handleRoundEnded(roundState);
       },
     });
     roundTimer.start();
+
+    if (state.timerPaused) {
+      roundTimer.pause();
+    }
   };
 
   render();

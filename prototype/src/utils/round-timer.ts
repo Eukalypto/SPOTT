@@ -21,12 +21,16 @@ export function isRoundFinished(roundState: RoundState): boolean {
 export interface RoundTimerController {
   start: () => void;
   stop: () => void;
+  pause: () => void;
+  resume: () => void;
+  isPaused: () => boolean;
   tickNow: () => void;
 }
 
 export interface RoundTimerOptions {
   getRoundState: () => RoundState | null;
   isGameScreenActive: () => boolean;
+  isPaused: () => boolean;
   onTick: (roundState: RoundState) => void;
   onRoundEnded: (roundState: RoundState) => void;
 }
@@ -34,8 +38,10 @@ export interface RoundTimerOptions {
 /** UI-owned round clock; delegates countdown and expiry to {@link tickTimer}. */
 export function createRoundTimerController(options: RoundTimerOptions): RoundTimerController {
   let timerId: ReturnType<typeof setInterval> | null = null;
+  let paused = false;
 
   const stop = (): void => {
+    paused = false;
     if (timerId !== null) {
       clearInterval(timerId);
       timerId = null;
@@ -44,6 +50,10 @@ export function createRoundTimerController(options: RoundTimerOptions): RoundTim
   };
 
   const tickNow = (): void => {
+    if (options.isPaused() || paused) {
+      return;
+    }
+
     const current = options.getRoundState();
     if (!current || !options.isGameScreenActive() || current.round.status !== 'active') {
       return;
@@ -64,11 +74,8 @@ export function createRoundTimerController(options: RoundTimerOptions): RoundTim
     }
   };
 
-  const start = (): void => {
-    stop();
-
-    const current = options.getRoundState();
-    if (!current || current.round.status !== 'active') {
+  const startInterval = (): void => {
+    if (timerId !== null) {
       return;
     }
 
@@ -79,13 +86,49 @@ export function createRoundTimerController(options: RoundTimerOptions): RoundTim
       }
       tickNow();
     }, ROUND_TIMER_INTERVAL_MS);
+  };
 
+  const start = (): void => {
+    stop();
+    paused = false;
+
+    const current = options.getRoundState();
+    if (!current || current.round.status !== 'active') {
+      return;
+    }
+
+    startInterval();
     document.addEventListener('visibilitychange', handleVisibilityChange);
+  };
+
+  const pause = (): void => {
+    paused = true;
+    if (timerId !== null) {
+      clearInterval(timerId);
+      timerId = null;
+    }
+  };
+
+  const resume = (): void => {
+    if (!options.isGameScreenActive()) {
+      return;
+    }
+
+    paused = false;
+    if (options.isPaused()) {
+      return;
+    }
+
+    startInterval();
+    tickNow();
   };
 
   return {
     start,
     stop,
+    pause,
+    resume,
+    isPaused: () => paused || options.isPaused(),
     tickNow,
   };
 }

@@ -87,13 +87,30 @@ export function attachGridSwipe(
     return target.closest<HTMLElement>('[data-row][data-col]');
   };
 
+  const findCellFromCoordinates = (clientX: number, clientY: number): HTMLElement | null => {
+    const cells = gridElement.querySelectorAll<HTMLElement>('[data-row][data-col]');
+    for (const cell of cells) {
+      const rect = cell.getBoundingClientRect();
+      if (
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom
+      ) {
+        return cell;
+      }
+    }
+    return null;
+  };
+
   const getCellFromPointer = (event: PointerEvent): HTMLElement | null => {
     const target = document.elementFromPoint(event.clientX, event.clientY);
-    const cell = getCellFromTarget(target);
-    if (!cell || !gridElement.contains(cell)) {
-      return null;
+    const cellFromTarget = getCellFromTarget(target);
+    if (cellFromTarget && gridElement.contains(cellFromTarget)) {
+      return cellFromTarget;
     }
-    return cell;
+
+    return findCellFromCoordinates(event.clientX, event.clientY);
   };
 
   const clearSelectionStyles = (): void => {
@@ -196,12 +213,12 @@ export function attachGridSwipe(
       return;
     }
 
+    event.preventDefault();
     const cell = getCellFromPointer(event);
     if (!cell) {
       return;
     }
 
-    event.preventDefault();
     addCellToPath(cell);
   };
 
@@ -221,8 +238,10 @@ export function attachGridSwipe(
     resetSelection();
   };
 
-  gridElement.addEventListener('pointerdown', handlePointerDown);
-  gridElement.addEventListener('pointermove', handlePointerMove);
+  const listenerOptions: AddEventListenerOptions = { passive: false };
+
+  gridElement.addEventListener('pointerdown', handlePointerDown, listenerOptions);
+  gridElement.addEventListener('pointermove', handlePointerMove, listenerOptions);
   gridElement.addEventListener('pointerup', handlePointerUp);
   gridElement.addEventListener('pointercancel', handlePointerCancel);
 
@@ -232,8 +251,8 @@ export function attachGridSwipe(
         clearTimeout(flashTimeoutId);
       }
       resetSelection();
-      gridElement.removeEventListener('pointerdown', handlePointerDown);
-      gridElement.removeEventListener('pointermove', handlePointerMove);
+      gridElement.removeEventListener('pointerdown', handlePointerDown, listenerOptions);
+      gridElement.removeEventListener('pointermove', handlePointerMove, listenerOptions);
       gridElement.removeEventListener('pointerup', handlePointerUp);
       gridElement.removeEventListener('pointercancel', handlePointerCancel);
     },
