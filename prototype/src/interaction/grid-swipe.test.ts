@@ -59,4 +59,30 @@ describe('tryExtendPath', () => {
     const path = [{ row: 0, col: 0 }];
     expect(tryExtendPath(path, { row: 2, col: 2 })).toEqual([{ row: 0, col: 0 }]);
   });
+
+  it('ignores re-entering an earlier cell without backtracking', () => {
+    const path = [
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+      { row: 0, col: 2 },
+    ];
+    expect(tryExtendPath(path, { row: 0, col: 0 })).toEqual(path);
+  });
+
+  it('ignores duplicate coordinates when hovering the current cell', () => {
+    const path = [
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+    ];
+    expect(tryExtendPath(path, { row: 0, col: 1 })).toEqual(path);
+  });
+
+  it('rejects bent paths after the direction is established', () => {
+    const path = [
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+      { row: 0, col: 2 },
+    ];
+    expect(tryExtendPath(path, { row: 1, col: 2 })).toEqual(path);
+  });
 });

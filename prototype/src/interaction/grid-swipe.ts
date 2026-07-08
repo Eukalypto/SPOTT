@@ -38,6 +38,10 @@ function coordinatesEqual(left: Coordinate, right: Coordinate): boolean {
   return left.row === right.row && left.col === right.col;
 }
 
+function pathContainsCoordinate(path: Coordinate[], coordinate: Coordinate): boolean {
+  return path.some((entry) => coordinatesEqual(entry, coordinate));
+}
+
 /** Extend a forward-only drag path; backtracking removes the last cell. */
 export function tryExtendPath(path: Coordinate[], next: Coordinate): Coordinate[] {
   if (path.length === 0) {
@@ -54,6 +58,10 @@ export function tryExtendPath(path: Coordinate[], next: Coordinate): Coordinate[
     if (coordinatesEqual(previous, next)) {
       return path.slice(0, -1);
     }
+  }
+
+  if (pathContainsCoordinate(path, next)) {
+    return path;
   }
 
   if (path.length === 1) {
@@ -100,18 +108,33 @@ export function attachGridSwipe(
   });
 
   const findCellFromCoordinates = (clientX: number, clientY: number): HTMLElement | null => {
-    const cells = gridElement.querySelectorAll<HTMLElement>('[data-row][data-col]');
-    for (const cell of cells) {
-      const rect = cell.getBoundingClientRect();
-      if (isPointInCellHitBox(clientX, clientY, rect)) {
-        return cell;
-      }
+    const target = document.elementFromPoint(clientX, clientY);
+    const cell = target?.closest<HTMLElement>('[data-row][data-col]');
+    if (!cell || !gridElement.contains(cell)) {
+      return null;
     }
-    return null;
+
+    const rect = cell.getBoundingClientRect();
+    if (!isPointInCellHitBox(clientX, clientY, rect)) {
+      return null;
+    }
+
+    return cell;
   };
 
   const getCellFromPointer = (event: PointerEvent): HTMLElement | null =>
     findCellFromCoordinates(event.clientX, event.clientY);
+
+  const clearInvalidFlash = (): void => {
+    if (flashTimeoutId !== null) {
+      clearTimeout(flashTimeoutId);
+      flashTimeoutId = null;
+    }
+
+    gridElement.querySelectorAll('.grid-cell--invalid').forEach((cell) => {
+      cell.classList.remove('grid-cell--invalid');
+    });
+  };
 
   const clearSelectionStyles = (): void => {
     gridElement.querySelectorAll('.grid-cell--selected').forEach((cell) => {
@@ -130,19 +153,22 @@ export function attachGridSwipe(
     }
   };
 
+  const setSelectingState = (selecting: boolean): void => {
+    gridElement.classList.toggle('letter-grid--selecting', selecting);
+  };
+
   const resetSelection = (): void => {
     isSelecting = false;
     activePointerId = null;
     activePath = [];
     clearSelectionStyles();
+    setSelectingState(false);
   };
 
   const flashInvalidSelection = (path: Coordinate[]): void => {
-    if (flashTimeoutId !== null) {
-      clearTimeout(flashTimeoutId);
-    }
-
+    clearInvalidFlash();
     clearSelectionStyles();
+
     for (const coordinate of path) {
       gridElement
         .querySelector<HTMLElement>(
@@ -160,8 +186,19 @@ export function attachGridSwipe(
   };
 
   const addCellToPath = (cell: HTMLElement): void => {
-    activePath = tryExtendPath(activePath, readCoordinate(cell));
+    const nextPath = tryExtendPath(activePath, readCoordinate(cell));
+    if (nextPath === activePath) {
+      return;
+    }
+
+    activePath = nextPath;
     applySelectionStyles();
+  };
+
+  const releasePointer = (pointerId: number): void => {
+    if (gridElement.hasPointerCapture(pointerId)) {
+      gridElement.releasePointerCapture(pointerId);
+    }
   };
 
   const finishSelection = (event: PointerEvent): void => {
@@ -169,16 +206,13 @@ export function attachGridSwipe(
       return;
     }
 
-    if (gridElement.hasPointerCapture(event.pointerId)) {
-      gridElement.releasePointerCapture(event.pointerId);
-    }
-
+    const path = [...activePath];
     isSelecting = false;
     activePointerId = null;
-
-    const path = [...activePath];
-    clearSelectionStyles();
     activePath = [];
+    clearSelectionStyles();
+    setSelectingState(false);
+    releasePointer(event.pointerId);
 
     if (path.length < 2) {
       return;
@@ -188,6 +222,19 @@ export function attachGridSwipe(
     if (!applied) {
       flashInvalidSelection(path);
     }
+  };
+
+  const cancelSelection = (event: PointerEvent): void => {
+    if (activePointerId !== event.pointerId) {
+      return;
+    }
+
+    isSelecting = false;
+    activePointerId = null;
+    activePath = [];
+    clearSelectionStyles();
+    setSelectingState(false);
+    releasePointer(event.pointerId);
   };
 
   const handlePointerDown = (event: PointerEvent): void => {
@@ -200,11 +247,13 @@ export function attachGridSwipe(
       return;
     }
 
+    clearInvalidFlash();
     event.preventDefault();
     gridElement.setPointerCapture(event.pointerId);
     isSelecting = true;
     activePointerId = event.pointerId;
     activePath = [readCoordinate(cell)];
+    setSelectingState(true);
     applySelectionStyles();
   };
 
@@ -214,6 +263,7 @@ export function attachGridSwipe(
     }
 
     event.preventDefault();
+
     const cell = getCellFromPointer(event);
     if (!cell) {
       return;
@@ -227,15 +277,17 @@ export function attachGridSwipe(
   };
 
   const handlePointerCancel = (event: PointerEvent): void => {
-    if (activePointerId !== event.pointerId) {
-      return;
-    }
+    cancelSelection(event);
+  };
 
-    if (gridElement.hasPointerCapture(event.pointerId)) {
-      gridElement.releasePointerCapture(event.pointerId);
+  const handleLostPointerCapture = (event: PointerEvent): void => {
+    if (isSelecting && activePointerId === event.pointerId) {
+      resetSelection();
     }
+  };
 
-    resetSelection();
+  const preventBrowserDrag = (event: Event): void => {
+    event.preventDefault();
   };
 
   const listenerOptions: AddEventListenerOptions = { passive: false };
@@ -244,17 +296,23 @@ export function attachGridSwipe(
   gridElement.addEventListener('pointermove', handlePointerMove, listenerOptions);
   gridElement.addEventListener('pointerup', handlePointerUp);
   gridElement.addEventListener('pointercancel', handlePointerCancel);
+  gridElement.addEventListener('lostpointercapture', handleLostPointerCapture);
+  gridElement.addEventListener('dragstart', preventBrowserDrag);
+  gridElement.addEventListener('selectstart', preventBrowserDrag);
+  gridElement.addEventListener('contextmenu', preventBrowserDrag);
 
   return {
     destroy: () => {
-      if (flashTimeoutId !== null) {
-        clearTimeout(flashTimeoutId);
-      }
+      clearInvalidFlash();
       resetSelection();
       gridElement.removeEventListener('pointerdown', handlePointerDown, listenerOptions);
       gridElement.removeEventListener('pointermove', handlePointerMove, listenerOptions);
       gridElement.removeEventListener('pointerup', handlePointerUp);
       gridElement.removeEventListener('pointercancel', handlePointerCancel);
+      gridElement.removeEventListener('lostpointercapture', handleLostPointerCapture);
+      gridElement.removeEventListener('dragstart', preventBrowserDrag);
+      gridElement.removeEventListener('selectstart', preventBrowserDrag);
+      gridElement.removeEventListener('contextmenu', preventBrowserDrag);
     },
   };
 }
