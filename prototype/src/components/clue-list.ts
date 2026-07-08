@@ -1,23 +1,26 @@
 import { getDisplayedClue, type GridData, type PlacedWord } from '@spott/engine';
 
 import { revealWordText } from './grid-review.js';
+import { t, type UiLocale } from '../i18n/index.js';
 import { escapeHtml } from '../utils/html.js';
 
 export interface ClueListOptions {
+  locale?: UiLocale;
   /** Dev-only visual aid: show full target words instead of masked clues. */
   revealWords?: boolean;
 }
 
 export function buildClueListHtml(grid: GridData, options: ClueListOptions = {}): string {
+  const locale = options.locale ?? 'en';
   const activeWords = grid.placedWords.filter((word) => !word.found);
   const foundWords = grid.placedWords.filter((word) => word.found);
 
   const activeSection =
     activeWords.length > 0
-      ? activeWords.map((word) => buildClueItemHtml(word, options)).join('')
-      : '<li class="clue-item clue-item--empty">All words found on this grid</li>';
+      ? activeWords.map((word) => buildClueItemHtml(word, options, locale)).join('')
+      : `<li class="clue-item clue-item--empty">${escapeHtml(t('allWordsFoundOnGrid', locale))}</li>`;
 
-  const foundSection = foundWords.map((word) => buildClueItemHtml(word, options)).join('');
+  const foundSection = foundWords.map((word) => buildClueItemHtml(word, options, locale)).join('');
 
   return `${activeSection}${foundSection}`;
 }
@@ -39,7 +42,7 @@ function getClueText(word: PlacedWord, options: ClueListOptions): string {
   return revealWordText(word);
 }
 
-function buildClueItemHtml(word: PlacedWord, options: ClueListOptions): string {
+function buildClueItemHtml(word: PlacedWord, options: ClueListOptions, locale: UiLocale): string {
   const clue = getClueText(word, options);
   const foundClass = word.found ? ' clue-item--found' : '';
   const revealedClass = options.revealWords && !word.found ? ' clue-item--revealed' : '';
@@ -48,8 +51,12 @@ function buildClueItemHtml(word: PlacedWord, options: ClueListOptions): string {
     word.found && colorIndex !== null
       ? ` style="--clue-accent: var(--word-color-${colorIndex}); border-left-color: var(--word-color-${colorIndex})"`
       : '';
-  const statusLabel = word.found ? 'Found' : options.revealWords ? 'Revealed' : 'Clue';
-  const ariaLabel = word.found ? `${clue}, found` : clue;
+  const statusLabel = word.found
+    ? t('found', locale)
+    : options.revealWords
+      ? t('revealed', locale)
+      : t('clue', locale);
+  const ariaLabel = word.found ? `${clue}, ${t('found', locale).toLowerCase()}` : clue;
 
   return `
     <li

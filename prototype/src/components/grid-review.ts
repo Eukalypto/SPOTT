@@ -1,6 +1,8 @@
 import type { GridData, PlacedWord } from '@spott/engine';
+import { toDisplayUpperCase } from '@spott/engine';
 
-import { cellKey, getReviewWordColor } from '../utils/grid-display.js';
+import { t, type UiLocale } from '../i18n/index.js';
+import { cellKey, formatGridCellLetter, getReviewWordColor } from '../utils/grid-display.js';
 import { escapeHtml } from '../utils/html.js';
 import { wordColorVar, WORDS_PER_GRID } from '../utils/word-colors.js';
 
@@ -22,9 +24,9 @@ export function getReviewWordEntries(grid: GridData): ReviewWordEntry[] {
   }));
 }
 
-/** Review mode always shows the full target word, never masked clues. */
+/** Review mode always shows the full original word, never masked clues. */
 export function revealWordText(word: PlacedWord): string {
-  return word.text.toUpperCase();
+  return toDisplayUpperCase(word.text.trim());
 }
 
 export function buildReviewLetterGridHtml(grid: GridData): string {
@@ -53,13 +55,13 @@ export function buildReviewLetterGridHtml(grid: GridData): string {
         .map((cell, colIndex) => {
           const meta = cellMeta.get(cellKey(rowIndex, colIndex));
           if (!meta) {
-            return `<span class="grid-cell grid-cell--review">${escapeHtml(cell.letter)}</span>`;
+            return `<span class="grid-cell grid-cell--review">${escapeHtml(formatGridCellLetter(cell.letter))}</span>`;
           }
 
           const stateClass = meta.found
             ? ' grid-cell--review-found'
             : ' grid-cell--review-missed';
-          return `<span class="grid-cell grid-cell--review${stateClass}" style="--cell-color:${wordColorVar(meta.colorIndex)}">${escapeHtml(cell.letter)}</span>`;
+          return `<span class="grid-cell grid-cell--review${stateClass}" style="--cell-color:${wordColorVar(meta.colorIndex)}">${escapeHtml(formatGridCellLetter(cell.letter))}</span>`;
         })
         .join('');
       return `<div class="grid-row">${cells}</div>`;
@@ -67,16 +69,18 @@ export function buildReviewLetterGridHtml(grid: GridData): string {
     .join('');
 }
 
-export function buildReviewClueListHtml(grid: GridData): string {
+export function buildReviewClueListHtml(grid: GridData, locale: UiLocale = 'en'): string {
   const missedEntries = getReviewWordEntries(grid).filter((entry) => !entry.found);
   const foundEntries = getReviewWordEntries(grid).filter((entry) => entry.found);
 
-  return [...missedEntries, ...foundEntries].map(buildReviewClueItemHtml).join('');
+  return [...missedEntries, ...foundEntries]
+    .map((entry) => buildReviewClueItemHtml(entry, locale))
+    .join('');
 }
 
-function buildReviewClueItemHtml(entry: ReviewWordEntry): string {
+function buildReviewClueItemHtml(entry: ReviewWordEntry, locale: UiLocale): string {
   const status = entry.found ? 'found' : 'missed';
-  const statusLabel = entry.found ? 'Found' : 'Missed';
+  const statusLabel = entry.found ? t('found', locale) : t('missed', locale);
   const wordClass = entry.found ? ' review-clue__word--found' : '';
 
   return `

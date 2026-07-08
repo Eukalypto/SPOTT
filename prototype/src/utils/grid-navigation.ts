@@ -1,5 +1,7 @@
 import { GAME_CONFIG, type RoundState } from '@spott/engine';
 
+import { t, tFormat, type UiLocale } from '../i18n/index.js';
+
 /** Whether the player can skip away from the current unfinished grid. */
 export function canSkipGrid(roundState: RoundState): boolean {
   return roundState.round.status === 'active' && roundState.activeGridIndices.length > 1;
@@ -14,10 +16,10 @@ export function getUnfinishedGridCount(roundState: RoundState): number {
   return roundState.activeGridIndices.length;
 }
 
-export function getGridNavigationHint(roundState: RoundState): string {
+export function getGridNavigationHint(roundState: RoundState, locale: UiLocale): string {
   const remaining = getUnfinishedGridCount(roundState);
   if (remaining <= 1) {
-    return 'Last grid';
+    return t('lastGrid', locale);
   }
-  return `${remaining} unfinished`;
+  return tFormat('unfinishedGrids', locale, { count: remaining });
 }

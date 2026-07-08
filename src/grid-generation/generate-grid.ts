@@ -5,6 +5,7 @@ import {
   getGridMaskingPolicy,
   type WordLengthCompositionEntry,
 } from '../config/index.js';
+import { toDisplayUpperCase } from '../display/to-display-uppercase.js';
 import { hasOverlappingPlacements, hasUniqueTargetWordOccurrences } from '../duplicate-detection/index.js';
 import { normalizeWord } from '../normalization/index.js';
 import type { DirectionDefinition, DirectionName } from '../types/direction.js';
@@ -332,7 +333,7 @@ function buildCellMatrix(
     for (let index = 0; index < placedWord.cells.length; index++) {
       const { row, col } = placedWord.cells[index];
       cells[row][col] = {
-        letter: placedWord.normalizedText[index].toUpperCase(),
+        letter: toDisplayUpperCase(placedWord.normalizedText[index]),
         wordId: placedWord.id,
       };
     }

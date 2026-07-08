@@ -79,5 +79,6 @@ describe('grid review', () => {
     expect(html.match(/review-clue__word--found/g)?.length).toBe(1);
     expect(html).toContain('review-clue--missed');
     expect(html).toContain('review-clue--found');
+    expect(html).toContain('>Missed<');
   });
 });

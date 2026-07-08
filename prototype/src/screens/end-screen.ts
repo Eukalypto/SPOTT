@@ -1,11 +1,13 @@
 import type { RoundState } from '@spott/engine';
 
+import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { escapeHtml } from '../utils/html.js';
 import { getGridSummaries, getRoundStats } from '../utils/round-stats.js';
 import { formatRemainingTime } from '../utils/round-timer.js';
 
 export interface EndScreenOptions {
   roundState: RoundState;
+  locale: UiLocale;
   onReviewGrids: () => void;
   onStartAnotherRound: () => void;
 }
@@ -14,51 +16,53 @@ export function renderEndScreen(container: HTMLElement, options: EndScreenOption
   const stats = getRoundStats(options.roundState);
   const gridSummaries = getGridSummaries(options.roundState);
   const statusLabel =
-    options.roundState.round.status === 'completed' ? 'All grids complete!' : 'Time is up';
+    options.roundState.round.status === 'completed'
+      ? t('allGridsComplete', options.locale)
+      : t('timeIsUp', options.locale);
 
   container.innerHTML = `
     <section class="screen screen--end" aria-labelledby="end-title">
       <header class="end-header">
-        <h2 id="end-title">Round over</h2>
+        <h2 id="end-title">${escapeHtml(t('roundOver', options.locale))}</h2>
         <p class="end-status">${escapeHtml(statusLabel)}</p>
       </header>
 
       <dl class="end-stats">
         <div class="end-stat">
-          <dt>Final score</dt>
+          <dt>${escapeHtml(t('finalScore', options.locale))}</dt>
           <dd>${stats.finalScore}</dd>
         </div>
         <div class="end-stat">
-          <dt>Words found</dt>
+          <dt>${escapeHtml(t('wordsFound', options.locale))}</dt>
           <dd>${stats.wordsFound} / ${stats.totalWords}</dd>
         </div>
         <div class="end-stat">
-          <dt>Grids completed</dt>
+          <dt>${escapeHtml(t('gridsCompleted', options.locale))}</dt>
           <dd>${stats.gridsCompleted} / ${stats.totalGrids}</dd>
         </div>
         <div class="end-stat">
-          <dt>Time remaining</dt>
+          <dt>${escapeHtml(t('timeRemaining', options.locale))}</dt>
           <dd>${formatRemainingTime(stats.remainingSeconds)}</dd>
         </div>
         <div class="end-stat">
-          <dt>Time bonus</dt>
+          <dt>${escapeHtml(t('timeBonus', options.locale))}</dt>
           <dd>${formatTimeBonus(stats.timeBonus)}</dd>
         </div>
       </dl>
 
       <section class="end-grid-summary" aria-labelledby="grid-summary-title">
-        <h3 id="grid-summary-title" class="end-grid-summary__title">Grid summary</h3>
+        <h3 id="grid-summary-title" class="end-grid-summary__title">${escapeHtml(t('gridSummary', options.locale))}</h3>
         <ul class="end-grid-summary__list">
-          ${gridSummaries.map(buildGridSummaryItemHtml).join('')}
+          ${gridSummaries.map((grid) => buildGridSummaryItemHtml(grid, options.locale)).join('')}
         </ul>
       </section>
 
       <div class="end-actions">
         <button type="button" class="primary-button" data-action="review">
-          Review Grids
+          ${escapeHtml(t('reviewGrids', options.locale))}
         </button>
         <button type="button" class="secondary-button" data-action="restart">
-          Start New Round
+          ${escapeHtml(t('startNewRound', options.locale))}
         </button>
       </div>
     </section>
@@ -81,18 +85,21 @@ function formatTimeBonus(timeBonus: number): string {
   return '—';
 }
 
-function buildGridSummaryItemHtml(grid: ReturnType<typeof getGridSummaries>[number]): string {
+function buildGridSummaryItemHtml(
+  grid: ReturnType<typeof getGridSummaries>[number],
+  locale: UiLocale,
+): string {
   const statusClass = grid.completed ? 'end-grid-item--complete' : 'end-grid-item--incomplete';
-  const statusLabel = grid.completed ? 'Complete' : 'Incomplete';
+  const statusLabel = grid.completed ? t('complete', locale) : t('incomplete', locale);
 
   return `
     <li class="end-grid-item ${statusClass}">
       <div class="end-grid-item__header">
-        <span class="end-grid-item__number">Grid ${grid.gridNumber}</span>
-        <span class="end-grid-item__status">${statusLabel}</span>
+        <span class="end-grid-item__number">${escapeHtml(t('grid', locale))} ${grid.gridNumber}</span>
+        <span class="end-grid-item__status">${escapeHtml(statusLabel)}</span>
       </div>
       <p class="end-grid-item__theme">${escapeHtml(grid.themeLabel)}</p>
-      <p class="end-grid-item__words">${grid.wordsFound} / ${grid.totalWords} words found</p>
+      <p class="end-grid-item__words">${escapeHtml(tFormat('gridWordsFoundSummary', locale, { found: grid.wordsFound, total: grid.totalWords }))}</p>
     </li>
   `;
 }

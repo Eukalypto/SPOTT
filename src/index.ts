@@ -18,3 +18,4 @@ export * from './round-state/index.js';
 export * from './round-generation/index.js';
 export * from './random/index.js';
 export * from './sample-data/index.js';
+export * from './display/index.js';

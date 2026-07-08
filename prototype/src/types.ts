@@ -1,11 +1,15 @@
-import type { RoundState } from '@spott/engine';
+import type { LanguageCode, RoundState } from '@spott/engine';
 
-export type AppScreen = 'start' | 'game' | 'end' | 'review';
+import { loadPersistedLanguage } from './utils/language-persistence.js';
+import type { RoundStartError } from './utils/round-start-error.js';
+
+export type AppScreen = 'start' | 'game' | 'end' | 'review' | 'round-error';
 
 export interface AppState {
   screen: AppScreen;
   roundState: RoundState | null;
-  errorMessage: string | null;
+  roundStartError: RoundStartError | null;
+  selectedLanguage: LanguageCode;
   reviewGridIndex: number;
   /** Dev-only: show full words in the clue list for the current grid. */
   debugRevealWords: boolean;
@@ -17,7 +21,8 @@ export function createInitialAppState(): AppState {
   return {
     screen: 'start',
     roundState: null,
-    errorMessage: null,
+    roundStartError: null,
+    selectedLanguage: loadPersistedLanguage(),
     reviewGridIndex: 0,
     debugRevealWords: false,
     timerPaused: false,

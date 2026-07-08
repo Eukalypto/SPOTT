@@ -188,6 +188,15 @@ describe('getDisplayedClue', () => {
       }),
     ).toBe('##TE');
   });
+
+  it('aligns partial clues to normalized length for French ligatures', () => {
+    expect(
+      getDisplayedClue({
+        ...createPlacedWord('w1', 'cœur', 'coeur'),
+        maskType: 'partial',
+      }),
+    ).toBe('###UR');
+  });
 });
 
 describe('assignMaskTypes', () => {

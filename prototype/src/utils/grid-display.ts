@@ -1,10 +1,16 @@
 import type { GridData, PlacedWord } from '@spott/engine';
+import { toDisplayUpperCase } from '@spott/engine';
 
 import { escapeHtml } from './html.js';
 import { getWordHighlightColor, wordColorVar, WORDS_PER_GRID } from './word-colors.js';
 
 export function cellKey(row: number, col: number): string {
   return `${row},${col}`;
+}
+
+/** Format a grid cell letter for display (normalized engine letter, uppercased). */
+export function formatGridCellLetter(letter: string): string {
+  return toDisplayUpperCase(letter);
 }
 
 /** Color index per cell for found target words on the current grid. */
@@ -37,7 +43,7 @@ export function buildLetterGridHtml(grid: GridData): string {
             colorIndex !== undefined
               ? ` style="--cell-color:${wordColorVar(colorIndex)}"`
               : '';
-          return `<span class="grid-cell${foundClass}" data-row="${rowIndex}" data-col="${colIndex}"${style}>${escapeHtml(cell.letter)}</span>`;
+          return `<span class="grid-cell${foundClass}" data-row="${rowIndex}" data-col="${colIndex}"${style}>${escapeHtml(formatGridCellLetter(cell.letter))}</span>`;
         })
         .join('');
       return `<div class="grid-row">${cells}</div>`;

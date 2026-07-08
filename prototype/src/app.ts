@@ -3,11 +3,14 @@ import { skipGrid, submitSwipe } from '@spott/engine';
 import { completeCurrentGridViaEngine, logRoundState } from './debug/debug-actions.js';
 import { mountDebugPanel, updateDebugPanelView } from './debug/debug-panel.js';
 import { IS_DEV } from './env.js';
+import { setDocumentLanguage } from './i18n/index.js';
 import { renderEndScreen } from './screens/end-screen.js';
 import { mountGameScreen, type GameScreenHandle } from './screens/game-screen.js';
 import { renderReviewScreen } from './screens/review-screen.js';
+import { renderRoundStartErrorScreen } from './screens/round-start-error-screen.js';
 import { renderStartScreen } from './screens/start-screen.js';
 import { startPracticeRoundState } from './utils/round-setup.js';
+import { savePersistedLanguage } from './utils/language-persistence.js';
 import {
   createRoundTimerController,
   isRoundFinished,
@@ -70,23 +73,28 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     }
   };
 
-  const startPracticeRound = (): void => {
-    const result = startPracticeRoundState();
-
-    if (!result.success) {
-      state = {
-        ...state,
-        screen: 'start',
-        errorMessage: `Could not start a practice round (${result.reason}).`,
-      };
-      render();
-      return;
-    }
-
+  const clearRoundStartError = (): void => {
     state = {
-      screen: 'game',
-      roundState: result.roundState,
-      errorMessage: null,
+      ...state,
+      screen: 'start',
+      roundStartError: null,
+      roundState: null,
+    };
+    render();
+  };
+
+  const handleRoundStartFailure = (
+    failure: Extract<ReturnType<typeof startPracticeRoundState>, { success: false }>,
+  ): void => {
+    stopRoundTimer();
+    state = {
+      ...state,
+      screen: 'round-error',
+      roundState: null,
+      roundStartError: {
+        reason: failure.reason,
+        message: failure.message,
+      },
       reviewGridIndex: 0,
       debugRevealWords: false,
       timerPaused: false,
@@ -94,8 +102,37 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     render();
   };
 
+  const startPracticeRound = (): void => {
+    const result = startPracticeRoundState({
+      language: state.selectedLanguage,
+      uiLocale: state.selectedLanguage,
+    });
+
+    if (!result.success) {
+      handleRoundStartFailure(result);
+      return;
+    }
+
+    state = {
+      ...state,
+      screen: 'game',
+      roundState: result.roundState,
+      roundStartError: null,
+      reviewGridIndex: 0,
+      debugRevealWords: false,
+      timerPaused: false,
+    };
+    render();
+  };
+
+  const resetToStartPreservingLanguage = (): AppState => ({
+    ...createInitialAppState(),
+    selectedLanguage: state.selectedLanguage,
+    roundStartError: null,
+  });
+
   const getGameViewOptions = () => ({
-    clueListOptions: { revealWords: state.debugRevealWords },
+    clueListOptions: { revealWords: state.debugRevealWords, locale: state.selectedLanguage },
     timerPaused: state.timerPaused,
   });
 
@@ -105,6 +142,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     }
 
     updateDebugPanelView(debugPanelRoot, {
+      locale: state.selectedLanguage,
       revealWords: state.debugRevealWords,
       timerPaused: state.timerPaused,
     });
@@ -122,6 +160,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     mountDebugPanel(
       debugPanelRoot,
       {
+        locale: state.selectedLanguage,
         revealWords: state.debugRevealWords,
         timerPaused: state.timerPaused,
       },
@@ -177,6 +216,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
   const render = (): void => {
     stopRoundTimer();
     destroyGameScreen();
+    setDocumentLanguage(state.selectedLanguage);
 
     root.innerHTML = '';
     const shell = document.createElement('div');
@@ -186,18 +226,41 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     switch (state.screen) {
       case 'start':
         renderStartScreen(shell, {
-          errorMessage: state.errorMessage,
+          locale: state.selectedLanguage,
+          selectedLanguage: state.selectedLanguage,
+          onLanguageChange: (language) => {
+            savePersistedLanguage(language);
+            state = {
+              ...state,
+              selectedLanguage: language,
+              roundStartError: null,
+            };
+            render();
+          },
           onStartPracticeRound: startPracticeRound,
+        });
+        break;
+      case 'round-error':
+        if (!state.roundStartError) {
+          clearRoundStartError();
+          return;
+        }
+        renderRoundStartErrorScreen(shell, {
+          locale: state.selectedLanguage,
+          error: state.roundStartError,
+          onTryAgain: startPracticeRound,
+          onBackToStart: clearRoundStartError,
         });
         break;
       case 'game':
         if (!state.roundState) {
-          state = createInitialAppState();
+          state = resetToStartPreservingLanguage();
           render();
           return;
         }
         gameScreenHandle = mountGameScreen(shell, {
           roundState: state.roundState,
+          locale: state.selectedLanguage,
           getViewOptions: getGameViewOptions,
           onSkip: () => {
             if (!state.roundState) {
@@ -226,12 +289,13 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
         break;
       case 'end':
         if (!state.roundState) {
-          state = createInitialAppState();
+          state = resetToStartPreservingLanguage();
           render();
           return;
         }
         renderEndScreen(shell, {
           roundState: state.roundState,
+          locale: state.selectedLanguage,
           onReviewGrids: () => {
             state = {
               ...state,
@@ -245,13 +309,14 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
         break;
       case 'review':
         if (!state.roundState) {
-          state = createInitialAppState();
+          state = resetToStartPreservingLanguage();
           render();
           return;
         }
         renderReviewScreen(shell, {
           roundState: state.roundState,
           reviewGridIndex: state.reviewGridIndex,
+          locale: state.selectedLanguage,
           onChangeGrid: (index) => {
             state = {
               ...state,

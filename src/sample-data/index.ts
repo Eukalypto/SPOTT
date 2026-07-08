@@ -34,3 +34,12 @@ export {
   type SampleWordSetLanguage,
   type SampleWordSetRegistry,
 } from './types.js';
+
+export {
+  buildWordSetValidationReport,
+  formatAllWordSetValidationReports,
+  formatWordSetValidationReport,
+  hasValidationFailures,
+  validateAllSampleWordSets,
+  type WordSetValidationReport,
+} from './validate-sample-word-sets.js';

@@ -1,3 +1,5 @@
+import { t, type UiLocale } from '../i18n/index.js';
+
 export interface DebugPanelActions {
   onRevealWords: () => void;
   onCompleteGrid: () => void;
@@ -7,6 +9,7 @@ export interface DebugPanelActions {
 }
 
 export interface DebugPanelViewModel {
+  locale: UiLocale;
   revealWords: boolean;
   timerPaused: boolean;
 }
@@ -18,17 +21,17 @@ export function mountDebugPanel(
 ): void {
   container.innerHTML = `
     <details class="debug-panel" open>
-      <summary class="debug-panel__summary">Dev tools</summary>
+      <summary class="debug-panel__summary">${t('devTools', viewModel.locale)}</summary>
       <div class="debug-panel__actions">
         <button type="button" class="debug-button" data-debug="reveal">
-          ${viewModel.revealWords ? 'Hide' : 'Reveal'} grid words
+          ${viewModel.revealWords ? t('hideSolutions', viewModel.locale) : t('showSolutions', viewModel.locale)}
         </button>
-        <button type="button" class="debug-button" data-debug="complete">Complete grid</button>
+        <button type="button" class="debug-button" data-debug="complete">${t('completeCurrentGrid', viewModel.locale)}</button>
         <button type="button" class="debug-button" data-debug="timer">
-          ${viewModel.timerPaused ? 'Resume' : 'Pause'} timer
+          ${viewModel.timerPaused ? t('resumeTimer', viewModel.locale) : t('pauseTimer', viewModel.locale)}
         </button>
-        <button type="button" class="debug-button" data-debug="regenerate">Regenerate round</button>
-        <button type="button" class="debug-button" data-debug="log">Log state</button>
+        <button type="button" class="debug-button" data-debug="regenerate">${t('regenerateRound', viewModel.locale)}</button>
+        <button type="button" class="debug-button" data-debug="log">${t('logState', viewModel.locale)}</button>
       </div>
     </details>
   `;
@@ -63,9 +66,13 @@ export function updateDebugPanelView(
   const timerButton = container.querySelector<HTMLButtonElement>('[data-debug="timer"]');
 
   if (revealButton) {
-    revealButton.textContent = `${viewModel.revealWords ? 'Hide' : 'Reveal'} grid words`;
+    revealButton.textContent = viewModel.revealWords
+      ? t('hideSolutions', viewModel.locale)
+      : t('showSolutions', viewModel.locale);
   }
   if (timerButton) {
-    timerButton.textContent = `${viewModel.timerPaused ? 'Resume' : 'Pause'} timer`;
+    timerButton.textContent = viewModel.timerPaused
+      ? t('resumeTimer', viewModel.locale)
+      : t('pauseTimer', viewModel.locale);
   }
 }

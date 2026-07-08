@@ -33,7 +33,8 @@ describe('grid navigation helpers', () => {
 
   it('reports unfinished grid count for skip feedback', () => {
     expect(getUnfinishedGridCount(createRoundState([2, 5, 6]))).toBe(3);
-    expect(getGridNavigationHint(createRoundState([2, 5, 6]))).toBe('3 unfinished');
-    expect(getGridNavigationHint(createRoundState([4]))).toBe('Last grid');
+    expect(getGridNavigationHint(createRoundState([2, 5, 6]), 'en')).toBe('3 unfinished');
+    expect(getGridNavigationHint(createRoundState([4]), 'en')).toBe('Last grid');
+    expect(getGridNavigationHint(createRoundState([4]), 'fr')).toBe('Dernière grille');
   });
 });
