@@ -26,7 +26,7 @@ export function startPracticeRoundState(
   const result = generateRound({
     id: roundId,
     language,
-    random: createSeededRandom(roundId),
+    random: createSeededRandom(Number(roundId) || 0),
   });
 
   if (!result.success) {

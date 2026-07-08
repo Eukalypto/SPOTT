@@ -1,6 +1,25 @@
 import type { Coordinate } from '@spott/engine';
 
 const INVALID_FLASH_MS = 220;
+const CELL_HIT_BOX_RATIO = 0.75;
+
+/** True when a pointer lies inside the centered hit box for a grid cell. */
+export function isPointInCellHitBox(
+  clientX: number,
+  clientY: number,
+  rect: Pick<DOMRect, 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'>,
+  ratio = CELL_HIT_BOX_RATIO,
+): boolean {
+  const insetX = (rect.width * (1 - ratio)) / 2;
+  const insetY = (rect.height * (1 - ratio)) / 2;
+
+  return (
+    clientX >= rect.left + insetX &&
+    clientX <= rect.right - insetX &&
+    clientY >= rect.top + insetY &&
+    clientY <= rect.bottom - insetY
+  );
+}
 
 function isAdjacent(a: Coordinate, b: Coordinate): boolean {
   const rowDiff = Math.abs(a.row - b.row);
@@ -80,38 +99,19 @@ export function attachGridSwipe(
     col: Number(cell.dataset.col),
   });
 
-  const getCellFromTarget = (target: EventTarget | null): HTMLElement | null => {
-    if (!(target instanceof Element)) {
-      return null;
-    }
-    return target.closest<HTMLElement>('[data-row][data-col]');
-  };
-
   const findCellFromCoordinates = (clientX: number, clientY: number): HTMLElement | null => {
     const cells = gridElement.querySelectorAll<HTMLElement>('[data-row][data-col]');
     for (const cell of cells) {
       const rect = cell.getBoundingClientRect();
-      if (
-        clientX >= rect.left &&
-        clientX <= rect.right &&
-        clientY >= rect.top &&
-        clientY <= rect.bottom
-      ) {
+      if (isPointInCellHitBox(clientX, clientY, rect)) {
         return cell;
       }
     }
     return null;
   };
 
-  const getCellFromPointer = (event: PointerEvent): HTMLElement | null => {
-    const target = document.elementFromPoint(event.clientX, event.clientY);
-    const cellFromTarget = getCellFromTarget(target);
-    if (cellFromTarget && gridElement.contains(cellFromTarget)) {
-      return cellFromTarget;
-    }
-
-    return findCellFromCoordinates(event.clientX, event.clientY);
-  };
+  const getCellFromPointer = (event: PointerEvent): HTMLElement | null =>
+    findCellFromCoordinates(event.clientX, event.clientY);
 
   const clearSelectionStyles = (): void => {
     gridElement.querySelectorAll('.grid-cell--selected').forEach((cell) => {

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import type { PlacedWord } from '@spott/engine';
+
 import {
   buildReviewClueListHtml,
   buildReviewLetterGridHtml,
@@ -11,6 +13,7 @@ function createWord(overrides: Partial<{
   text: string;
   found: boolean;
   colorIndex: number | null;
+  maskType: 'none' | 'partial' | 'full';
   cells: { row: number; col: number }[];
 }> = {}) {
   return {
@@ -18,7 +21,7 @@ function createWord(overrides: Partial<{
     text: 'lion',
     normalizedText: 'lion',
     length: 4 as const,
-    direction: 'E' as const,
+    direction: 'horizontal-right' as const,
     start: { row: 0, col: 0 },
     end: { row: 0, col: 3 },
     cells: [{ row: 0, col: 0 }, { row: 0, col: 1 }],
@@ -30,9 +33,22 @@ function createWord(overrides: Partial<{
   };
 }
 
+function asPlacedWord(
+  overrides: Partial<{
+    id: string;
+    text: string;
+    found: boolean;
+    colorIndex: number | null;
+    maskType: 'none' | 'partial' | 'full';
+    cells: { row: number; col: number }[];
+  }> = {},
+): PlacedWord {
+  return createWord(overrides) as PlacedWord;
+}
+
 describe('grid review', () => {
   it('reveals full words instead of masked clues', () => {
-    expect(revealWordText(createWord({ text: 'señor', maskType: 'full' as never }))).toBe('SEÑOR');
+    expect(revealWordText(asPlacedWord({ text: 'señor', maskType: 'full' }))).toBe('SEÑOR');
   });
 
   it('colors all target words on the review grid', () => {

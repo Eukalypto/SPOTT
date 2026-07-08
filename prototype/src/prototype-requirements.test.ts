@@ -64,7 +64,9 @@ describe('Phase 2 prototype requirements', () => {
     expect(unfoundWord).toBeDefined();
     const reversed = submitSwipe(valid.state, [...unfoundWord!.cells].reverse());
     expect(reversed.applied).toBe(false);
-    expect(reversed.reason).toBe('reverse-not-allowed');
+    if (!reversed.applied) {
+      expect(reversed.reason).toBe('reverse-not-allowed');
+    }
     expect(reversed.state.score.total).toBe(valid.state.score.total);
   });
 

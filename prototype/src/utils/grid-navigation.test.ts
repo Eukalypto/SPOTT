@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import type { RoundState } from '@spott/engine';
+
 import {
   canSkipGrid,
   getGridDisplayLabel,
@@ -15,7 +17,7 @@ function createRoundState(activeGridIndices: number[], currentGridIndex = active
     remainingSeconds: 60,
     foundWordIds: new Set<string>(),
     score: { entries: [], wordPoints: 0, timeBonus: 0, total: 0 },
-  };
+  } as unknown as RoundState;
 }
 
 describe('grid navigation helpers', () => {

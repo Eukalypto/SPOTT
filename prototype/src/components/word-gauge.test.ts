@@ -14,7 +14,7 @@ function createFoundWord(
     text: id,
     normalizedText: id,
     length: 4 as const,
-    direction: 'E' as const,
+    direction: 'horizontal-right' as const,
     start: cells[0],
     end: cells[cells.length - 1],
     cells,
@@ -27,7 +27,7 @@ function createFoundWord(
 
 describe('word gauge and found-word coloring', () => {
   it('renders exactly six notches per grid', () => {
-    const grid = { placedWords: [] } as Parameters<typeof buildGaugeHtml>[0];
+    const grid = { placedWords: [] } as unknown as Parameters<typeof buildGaugeHtml>[0];
     const html = buildGaugeHtml(grid);
     expect(html.match(/gauge-notch/g)?.length).toBe(WORDS_PER_GRID);
   });
@@ -38,7 +38,7 @@ describe('word gauge and found-word coloring', () => {
         createFoundWord('w2', 2, [{ row: 0, col: 1 }]),
         createFoundWord('w1', 1, [{ row: 0, col: 0 }]),
       ],
-    } as Parameters<typeof buildGaugeHtml>[0];
+    } as unknown as Parameters<typeof buildGaugeHtml>[0];
 
     const notches = getFilledGaugeNotches(grid);
     expect(notches[0]?.colorIndex).toBe(0);
@@ -61,7 +61,7 @@ describe('word gauge and found-word coloring', () => {
           { row: 2, col: 3 },
         ]),
       ],
-    } as Parameters<typeof buildLetterGridHtml>[0];
+    } as unknown as Parameters<typeof buildLetterGridHtml>[0];
 
     const colorIndexes = getFoundCellColorIndexes(grid);
     expect(colorIndexes.get('2,2')).toBe(0);
@@ -84,7 +84,7 @@ describe('word gauge and found-word coloring', () => {
           colorIndex: null,
         },
       ],
-    } as Parameters<typeof getFoundCellColorIndexes>[0];
+    } as unknown as Parameters<typeof getFoundCellColorIndexes>[0];
 
     expect(getFoundCellColorIndexes(grid).get('1,1')).toBe(0);
     expect(getFoundCellColorIndexes(grid).has('3,3')).toBe(false);

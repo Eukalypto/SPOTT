@@ -10,7 +10,12 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@spott/engine": ["../src/index.ts"]
+    },
+    "types": ["vite/client"]
   },
   "include": ["src/**/*"]
 }

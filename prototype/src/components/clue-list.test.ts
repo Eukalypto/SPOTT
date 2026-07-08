@@ -18,7 +18,7 @@ function createWord(
     text: 'lion',
     normalizedText: 'lion',
     length: 4 as const,
-    direction: 'E' as const,
+    direction: 'horizontal-right' as const,
     start: { row: 0, col: 0 },
     end: { row: 0, col: 3 },
     cells: [],
@@ -49,7 +49,7 @@ describe('buildClueListHtml', () => {
         createWord({ id: 'w2', text: 'tiger', maskType: 'full' }),
         createWord({ id: 'w3', text: 'bear', maskType: 'partial' }),
       ],
-    } as Parameters<typeof buildClueListHtml>[0];
+    } as unknown as Parameters<typeof buildClueListHtml>[0];
 
     const html = buildClueListHtml(grid);
 
@@ -65,7 +65,7 @@ describe('buildClueListHtml', () => {
       normalizedText: 'señor',
       maskType: 'none',
     });
-    const grid = { placedWords: [word] } as Parameters<typeof buildClueListHtml>[0];
+    const grid = { placedWords: [word] } as unknown as Parameters<typeof buildClueListHtml>[0];
 
     expect(buildClueListHtml(grid)).toContain('>Ñ<');
     expect(buildClueListHtml(grid)).toContain(
@@ -80,7 +80,7 @@ describe('buildClueListHtml', () => {
       normalizedText: 'fete',
       maskType: 'none',
     });
-    const grid = { placedWords: [word] } as Parameters<typeof buildClueListHtml>[0];
+    const grid = { placedWords: [word] } as unknown as Parameters<typeof buildClueListHtml>[0];
 
     expect(buildClueListHtml(grid)).toContain('>Ê<');
   });
@@ -91,7 +91,7 @@ describe('buildClueListHtml', () => {
         createWord({ id: 'w1', text: 'lion', found: true, colorIndex: 0, maskType: 'full' }),
         createWord({ id: 'w2', text: 'tiger', maskType: 'partial' }),
       ],
-    } as Parameters<typeof buildClueListHtml>[0];
+    } as unknown as Parameters<typeof buildClueListHtml>[0];
 
     const html = buildClueListHtml(grid);
     const activePartialIndex = html.indexOf(formatClueDisplayHtml('###ER'));
