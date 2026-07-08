@@ -7,7 +7,9 @@ import { SAMPLE_WORD_SETS } from './index.js';
 import {
   buildWordSetValidationReport,
   formatAllWordSetValidationReports,
+  formatValidationCommandOutput,
   formatWordSetValidationReport,
+  getWordSetValidationExitCode,
   hasValidationFailures,
   validateAllSampleWordSets,
 } from './validate-sample-word-sets.js';
@@ -90,5 +92,34 @@ describe('validate-sample-word-sets', () => {
     expect(formatted).toContain('Language: fr');
     expect(formatted).toContain('Language: es');
     expect(formatted.split('\n\n')).toHaveLength(3);
+  });
+
+  it('adds a success line when every registered word set is valid', () => {
+    const reports = validateAllSampleWordSets();
+    const output = formatValidationCommandOutput(reports);
+
+    expect(output).toContain('All sample word sets are valid (en, fr, es).');
+    expect(getWordSetValidationExitCode(reports)).toBe(0);
+  });
+
+  it('adds a failure line and non-zero exit code when a word set is invalid', () => {
+    const reports = [
+      buildWordSetValidationReport(ENGLISH_SAMPLE_WORD_SET),
+      {
+        language: 'fr',
+        isValid: false,
+        themeCount: 0,
+        themesByTier: { A: 0, B: 0, C: 0, D: 0, E: 0 },
+        errors: ['example failure'],
+        warnings: ['example warning'],
+      },
+    ];
+
+    const output = formatValidationCommandOutput(reports);
+
+    expect(output).toContain('Validation failed: one or more sample word sets are invalid.');
+    expect(output).toContain('example failure');
+    expect(output).toContain('example warning');
+    expect(getWordSetValidationExitCode(reports)).toBe(1);
   });
 });

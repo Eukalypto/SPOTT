@@ -81,6 +81,22 @@ export function formatAllWordSetValidationReports(reports: readonly WordSetValid
   return reports.map(formatWordSetValidationReport).join('\n\n');
 }
 
+/** Full CLI output for `npm run validate:wordsets`, including a final pass/fail line. */
+export function formatValidationCommandOutput(reports: readonly WordSetValidationReport[]): string {
+  const body = formatAllWordSetValidationReports(reports);
+
+  if (hasValidationFailures(reports)) {
+    return `${body}\n\nValidation failed: one or more sample word sets are invalid.`;
+  }
+
+  return `${body}\n\nAll sample word sets are valid (en, fr, es).`;
+}
+
+/** Exit code for the validate:wordsets command (`0` = all valid, `1` = any invalid). */
+export function getWordSetValidationExitCode(reports: readonly WordSetValidationReport[]): number {
+  return hasValidationFailures(reports) ? 1 : 0;
+}
+
 function countThemesByTier(
   themes: LanguageWordSet['themes'],
 ): Readonly<Record<DifficultyTier, number>> {

@@ -38,7 +38,9 @@ export {
 export {
   buildWordSetValidationReport,
   formatAllWordSetValidationReports,
+  formatValidationCommandOutput,
   formatWordSetValidationReport,
+  getWordSetValidationExitCode,
   hasValidationFailures,
   validateAllSampleWordSets,
   type WordSetValidationReport,

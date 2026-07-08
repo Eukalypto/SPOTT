@@ -1,11 +1,11 @@
 import {
-  formatAllWordSetValidationReports,
-  hasValidationFailures,
+  formatValidationCommandOutput,
+  getWordSetValidationExitCode,
   validateAllSampleWordSets,
 } from '../dist/sample-data/validate-sample-word-sets.js';
 
 const reports = validateAllSampleWordSets();
 
-console.log(formatAllWordSetValidationReports(reports));
+console.log(formatValidationCommandOutput(reports));
 
-process.exit(hasValidationFailures(reports) ? 1 : 0);
+process.exit(getWordSetValidationExitCode(reports));
