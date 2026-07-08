@@ -1,4 +1,5 @@
-import { t, type UiLocale } from '../i18n/index.js';
+import { dt } from './dev-i18n.js';
+import type { UiLocale } from '../i18n/index.js';
 
 export interface DebugPanelActions {
   onRevealWords: () => void;
@@ -21,17 +22,17 @@ export function mountDebugPanel(
 ): void {
   container.innerHTML = `
     <details class="debug-panel" open>
-      <summary class="debug-panel__summary">${t('devTools', viewModel.locale)}</summary>
+      <summary class="debug-panel__summary">${dt('devTools', viewModel.locale)}</summary>
       <div class="debug-panel__actions">
         <button type="button" class="debug-button" data-debug="reveal">
-          ${viewModel.revealWords ? t('hideSolutions', viewModel.locale) : t('showSolutions', viewModel.locale)}
+          ${viewModel.revealWords ? dt('hideSolutions', viewModel.locale) : dt('showSolutions', viewModel.locale)}
         </button>
-        <button type="button" class="debug-button" data-debug="complete">${t('completeCurrentGrid', viewModel.locale)}</button>
+        <button type="button" class="debug-button" data-debug="complete">${dt('completeCurrentGrid', viewModel.locale)}</button>
         <button type="button" class="debug-button" data-debug="timer">
-          ${viewModel.timerPaused ? t('resumeTimer', viewModel.locale) : t('pauseTimer', viewModel.locale)}
+          ${viewModel.timerPaused ? dt('resumeTimer', viewModel.locale) : dt('pauseTimer', viewModel.locale)}
         </button>
-        <button type="button" class="debug-button" data-debug="regenerate">${t('regenerateRound', viewModel.locale)}</button>
-        <button type="button" class="debug-button" data-debug="log">${t('logState', viewModel.locale)}</button>
+        <button type="button" class="debug-button" data-debug="regenerate">${dt('regenerateRound', viewModel.locale)}</button>
+        <button type="button" class="debug-button" data-debug="log">${dt('logState', viewModel.locale)}</button>
       </div>
     </details>
   `;
@@ -67,12 +68,12 @@ export function updateDebugPanelView(
 
   if (revealButton) {
     revealButton.textContent = viewModel.revealWords
-      ? t('hideSolutions', viewModel.locale)
-      : t('showSolutions', viewModel.locale);
+      ? dt('hideSolutions', viewModel.locale)
+      : dt('showSolutions', viewModel.locale);
   }
   if (timerButton) {
     timerButton.textContent = viewModel.timerPaused
-      ? t('resumeTimer', viewModel.locale)
-      : t('pauseTimer', viewModel.locale);
+      ? dt('resumeTimer', viewModel.locale)
+      : dt('pauseTimer', viewModel.locale);
   }
 }

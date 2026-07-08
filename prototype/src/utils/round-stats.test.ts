@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getGridSummaries, getRoundStats } from './round-stats.js';
+import { getGridSummaries, getRoundStats, shouldShowTimeBonus } from './round-stats.js';
 
 function createRoundState(
   grids: Array<{
@@ -94,5 +94,19 @@ describe('round stats', () => {
         completed: false,
       },
     ]);
+  });
+
+  it('shows time bonus only for completed rounds with bonus points', () => {
+    const completed = createRoundState([{ themeLabel: 'Animals', foundCount: 6 }], {
+      status: 'completed',
+      timeBonus: 120,
+    });
+    const expired = createRoundState([{ themeLabel: 'Animals', foundCount: 3 }], {
+      status: 'expired',
+      timeBonus: 0,
+    });
+
+    expect(shouldShowTimeBonus(completed)).toBe(true);
+    expect(shouldShowTimeBonus(expired)).toBe(false);
   });
 });

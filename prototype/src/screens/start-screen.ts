@@ -71,6 +71,7 @@ function buildLanguageOptionHtml(
         type="radio"
         name="practice-language"
         value="${escapeHtml(option.code)}"
+        aria-label="${escapeHtml(option.label)}"
         ${checked}
       />
       <span class="language-option__label">${escapeHtml(option.label)}</span>

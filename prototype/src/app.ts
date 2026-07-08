@@ -1,7 +1,5 @@
 import { skipGrid, submitSwipe } from '@spott/engine';
 
-import { completeCurrentGridViaEngine, logRoundState } from './debug/debug-actions.js';
-import { mountDebugPanel, updateDebugPanelView } from './debug/debug-panel.js';
 import { IS_DEV } from './env.js';
 import { setDocumentLanguage } from './i18n/index.js';
 import { renderEndScreen } from './screens/end-screen.js';
@@ -18,16 +16,27 @@ import {
 } from './utils/round-timer.js';
 import { createInitialAppState, type AppState } from './types.js';
 
+type DevToolsHandle = {
+  update: () => void;
+  destroy: () => void;
+};
+
 export function createApp(root: HTMLElement): { getState: () => AppState } {
   let state = createInitialAppState();
   let gameScreenHandle: GameScreenHandle | null = null;
   let roundTimer: RoundTimerController | null = null;
-  let debugPanelRoot: HTMLElement | null = null;
+  let devToolsHandle: DevToolsHandle | null = null;
+  let renderGeneration = 0;
+
+  const destroyDevTools = (): void => {
+    devToolsHandle?.destroy();
+    devToolsHandle = null;
+  };
 
   const destroyGameScreen = (): void => {
     gameScreenHandle?.destroy();
     gameScreenHandle = null;
-    debugPanelRoot = null;
+    destroyDevTools();
   };
 
   const stopRoundTimer = (): void => {
@@ -71,6 +80,16 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
       }
       render();
     }
+  };
+
+  const goToStartScreen = (): void => {
+    stopRoundTimer();
+    state = {
+      ...resetToStartPreservingLanguage(),
+      screen: 'start',
+      roundState: null,
+    };
+    render();
   };
 
   const clearRoundStartError = (): void => {
@@ -132,83 +151,75 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
   });
 
   const getGameViewOptions = () => ({
-    clueListOptions: { revealWords: state.debugRevealWords, locale: state.selectedLanguage },
-    timerPaused: state.timerPaused,
+    clueListOptions: {
+      revealWords: IS_DEV && state.debugRevealWords,
+      locale: state.selectedLanguage,
+    },
+    timerPaused: IS_DEV && state.timerPaused,
   });
 
   const updateDebugPanel = (): void => {
-    if (!IS_DEV || !debugPanelRoot) {
-      return;
-    }
-
-    updateDebugPanelView(debugPanelRoot, {
-      locale: state.selectedLanguage,
-      revealWords: state.debugRevealWords,
-      timerPaused: state.timerPaused,
-    });
+    devToolsHandle?.update();
   };
 
-  const mountDevTools = (shell: HTMLElement): void => {
+  const mountDevTools = (shell: HTMLElement, generation: number): void => {
     if (!IS_DEV || state.screen !== 'game') {
       return;
     }
 
-    debugPanelRoot = document.createElement('div');
-    debugPanelRoot.className = 'debug-panel-root';
-    shell.appendChild(debugPanelRoot);
+    void import('./debug/dev-tools-setup.js').then(
+      ({ attachDevTools, completeCurrentGridViaEngine, logRoundState }) => {
+        if (generation !== renderGeneration || state.screen !== 'game') {
+          return;
+        }
 
-    mountDebugPanel(
-      debugPanelRoot,
-      {
-        locale: state.selectedLanguage,
-        revealWords: state.debugRevealWords,
-        timerPaused: state.timerPaused,
-      },
-      {
-        onRevealWords: () => {
-          state = {
-            ...state,
-            debugRevealWords: !state.debugRevealWords,
-          };
-          if (state.roundState) {
-            gameScreenHandle?.updateFromRoundState(state.roundState);
-          }
-          updateDebugPanel();
-        },
-        onCompleteGrid: () => {
-          if (!state.roundState) {
-            return;
-          }
-          applyRoundState(completeCurrentGridViaEngine(state.roundState), { fromDebug: true });
-        },
-        onToggleTimerPause: () => {
-          state = {
-            ...state,
-            timerPaused: !state.timerPaused,
-          };
+        devToolsHandle = attachDevTools(shell, {
+          getLocale: () => state.selectedLanguage,
+          getRevealWords: () => state.debugRevealWords,
+          getTimerPaused: () => state.timerPaused,
+          onRevealWords: () => {
+            state = {
+              ...state,
+              debugRevealWords: !state.debugRevealWords,
+            };
+            if (state.roundState) {
+              gameScreenHandle?.updateFromRoundState(state.roundState);
+            }
+          },
+          onCompleteGrid: () => {
+            if (!state.roundState) {
+              return;
+            }
+            applyRoundState(completeCurrentGridViaEngine(state.roundState), { fromDebug: true });
+          },
+          onToggleTimerPause: () => {
+            state = {
+              ...state,
+              timerPaused: !state.timerPaused,
+            };
 
-          if (state.timerPaused) {
-            roundTimer?.pause();
-          } else {
-            roundTimer?.resume();
-          }
+            if (state.timerPaused) {
+              roundTimer?.pause();
+            } else {
+              roundTimer?.resume();
+            }
 
-          if (state.roundState) {
-            gameScreenHandle?.updateTimer(
-              state.roundState.remainingSeconds,
-              state.timerPaused,
-            );
-          }
-          updateDebugPanel();
-        },
-        onRegenerateRound: () => {
-          startPracticeRound();
-        },
-        onLogState: () => {
-          if (state.roundState) {
-            logRoundState(state.roundState);
-          }
-        },
+            if (state.roundState) {
+              gameScreenHandle?.updateTimer(
+                state.roundState.remainingSeconds,
+                state.timerPaused,
+              );
+            }
+          },
+          onRegenerateRound: () => {
+            startPracticeRound();
+          },
+          onLogState: () => {
+            if (state.roundState) {
+              logRoundState(state.roundState);
+            }
+          },
+        });
       },
     );
   };
@@ -217,6 +228,8 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     stopRoundTimer();
     destroyGameScreen();
     setDocumentLanguage(state.selectedLanguage);
+
+    const generation = ++renderGeneration;
 
     root.innerHTML = '';
     const shell = document.createElement('div');
@@ -284,7 +297,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
             return true;
           },
         });
-        mountDevTools(shell);
+        mountDevTools(shell, generation);
         startRoundTimer();
         break;
       case 'end':
@@ -305,6 +318,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
             render();
           },
           onStartAnotherRound: startPracticeRound,
+          onBackToStart: goToStartScreen,
         });
         break;
       case 'review':
@@ -340,13 +354,16 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     roundTimer = createRoundTimerController({
       getRoundState: () => state.roundState,
       isGameScreenActive: () => state.screen === 'game',
-      isPaused: () => state.timerPaused,
+      isPaused: () => IS_DEV && state.timerPaused,
       onTick: (roundState) => {
         state = {
           ...state,
           roundState,
         };
-        gameScreenHandle?.updateTimer(roundState.remainingSeconds, state.timerPaused);
+        gameScreenHandle?.updateTimer(
+          roundState.remainingSeconds,
+          IS_DEV && state.timerPaused,
+        );
       },
       onRoundEnded: (roundState) => {
         handleRoundEnded(roundState);
@@ -354,7 +371,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     });
     roundTimer.start();
 
-    if (state.timerPaused) {
+    if (IS_DEV && state.timerPaused) {
       roundTimer.pause();
     }
   };

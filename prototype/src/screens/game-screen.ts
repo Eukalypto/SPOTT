@@ -1,8 +1,8 @@
 import { type Coordinate, type RoundState } from '@spott/engine';
 
 import { buildClueListHtml, renderClueList, type ClueListOptions } from '../components/clue-list.js';
-import { buildGaugeHtml, renderGauge } from '../components/word-gauge.js';
-import { t, tFormat, type UiLocale } from '../i18n/index.js';
+import { buildGaugeHtml, getGaugeSummaryText, renderGauge } from '../components/word-gauge.js';
+import { t, type UiLocale } from '../i18n/index.js';
 import { attachGridSwipe } from '../interaction/grid-swipe.js';
 import { buildLetterGridHtml } from '../utils/grid-display.js';
 import {
@@ -11,7 +11,7 @@ import {
   getGridNavigationHint,
 } from '../utils/grid-navigation.js';
 import { escapeHtml } from '../utils/html.js';
-import { formatRemainingTime, isTimerUrgent } from '../utils/round-timer.js';
+import { buildTimerStatHtml, updateTimerDisplay } from '../utils/timer-display.js';
 import { injectWordColorVars } from '../utils/word-colors.js';
 
 const SKIP_TRANSITION_MS = 200;
@@ -78,23 +78,12 @@ export function mountGameScreen(
     }, SKIP_TRANSITION_MS);
   };
 
-  const updateTimerDisplay = (remainingSeconds: number, timerPaused = false): void => {
-    const timerEl = container.querySelector<HTMLElement>('[data-timer]');
-    if (!timerEl) {
-      return;
-    }
-
-    timerEl.textContent = formatRemainingTime(remainingSeconds);
-    timerEl.classList.toggle('game-stat__value--urgent', !timerPaused && isTimerUrgent(remainingSeconds));
-    timerEl.classList.toggle('game-stat__value--paused', timerPaused);
-    timerEl.setAttribute(
-      'aria-label',
-      timerPaused ? t('timerPaused', options.locale) : t('timeRemainingAria', options.locale),
-    );
+  const updateTimerDisplayHandler = (remainingSeconds: number, timerPaused = false): void => {
+    updateTimerDisplay(container, remainingSeconds, options.locale, { timerPaused });
   };
 
   return {
-    updateTimer: updateTimerDisplay,
+    updateTimer: updateTimerDisplayHandler,
     updateFromRoundState: (roundState) => {
       updateGameScreenDom(container, roundState, options.locale, getViewOptions());
     },
@@ -127,7 +116,12 @@ function updateGameScreenDom(
 
   const gauge = container.querySelector<HTMLElement>('[data-gauge]');
   if (gauge) {
-    renderGauge(gauge, grid);
+    renderGauge(gauge, grid, locale);
+  }
+
+  const gaugeSummary = container.querySelector<HTMLElement>('[data-gauge-summary]');
+  if (gaugeSummary) {
+    gaugeSummary.textContent = getGaugeSummaryText(grid, locale);
   }
 
   const clueList = container.querySelector<HTMLElement>('[data-clue-list]');
@@ -147,16 +141,7 @@ function updateGameScreenDom(
     letterGrid.innerHTML = buildLetterGridHtml(grid);
   }
 
-  const timerEl = container.querySelector<HTMLElement>('[data-timer]');
-  if (timerEl) {
-    timerEl.textContent = formatRemainingTime(roundState.remainingSeconds);
-    timerEl.classList.toggle('game-stat__value--urgent', !timerPaused && isTimerUrgent(roundState.remainingSeconds));
-    timerEl.classList.toggle('game-stat__value--paused', timerPaused);
-    timerEl.setAttribute(
-      'aria-label',
-      timerPaused ? t('timerPaused', locale) : t('timeRemainingAria', locale),
-    );
-  }
+  updateTimerDisplay(container, roundState.remainingSeconds, locale, { timerPaused });
 }
 
 function updateGridNavigation(container: HTMLElement, roundState: RoundState, locale: UiLocale): void {
@@ -178,6 +163,13 @@ function updateSkipButton(container: HTMLElement, roundState: RoundState, locale
     'aria-label',
     skippable ? t('skipAriaAvailable', locale) : t('skipAriaUnavailable', locale),
   );
+  skipButton.classList.toggle('skip-button--disabled', !skippable);
+
+  const skipHint = container.querySelector<HTMLElement>('[data-skip-hint]');
+  if (skipHint) {
+    skipHint.hidden = skippable;
+    skipHint.textContent = t('skipHintUnavailable', locale);
+  }
 }
 
 function buildGameScreenHtml(
@@ -188,7 +180,6 @@ function buildGameScreenHtml(
   const grid = roundState.round.grids[roundState.currentGridIndex];
   const skippable = canSkipGrid(roundState);
   const timerPaused = viewOptions.timerPaused ?? false;
-  const foundOnGrid = grid.placedWords.filter((word) => word.found).length;
   const clueListOptions = { ...viewOptions.clueListOptions, locale };
 
   return `
@@ -205,7 +196,7 @@ function buildGameScreenHtml(
         </div>
         <div class="game-stat">
           <span class="game-stat__label">${escapeHtml(t('time', locale))}</span>
-          <span class="game-stat__value${!timerPaused && isTimerUrgent(roundState.remainingSeconds) ? ' game-stat__value--urgent' : ''}${timerPaused ? ' game-stat__value--paused' : ''}" data-timer aria-live="polite" aria-label="${escapeHtml(timerPaused ? t('timerPaused', locale) : t('timeRemainingAria', locale))}">${formatRemainingTime(roundState.remainingSeconds)}</span>
+          ${buildTimerStatHtml(roundState.remainingSeconds, locale, { timerPaused })}
         </div>
         <div class="game-stat">
           <span class="game-stat__label">${escapeHtml(t('score', locale))}</span>
@@ -215,11 +206,14 @@ function buildGameScreenHtml(
 
       <p class="game-theme" data-theme-label>${escapeHtml(grid.themeLabel)}</p>
 
-      <div class="word-gauge" data-gauge aria-label="${escapeHtml(tFormat('wordsFoundOnGrid', locale, { found: foundOnGrid, total: grid.placedWords.length }))}">
-        ${buildGaugeHtml(grid)}
+      <div class="word-gauge-block">
+        <p class="word-gauge__summary" data-gauge-summary aria-live="polite">${escapeHtml(getGaugeSummaryText(grid, locale))}</p>
+        <div class="word-gauge" data-gauge aria-label="${escapeHtml(getGaugeSummaryText(grid, locale))}">
+          ${buildGaugeHtml(grid)}
+        </div>
       </div>
 
-      <div class="letter-grid" data-letter-grid role="grid" aria-label="${escapeHtml(`${t('grid', locale)} ${getGridDisplayLabel(roundState)}`)}">
+      <div class="letter-grid" data-letter-grid role="grid" aria-label="${escapeHtml(t('letterGridAria', locale))}">
         ${buildLetterGridHtml(grid)}
       </div>
 
@@ -237,6 +231,7 @@ function buildGameScreenHtml(
         <span class="skip-button__label">${escapeHtml(t('skip', locale))}</span>
         <span class="skip-button__arrow" aria-hidden="true">→</span>
       </button>
+      <p class="skip-button__hint" data-skip-hint${skippable ? ' hidden' : ''}>${escapeHtml(t('skipHintUnavailable', locale))}</p>
     </section>
   `;
 }

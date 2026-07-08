@@ -45,8 +45,8 @@ describe('word gauge and found-word coloring', () => {
     expect(notches[1]?.colorIndex).toBe(1);
     expect(notches[2]).toBeUndefined();
 
-    expect(buildGaugeHtml(grid)).toContain(`--word-color-0`);
-    expect(buildGaugeHtml(grid)).toContain(`--word-color-1`);
+    expect(buildGaugeHtml(grid)).toContain(getWordHighlightColor(0));
+    expect(buildGaugeHtml(grid)).toContain(getWordHighlightColor(1));
   });
 
   it('uses the same color index on grid cells as the assigned word color', () => {
@@ -66,7 +66,7 @@ describe('word gauge and found-word coloring', () => {
     const colorIndexes = getFoundCellColorIndexes(grid);
     expect(colorIndexes.get('2,2')).toBe(0);
     expect(colorIndexes.get('2,3')).toBe(0);
-    expect(buildLetterGridHtml(grid)).toContain('--cell-color:var(--word-color-0)');
+    expect(buildLetterGridHtml(grid)).toContain(`background-color:${getWordHighlightColor(0)}`);
   });
 
   it('keeps found-word colors when revisiting a skipped grid', () => {

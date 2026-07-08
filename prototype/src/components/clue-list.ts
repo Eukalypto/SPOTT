@@ -1,5 +1,6 @@
 import { getDisplayedClue, type GridData, type PlacedWord } from '@spott/engine';
 
+import { getWordHighlightColor } from '../utils/word-colors.js';
 import { revealWordText } from './grid-review.js';
 import { t, type UiLocale } from '../i18n/index.js';
 import { escapeHtml } from '../utils/html.js';
@@ -47,9 +48,10 @@ function buildClueItemHtml(word: PlacedWord, options: ClueListOptions, locale: U
   const foundClass = word.found ? ' clue-item--found' : '';
   const revealedClass = options.revealWords && !word.found ? ' clue-item--revealed' : '';
   const colorIndex = word.colorIndex ?? null;
+  const accentColor = colorIndex !== null ? getWordHighlightColor(colorIndex) : null;
   const colorStyle =
-    word.found && colorIndex !== null
-      ? ` style="--clue-accent: var(--word-color-${colorIndex}); border-left-color: var(--word-color-${colorIndex})"`
+    word.found && accentColor !== null
+      ? ` style="--clue-accent: ${accentColor}; border-left-color: ${accentColor}"`
       : '';
   const statusLabel = word.found
     ? t('found', locale)

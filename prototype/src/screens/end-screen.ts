@@ -2,7 +2,12 @@ import type { RoundState } from '@spott/engine';
 
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { escapeHtml } from '../utils/html.js';
-import { getGridSummaries, getRoundStats } from '../utils/round-stats.js';
+import {
+  getGridSummaries,
+  getRoundStats,
+  shouldShowTimeBonus,
+  type GridSummary,
+} from '../utils/round-stats.js';
 import { formatRemainingTime } from '../utils/round-timer.js';
 
 export interface EndScreenOptions {
@@ -10,28 +15,36 @@ export interface EndScreenOptions {
   locale: UiLocale;
   onReviewGrids: () => void;
   onStartAnotherRound: () => void;
+  onBackToStart: () => void;
 }
 
-export function renderEndScreen(container: HTMLElement, options: EndScreenOptions): void {
+export function buildEndScreenHtml(options: EndScreenOptions): string {
   const stats = getRoundStats(options.roundState);
   const gridSummaries = getGridSummaries(options.roundState);
+  const showTimeBonus = shouldShowTimeBonus(options.roundState);
   const statusLabel =
     options.roundState.round.status === 'completed'
       ? t('allGridsComplete', options.locale)
       : t('timeIsUp', options.locale);
 
-  container.innerHTML = `
+  return `
     <section class="screen screen--end" aria-labelledby="end-title">
       <header class="end-header">
         <h2 id="end-title">${escapeHtml(t('roundOver', options.locale))}</h2>
         <p class="end-status">${escapeHtml(statusLabel)}</p>
       </header>
 
+      <div class="end-score-hero" aria-labelledby="end-score-label">
+        <span id="end-score-label" class="end-score-hero__label">${escapeHtml(t('finalScore', options.locale))}</span>
+        <span class="end-score-hero__value">${stats.finalScore}</span>
+        ${
+          showTimeBonus
+            ? `<span class="end-score-hero__bonus">${escapeHtml(tFormat('endScoreIncludesBonus', options.locale, { bonus: stats.timeBonus }))}</span>`
+            : ''
+        }
+      </div>
+
       <dl class="end-stats">
-        <div class="end-stat">
-          <dt>${escapeHtml(t('finalScore', options.locale))}</dt>
-          <dd>${stats.finalScore}</dd>
-        </div>
         <div class="end-stat">
           <dt>${escapeHtml(t('wordsFound', options.locale))}</dt>
           <dd>${stats.wordsFound} / ${stats.totalWords}</dd>
@@ -44,10 +57,15 @@ export function renderEndScreen(container: HTMLElement, options: EndScreenOption
           <dt>${escapeHtml(t('timeRemaining', options.locale))}</dt>
           <dd>${formatRemainingTime(stats.remainingSeconds)}</dd>
         </div>
-        <div class="end-stat">
+        ${
+          showTimeBonus
+            ? `
+        <div class="end-stat end-stat--bonus">
           <dt>${escapeHtml(t('timeBonus', options.locale))}</dt>
-          <dd>${formatTimeBonus(stats.timeBonus)}</dd>
-        </div>
+          <dd>+${stats.timeBonus}</dd>
+        </div>`
+            : ''
+        }
       </dl>
 
       <section class="end-grid-summary" aria-labelledby="grid-summary-title">
@@ -64,9 +82,16 @@ export function renderEndScreen(container: HTMLElement, options: EndScreenOption
         <button type="button" class="secondary-button" data-action="restart">
           ${escapeHtml(t('startNewRound', options.locale))}
         </button>
+        <button type="button" class="text-button end-actions__back" data-action="back-to-start">
+          ${escapeHtml(t('backToStart', options.locale))}
+        </button>
       </div>
     </section>
   `;
+}
+
+export function renderEndScreen(container: HTMLElement, options: EndScreenOptions): void {
+  container.innerHTML = buildEndScreenHtml(options);
 
   container.querySelector<HTMLButtonElement>('[data-action="review"]')?.addEventListener(
     'click',
@@ -76,19 +101,13 @@ export function renderEndScreen(container: HTMLElement, options: EndScreenOption
     'click',
     options.onStartAnotherRound,
   );
+  container.querySelector<HTMLButtonElement>('[data-action="back-to-start"]')?.addEventListener(
+    'click',
+    options.onBackToStart,
+  );
 }
 
-function formatTimeBonus(timeBonus: number): string {
-  if (timeBonus > 0) {
-    return `+${timeBonus}`;
-  }
-  return '—';
-}
-
-function buildGridSummaryItemHtml(
-  grid: ReturnType<typeof getGridSummaries>[number],
-  locale: UiLocale,
-): string {
+function buildGridSummaryItemHtml(grid: GridSummary, locale: UiLocale): string {
   const statusClass = grid.completed ? 'end-grid-item--complete' : 'end-grid-item--incomplete';
   const statusLabel = grid.completed ? t('complete', locale) : t('incomplete', locale);
 

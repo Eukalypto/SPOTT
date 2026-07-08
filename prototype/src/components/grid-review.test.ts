@@ -7,6 +7,7 @@ import {
   buildReviewLetterGridHtml,
   revealWordText,
 } from './grid-review.js';
+import { getWordHighlightColor } from '../utils/word-colors.js';
 
 function createWord(overrides: Partial<{
   id: string;
@@ -61,7 +62,8 @@ describe('grid review', () => {
     } as never;
 
     expect(buildReviewLetterGridHtml(grid)).toContain('grid-cell--review-missed');
-    expect(buildReviewLetterGridHtml(grid)).toContain('--cell-color:var(--word-color-0)');
+    expect(buildReviewLetterGridHtml(grid)).toContain(`background-color:${getWordHighlightColor(0)}`);
+    expect(buildReviewLetterGridHtml(grid)).not.toContain('--cell-color:var(--word-color-0)');
   });
 
   it('marks found clues with strikethrough and missed clues without', () => {

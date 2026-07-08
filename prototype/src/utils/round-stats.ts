@@ -45,3 +45,8 @@ export function getGridSummaries(roundState: RoundState): GridSummary[] {
     };
   });
 }
+
+/** Time bonus is shown only after a fully completed round with bonus points earned. */
+export function shouldShowTimeBonus(roundState: RoundState): boolean {
+  return roundState.round.status === 'completed' && roundState.score.timeBonus > 0;
+}

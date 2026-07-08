@@ -1,6 +1,7 @@
 import { GAME_CONFIG, type GridData, type PlacedWord } from '@spott/engine';
 
-import { wordColorVar } from '../utils/word-colors.js';
+import { tFormat, type UiLocale } from '../i18n/index.js';
+import { getWordHighlightColor } from '../utils/word-colors.js';
 
 export function buildGaugeHtml(grid: GridData): string {
   const filledNotches = getFilledGaugeNotches(grid);
@@ -11,17 +12,17 @@ export function buildGaugeHtml(grid: GridData): string {
       return `<span class="gauge-notch" data-notch="${notchIndex}" aria-hidden="true"></span>`;
     }
 
-    const color = wordColorVar(word.colorIndex);
+    const color = getWordHighlightColor(word.colorIndex);
     return `<span class="gauge-notch gauge-notch--filled" data-notch="${notchIndex}" style="--notch-color:${color};background:${color};border-color:${color}" aria-hidden="true"></span>`;
   }).join('');
 }
 
-export function renderGauge(container: HTMLElement, grid: GridData): void {
+export function renderGauge(container: HTMLElement, grid: GridData, locale: UiLocale = 'en'): void {
   const foundCount = grid.placedWords.filter((word) => word.found).length;
   container.innerHTML = buildGaugeHtml(grid);
   container.setAttribute(
     'aria-label',
-    `${foundCount} of ${grid.placedWords.length} words found on this grid`,
+    tFormat('wordsFoundOnGrid', locale, { found: foundCount, total: grid.placedWords.length }),
   );
 }
 
@@ -44,4 +45,15 @@ export function getFilledGaugeNotches(grid: GridData): Array<PlacedWord | undefi
   }
 
   return slots;
+}
+
+export function getGaugeSummaryText(
+  grid: GridData,
+  locale: UiLocale,
+): string {
+  const foundCount = grid.placedWords.filter((word) => word.found).length;
+  return tFormat('gridWordsFoundSummary', locale, {
+    found: foundCount,
+    total: grid.placedWords.length,
+  });
 }
