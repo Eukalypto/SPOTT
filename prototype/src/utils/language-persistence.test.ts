@@ -50,6 +50,12 @@ describe('language persistence', () => {
     expect(loadPersistedLanguage(storage)).toBe('es');
   });
 
+  it('does not persist invalid language codes', () => {
+    const storage = createMemoryStorage();
+    savePersistedLanguage('de' as 'en', storage);
+    expect(storage.getItem(SELECTED_LANGUAGE_STORAGE_KEY)).toBeNull();
+  });
+
   it('validates supported language codes', () => {
     expect(isValidLanguageCode('en')).toBe(true);
     expect(isValidLanguageCode('fr')).toBe(true);

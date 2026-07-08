@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { validateLanguageWordSet } from '../word-set-validation/validate-language-word-set.js';
 import { ENGLISH_SAMPLE_WORD_SET } from './english/index.js';
+import { FRENCH_SAMPLE_WORD_SET } from './french/index.js';
+import { SPANISH_SAMPLE_WORD_SET } from './spanish/index.js';
 import { SAMPLE_WORD_SETS } from './index.js';
 import {
   buildWordSetValidationReport,
@@ -41,6 +43,24 @@ describe('validate-sample-word-sets', () => {
       expect(report.isValid).toBe(true);
       expect(report.errors).toEqual([]);
     }
+  });
+
+  it('validates the French sample word set', () => {
+    const report = buildWordSetValidationReport(FRENCH_SAMPLE_WORD_SET);
+
+    expect(report.language).toBe('fr');
+    expect(report.isValid).toBe(true);
+    expect(report.errors).toEqual([]);
+    expect(validateLanguageWordSet(FRENCH_SAMPLE_WORD_SET).isValid).toBe(true);
+  });
+
+  it('validates the Spanish sample word set', () => {
+    const report = buildWordSetValidationReport(SPANISH_SAMPLE_WORD_SET);
+
+    expect(report.language).toBe('es');
+    expect(report.isValid).toBe(true);
+    expect(report.errors).toEqual([]);
+    expect(validateLanguageWordSet(SPANISH_SAMPLE_WORD_SET).isValid).toBe(true);
   });
 
   it('reuses validateLanguageWordSet without duplicating rules', () => {

@@ -1,11 +1,13 @@
+import { GAME_CONFIG } from '@spott/engine';
 import { describe, expect, it, vi } from 'vitest';
 
-import { t } from '../i18n/index.js';
+import { getLanguageLabel, t } from '../i18n/index.js';
 import {
   formatRoundStartError,
   logRoundStartFailureInDev,
   startPracticeRoundState,
 } from './round-setup.js';
+import type { RoundStartFailureReason } from './round-start-error.js';
 import { normalizeRoundStartFailureReason } from './round-start-error.js';
 
 describe('round start error helpers', () => {
@@ -17,7 +19,7 @@ describe('round start error helpers', () => {
 });
 
 describe('round setup', () => {
-  it('starts rounds for English, French, and Spanish', () => {
+  it('starts Classic rounds for English, French, and Spanish', () => {
     for (const language of ['en', 'fr', 'es'] as const) {
       const result = startPracticeRoundState({
         roundId: `round-setup-${language}`,
@@ -28,9 +30,28 @@ describe('round setup', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.roundState.round.language).toBe(language);
+        expect(result.roundState.round.grids).toHaveLength(GAME_CONFIG.gridsPerRound);
       }
     }
   });
+
+  it.each([
+    'missing-word-set',
+    'theme-selection-failed',
+    'grid-generation-failed',
+    'unknown',
+  ] as const satisfies readonly RoundStartFailureReason[])(
+    'maps %s to localized user-facing messages in every UI locale',
+    (reason) => {
+      for (const uiLocale of ['en', 'fr', 'es'] as const) {
+        const message = formatRoundStartError(reason, uiLocale, uiLocale);
+
+        expect(message.length).toBeGreaterThan(10);
+        expect(message).toContain(getLanguageLabel(uiLocale, uiLocale));
+        expect(message).not.toContain(reason);
+      }
+    },
+  );
 
   it('returns localized messages for generation failures', () => {
     expect(formatRoundStartError('missing-word-set', 'fr', 'fr')).toContain(

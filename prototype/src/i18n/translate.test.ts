@@ -1,12 +1,28 @@
 import { describe, expect, it } from 'vitest';
 
+import { EN_TRANSLATIONS, ES_TRANSLATIONS, FR_TRANSLATIONS } from './translations.js';
 import { t, tFormat } from './translate.js';
+import { TRANSLATION_KEYS } from './types.js';
 
 describe('i18n translate', () => {
   it('returns localized strings for English, French, and Spanish', () => {
     expect(t('startPracticeRound', 'en')).toBe('Start Practice Round');
     expect(t('startPracticeRound', 'fr')).toContain('entraînement');
     expect(t('startPracticeRound', 'es')).toContain('práctica');
+  });
+
+  it('returns different copy for the same key across locales when localized', () => {
+    expect(t('reviewGrids', 'en')).toBe('Review Grids');
+    expect(t('reviewGrids', 'fr')).not.toBe(t('reviewGrids', 'en'));
+    expect(t('reviewGrids', 'es')).not.toBe(t('reviewGrids', 'en'));
+  });
+
+  it('defines every translation key in English, French, and Spanish', () => {
+    for (const key of TRANSLATION_KEYS) {
+      expect(EN_TRANSLATIONS[key].length).toBeGreaterThan(0);
+      expect(FR_TRANSLATIONS[key].length).toBeGreaterThan(0);
+      expect(ES_TRANSLATIONS[key].length).toBeGreaterThan(0);
+    }
   });
 
   it('falls back to English when a locale entry is missing', () => {
