@@ -191,23 +191,16 @@ describe('Phase 2 prototype requirements', () => {
     }
   });
 
-  it('keeps language selection ready for future French and Spanish word sets', () => {
-    expect(getPlayableLanguages()).toContain('en');
+  it('supports English, French, and Spanish sample word sets', () => {
+    expect(getPlayableLanguages()).toEqual(['en', 'fr', 'es']);
     expect(getPlayableLanguages()).toContain(PROTOTYPE_LANGUAGE);
 
-    const english = startPracticeRoundState({
-      roundId: 'requirements-en',
-      language: 'en',
-    });
-    expect(english.success).toBe(true);
-
-    const french = startPracticeRoundState({
-      roundId: 'requirements-fr',
-      language: 'fr',
-    });
-    expect(french.success).toBe(false);
-    if (!french.success) {
-      expect(french.reason).toBe('missing-word-set');
+    for (const language of ['en', 'fr', 'es'] as const) {
+      const result = startPracticeRoundState({
+        roundId: `requirements-${language}`,
+        language,
+      });
+      expect(result.success).toBe(true);
     }
   });
 });

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { DIFFICULTY_SEQUENCE, GAME_CONFIG, GRID_MASKING_POLICIES } from '../config/index.js';
 import * as gridGeneration from '../grid-generation/index.js';
 import { createSeededRandom } from '../random/index.js';
+import * as sampleData from '../sample-data/index.js';
 import { ENGLISH_SAMPLE_WORD_SET } from '../sample-data/index.js';
 import { ENGLISH_SAMPLE_THEMES } from '../sample-data/english/themes.js';
 import { toLanguageWordSet } from '../sample-data/types.js';
@@ -113,15 +114,22 @@ describe('generateRound', () => {
   });
 
   it('returns missing-word-set when no word set exists for a language', () => {
-    expect(generateRound({ id: 'round-fr', language: 'fr' })).toEqual({
+    vi.spyOn(sampleData, 'getSampleWordSet').mockReturnValue(undefined);
+
+    expect(generateRound({ id: 'round-en', language: 'en' })).toEqual({
       success: false,
       reason: 'missing-word-set',
     });
 
-    expect(generateRound({ id: 'round-es', language: 'es' })).toEqual({
-      success: false,
-      reason: 'missing-word-set',
-    });
+    vi.restoreAllMocks();
+  });
+
+  it('generates a round for French and Spanish sample word sets', () => {
+    const french = generateRound({ id: 'round-fr', language: 'fr' });
+    expect(french.success).toBe(true);
+
+    const spanish = generateRound({ id: 'round-es', language: 'es' });
+    expect(spanish.success).toBe(true);
   });
 
   it('returns missing-word-set when the word set language does not match', () => {

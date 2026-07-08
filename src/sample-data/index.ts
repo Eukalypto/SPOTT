@@ -1,6 +1,8 @@
 import type { LanguageCode } from '../types/language.js';
 import type { LanguageWordSet } from '../types/word.js';
 import { ENGLISH_SAMPLE_WORD_SET } from './english/index.js';
+import { FRENCH_SAMPLE_WORD_SET } from './french/index.js';
+import { SPANISH_SAMPLE_WORD_SET } from './spanish/index.js';
 import type { SampleWordSetRegistry } from './types.js';
 
 /**
@@ -10,6 +12,8 @@ import type { SampleWordSetRegistry } from './types.js';
  */
 export const SAMPLE_WORD_SETS = {
   en: ENGLISH_SAMPLE_WORD_SET,
+  fr: FRENCH_SAMPLE_WORD_SET,
+  es: SPANISH_SAMPLE_WORD_SET,
 } as const satisfies SampleWordSetRegistry;
 
 export function getSampleWordSet(language: LanguageCode): LanguageWordSet | undefined {
@@ -20,8 +24,8 @@ export function getSampleWordSet(language: LanguageCode): LanguageWordSet | unde
 }
 
 export { ENGLISH_SAMPLE_THEMES, ENGLISH_SAMPLE_WORD_SET } from './english/index.js';
-export { FRENCH_SAMPLE_THEMES } from './french/index.js';
-export { SPANISH_SAMPLE_THEMES } from './spanish/index.js';
+export { FRENCH_SAMPLE_THEMES, FRENCH_SAMPLE_WORD_SET } from './french/index.js';
+export { SPANISH_SAMPLE_THEMES, SPANISH_SAMPLE_WORD_SET } from './spanish/index.js';
 
 export {
   toLanguageWordSet,
