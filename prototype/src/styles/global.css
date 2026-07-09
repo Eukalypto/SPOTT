@@ -69,6 +69,10 @@ body {
     clamp(0.75rem, 3vw, 1rem);
 }
 
+.screen--home,
+.screen--practice-setup,
+.screen--rules,
+.screen--settings,
 .screen--start,
 .screen--error {
   align-items: center;
@@ -78,8 +82,221 @@ body {
   text-align: center;
 }
 
+.screen--home,
 .screen--start {
   gap: clamp(1.25rem, 5vw, 2rem);
+}
+
+.home-hero {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.home-actions {
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 18rem;
+}
+
+.home-actions--secondary {
+  gap: 0.65rem;
+}
+
+.home-modes {
+  display: grid;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 18rem;
+}
+
+.home-modes__label {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.home-modes__placeholder {
+  opacity: 0.65;
+}
+
+.screen-header {
+  align-self: stretch;
+  display: grid;
+  gap: 0.35rem;
+  text-align: left;
+  width: 100%;
+}
+
+.screen-header__title {
+  font-size: clamp(1.1rem, 4vw, 1.35rem);
+  margin: 0;
+  text-align: center;
+}
+
+.screen-header__back {
+  justify-self: start;
+}
+
+.screen-centered {
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding:
+    clamp(0.75rem, 3vw, 1.5rem)
+    clamp(0.5rem, 3vw, 0.75rem);
+}
+
+.screen-centered__stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: auto;
+  max-width: 18rem;
+  width: 100%;
+}
+
+.screen-centered__stack .screen-header,
+.screen-centered__stack .practice-setup-panel,
+.screen-centered__stack .rules-panel {
+  width: 100%;
+}
+
+.info-panel {
+  align-self: stretch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  text-align: left;
+  width: 100%;
+}
+
+.info-panel p {
+  margin: 0;
+}
+
+.practice-setup__description {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin: 0;
+  text-align: left;
+}
+
+.practice-setup-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.15rem;
+  width: 100%;
+}
+
+.practice-setup__actions {
+  display: grid;
+  gap: 0.65rem;
+  justify-items: center;
+}
+
+.practice-setup__back {
+  justify-self: center;
+}
+
+.screen--settings {
+  flex: 1;
+  gap: 1rem;
+  justify-content: flex-start;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: clamp(0.5rem, 2vw, 0.75rem);
+  -webkit-overflow-scrolling: touch;
+}
+
+.settings-panel {
+  align-self: stretch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  padding: 1.15rem;
+  text-align: left;
+  width: 100%;
+}
+
+.settings-panel__intro,
+.settings-panel__help {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.settings-panel__help {
+  font-size: 0.85rem;
+  margin-bottom: 0.35rem;
+}
+
+.settings-panel__reset {
+  width: 100%;
+}
+
+.settings-panel__version {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin: 0;
+  text-align: center;
+}
+
+.screen--settings .settings-panel {
+  max-width: 18rem;
+  width: 100%;
+}
+
+.rules-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem 1rem 1.1rem;
+  text-align: left;
+  width: 100%;
+}
+
+.rules-panel__heading {
+  font-size: 1rem;
+  margin: 0 0 0.35rem;
+}
+
+.rules-panel__intro {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0 0 0.85rem;
+}
+
+.rules-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.rules-list li {
+  line-height: 1.5;
 }
 
 .screen--game {

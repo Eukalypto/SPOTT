@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isValidLanguageCode,
   loadPersistedLanguage,
+  resetPersistedLanguage,
   savePersistedLanguage,
   SELECTED_LANGUAGE_STORAGE_KEY,
   type LanguageStorage,
@@ -17,6 +18,9 @@ function createMemoryStorage(initial: Record<string, string> = {}): LanguageStor
     },
     setItem(key: string, value: string) {
       values.set(key, value);
+    },
+    removeItem(key: string) {
+      values.delete(key);
     },
   };
 }
@@ -62,5 +66,12 @@ describe('language persistence', () => {
     expect(isValidLanguageCode('es')).toBe(true);
     expect(isValidLanguageCode('de')).toBe(false);
     expect(isValidLanguageCode(null)).toBe(false);
+  });
+
+  it('clears a saved language so the default is used again', () => {
+    const storage = createMemoryStorage({ [SELECTED_LANGUAGE_STORAGE_KEY]: 'es' });
+    resetPersistedLanguage(storage);
+    expect(storage.getItem(SELECTED_LANGUAGE_STORAGE_KEY)).toBeNull();
+    expect(loadPersistedLanguage(storage)).toBe('en');
   });
 });

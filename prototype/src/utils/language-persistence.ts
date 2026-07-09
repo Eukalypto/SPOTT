@@ -9,6 +9,7 @@ const VALID_LANGUAGE_CODES = new Set<LanguageCode>(['en', 'fr', 'es']);
 export interface LanguageStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+  removeItem?(key: string): void;
 }
 
 export function isValidLanguageCode(value: unknown): value is LanguageCode {
@@ -49,4 +50,20 @@ export function savePersistedLanguage(
   }
 
   storage.setItem(SELECTED_LANGUAGE_STORAGE_KEY, language);
+}
+
+/** Remove the saved language so the app falls back to the default on next load. */
+export function resetPersistedLanguage(
+  storage: LanguageStorage | null = getDefaultStorage(),
+): void {
+  if (!storage) {
+    return;
+  }
+
+  if (storage.removeItem) {
+    storage.removeItem(SELECTED_LANGUAGE_STORAGE_KEY);
+    return;
+  }
+
+  storage.setItem(SELECTED_LANGUAGE_STORAGE_KEY, DEFAULT_PRACTICE_LANGUAGE);
 }
