@@ -190,6 +190,33 @@ describe('generateGrid', () => {
 
     expect(result.success).toBe(true);
   });
+
+  it('varies word starting positions across runs for the same word set', () => {
+    const fingerprints = new Set<string>();
+
+    for (let run = 0; run < 10; run++) {
+      const result = generateGrid({
+        id: `grid-variety-${run}`,
+        index: 0,
+        themeWordSet: FOREST_THEME,
+        difficulty: 'A',
+        language: 'en',
+      });
+
+      expect(result.success).toBe(true);
+      if (!result.success) {
+        return;
+      }
+
+      const fingerprint = result.grid.placedWords
+        .map((word) => `${word.normalizedText}:${word.start.row},${word.start.col}`)
+        .sort()
+        .join('|');
+      fingerprints.add(fingerprint);
+    }
+
+    expect(fingerprints.size).toBeGreaterThanOrEqual(5);
+  });
 });
 
 describe('generateGrid config', () => {

@@ -176,16 +176,16 @@ describe('assertGeneratedGridInvariants', () => {
       throw new Error('Expected successful grid');
     }
 
-    const [firstWord] = grid.grid.placedWords;
+    const [firstWord, secondWord] = grid.grid.placedWords;
     const broken = {
       ...grid.grid,
       placedWords: grid.grid.placedWords.map((word, index) =>
         index === 1
           ? {
               ...word,
-              cells: firstWord.cells,
-              start: firstWord.start,
-              end: firstWord.end,
+              // Overlap one cell without changing path length (lengths may differ).
+              cells: [firstWord.cells[0], ...secondWord.cells.slice(1)],
+              start: firstWord.cells[0],
             }
           : word,
       ),

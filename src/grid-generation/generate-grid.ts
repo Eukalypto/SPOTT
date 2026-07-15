@@ -8,6 +8,7 @@ import {
 import { toDisplayUpperCase } from '../display/to-display-uppercase.js';
 import { hasOverlappingPlacements, hasUniqueTargetWordOccurrences } from '../duplicate-detection/index.js';
 import { normalizeWord } from '../normalization/index.js';
+import { shuffleCopy } from '../random/index.js';
 import type { DirectionDefinition, DirectionName } from '../types/direction.js';
 import type { Coordinate } from '../types/coordinate.js';
 import type { GridCell, GridData, GridMatrix } from '../types/grid.js';
@@ -78,18 +79,28 @@ export function generateGrid(options: GenerateGridOptions): GridGenerationResult
     return { success: false, reason: 'invalid-word-set' };
   }
 
-  const buckets = buildWordBuckets(options.themeWordSet, options.language);
+  const buckets = buildWordBuckets(options.themeWordSet, options.language, random);
   if (!hasSufficientWords(buckets, wordLengthComposition)) {
     return { success: false, reason: 'invalid-word-set' };
   }
 
-  for (const selection of selectWordCombinations(buckets, wordLengthComposition)) {
-    const placement = backtrackPlacement(selection, config.directions, gridSize);
+  const combinations = shuffleCopy(
+    [...selectWordCombinations(buckets, wordLengthComposition)],
+    random,
+  );
+
+  for (const selection of combinations) {
+    const placement = backtrackPlacement(
+      shuffleCopy(selection, random),
+      shuffleCopy(config.directions, random),
+      gridSize,
+      random,
+    );
     if (!placement) {
       continue;
     }
 
-    const placedWords = toPlacedWords(options.id, placement);
+    const placedWords = toPlacedWords(options.id, placement, config.directions);
 
     for (let fillAttempt = 0; fillAttempt < MAX_FILL_ATTEMPTS; fillAttempt++) {
       const cells = buildCellMatrix(placedWords, gridSize, config.fillerAlphabet, random);
@@ -118,6 +129,7 @@ export function generateGrid(options: GenerateGridOptions): GridGenerationResult
 function buildWordBuckets(
   theme: ThemeWordSet,
   language: LanguageCode,
+  random: () => number,
 ): Map<WordLength, WordCandidate[]> {
   const buckets = new Map<WordLength, WordCandidate[]>();
 
@@ -127,6 +139,10 @@ function buildWordBuckets(
     const candidates = buckets.get(length) ?? [];
     candidates.push({ original, normalized, length });
     buckets.set(length, candidates);
+  }
+
+  for (const [length, candidates] of buckets) {
+    buckets.set(length, shuffleCopy(candidates, random));
   }
 
   return buckets;
@@ -197,6 +213,7 @@ function backtrackPlacement(
   words: WordCandidate[],
   directions: readonly DirectionDefinition[],
   gridSize: number,
+  random: () => number,
 ): PendingPlacement[] | null {
   const occupied = new Set<string>();
 
@@ -210,12 +227,13 @@ function backtrackPlacement(
     }
 
     const direction = directions[directionIndex];
+    const orderedWords = shuffleCopy(remaining, random);
 
-    for (let wordIndex = 0; wordIndex < remaining.length; wordIndex++) {
-      const candidate = remaining[wordIndex];
-      const nextRemaining = remaining.filter((_, index) => index !== wordIndex);
+    for (const candidate of orderedWords) {
+      const nextRemaining = remaining.filter((word) => word !== candidate);
+      const starts = shuffleCopy(listCandidateStarts(candidate, direction, gridSize), random);
 
-      for (const start of candidateStarts(candidate, direction, gridSize)) {
+      for (const start of starts) {
         const cells = buildCellPath(start, direction, candidate.normalized.length, gridSize);
         if (!cells || !canOccupy(cells, occupied)) {
           continue;
@@ -245,19 +263,23 @@ function backtrackPlacement(
   return search(0, words, []);
 }
 
-function* candidateStarts(
+function listCandidateStarts(
   word: WordCandidate,
   direction: DirectionDefinition,
   gridSize: number,
-): Generator<Coordinate> {
+): Coordinate[] {
+  const starts: Coordinate[] = [];
+
   for (let row = 0; row < gridSize; row++) {
     for (let col = 0; col < gridSize; col++) {
       const cells = buildCellPath({ row, col }, direction, word.normalized.length, gridSize);
       if (cells) {
-        yield { row, col };
+        starts.push({ row, col });
       }
     }
   }
+
+  return starts;
 }
 
 function buildCellPath(
@@ -302,8 +324,22 @@ function release(cells: Coordinate[], occupied: Set<string>): void {
   }
 }
 
-function toPlacedWords(gridId: string, placements: PendingPlacement[]): PlacedWord[] {
-  return placements.map((placement, index) => ({
+function toPlacedWords(
+  gridId: string,
+  placements: PendingPlacement[],
+  directions: readonly DirectionDefinition[],
+): PlacedWord[] {
+  const directionOrder = new Map(
+    directions.map((direction, index) => [direction.name, index] as const),
+  );
+
+  // Keep metadata order stable by configured direction list; placement geometry is still random.
+  const ordered = [...placements].sort(
+    (left, right) =>
+      (directionOrder.get(left.direction) ?? 0) - (directionOrder.get(right.direction) ?? 0),
+  );
+
+  return ordered.map((placement, index) => ({
     id: `${gridId}-word-${index + 1}`,
     text: placement.candidate.original,
     normalizedText: placement.candidate.normalized,
