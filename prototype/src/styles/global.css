@@ -116,11 +116,12 @@ body {
   margin: 0 auto;
   max-width: var(--screen-max-width);
   min-height: 100dvh;
+  position: relative;
   width: 100%;
 }
 
 .app-shell--with-footer {
-  padding-bottom: calc(3.5rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(56px + env(safe-area-inset-bottom));
 }
 
 .footer-nav {
@@ -131,9 +132,8 @@ body {
   grid-template-columns: 1fr 1fr;
   left: 0;
   padding-bottom: env(safe-area-inset-bottom);
-  position: fixed;
+  position: absolute;
   right: 0;
-  width: 100%;
   z-index: 40;
 }
 
@@ -194,7 +194,7 @@ body {
 
 .app-shell--with-footer .screen--home,
 .app-shell--with-footer .screen--profile {
-  min-height: calc(100dvh - 3.5rem - env(safe-area-inset-bottom));
+  min-height: calc(100dvh - 56px - env(safe-area-inset-bottom));
 }
 
 .screen--home,

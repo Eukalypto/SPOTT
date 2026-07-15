@@ -59,7 +59,7 @@ export const EN_TRANSLATIONS = {
     'Could not build the {language} puzzle grids. Please try again.',
   errorUnknownFailure:
     'Something went wrong while preparing the {language} practice round. Please try again.',
-  backToStart: 'Back to Start',
+  backToStart: 'Back to Home',
   roundOver: 'Round over',
   allGridsComplete: 'All grids complete!',
   timeIsUp: 'Time is up',
