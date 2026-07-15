@@ -13,7 +13,7 @@ process.env.DATABASE_URL = path.join(testDir, 'auth-test.sqlite');
 
 const { createApp } = await import('./app');
 const { db } = await import('./db/client');
-const { practiceStats, users } = await import('./db/schema');
+const { practiceRounds, practiceStats, users } = await import('./db/schema');
 
 const app = createApp();
 
@@ -29,6 +29,7 @@ describe('auth', () => {
   });
 
   beforeEach(() => {
+    db.delete(practiceRounds).run();
     db.delete(practiceStats).run();
     db.delete(users).run();
   });

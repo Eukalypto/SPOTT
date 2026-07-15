@@ -11,12 +11,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "validate:wordsets": "npm run build --silent && node scripts/validate-wordsets.mjs",
+    "dev": "concurrently \"npm run server:dev\" \"npm run prototype:dev\"",
     "prototype:dev": "npm run dev --prefix prototype",
     "prototype:build": "npm run build --prefix prototype",
     "server:dev": "cd server && npm run dev",
     "server:build": "cd server && npm run build"
   },
   "devDependencies": {
+    "concurrently": "^9.2.4",
     "typescript": "^5.8.3",
     "vitest": "^3.2.6"
   }
