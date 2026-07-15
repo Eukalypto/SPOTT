@@ -124,6 +124,15 @@ export const EN_TRANSLATIONS = {
   statsLoading: 'Loading stats…',
   statsLoadError: 'Could not load stats',
   statsLoginPrompt: 'Log in to track your stats',
+  footerNavLabel: 'Main navigation',
+  footerPlay: 'Play',
+  footerProfile: 'Profile',
+  profileTitle: 'Profile',
+  profileGuestMessage: 'Log in to save your scores and track your progress',
+  profileSessionTitle: 'This session',
+  profileGamesPlayed: 'Games played',
+  profileBestScore: 'Best score',
+  profileNoGamesYet: 'No games played yet.',
 } satisfies TranslationDictionary;
 
 export const FR_TRANSLATIONS = {
@@ -253,6 +262,15 @@ export const FR_TRANSLATIONS = {
   statsLoading: 'Chargement des stats…',
   statsLoadError: 'Impossible de charger les stats',
   statsLoginPrompt: 'Connectez-vous pour suivre vos stats',
+  footerNavLabel: 'Navigation principale',
+  footerPlay: 'Jouer',
+  footerProfile: 'Profil',
+  profileTitle: 'Profil',
+  profileGuestMessage: 'Connectez-vous pour enregistrer vos scores et suivre vos progrès',
+  profileSessionTitle: 'Cette session',
+  profileGamesPlayed: 'Parties jouées',
+  profileBestScore: 'Meilleur score',
+  profileNoGamesYet: 'Aucune partie jouée pour le moment.',
 } satisfies TranslationDictionary;
 
 export const ES_TRANSLATIONS = {
@@ -384,4 +402,13 @@ export const ES_TRANSLATIONS = {
   statsLoading: 'Cargando estadísticas…',
   statsLoadError: 'No se pudieron cargar las estadísticas',
   statsLoginPrompt: 'Inicia sesión para guardar tus estadísticas',
+  footerNavLabel: 'Navegación principal',
+  footerPlay: 'Jugar',
+  footerProfile: 'Perfil',
+  profileTitle: 'Perfil',
+  profileGuestMessage: 'Inicia sesión para guardar tus puntuaciones y seguir tu progreso',
+  profileSessionTitle: 'Esta sesión',
+  profileGamesPlayed: 'Partidas jugadas',
+  profileBestScore: 'Mejor puntuación',
+  profileNoGamesYet: 'Aún no has jugado ninguna partida.',
 } satisfies TranslationDictionary;

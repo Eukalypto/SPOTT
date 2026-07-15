@@ -119,6 +119,15 @@ export const TRANSLATION_KEYS = [
   'statsLoading',
   'statsLoadError',
   'statsLoginPrompt',
+  'footerNavLabel',
+  'footerPlay',
+  'footerProfile',
+  'profileTitle',
+  'profileGuestMessage',
+  'profileSessionTitle',
+  'profileGamesPlayed',
+  'profileBestScore',
+  'profileNoGamesYet',
 ] as const;
 
 export type TranslationKey = (typeof TRANSLATION_KEYS)[number];

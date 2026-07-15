@@ -5,6 +5,7 @@ import {
   gameState,
   homeState,
   practiceSetupState,
+  profileState,
   reviewState,
   rulesState,
   settingsState,
@@ -35,6 +36,7 @@ describe('app navigation state helpers', () => {
     expect(rulesState(base).screen).toBe('rules');
     expect(rulesState(base, 'practice-setup').rulesReturnScreen).toBe('practice-setup');
     expect(settingsState(base).screen).toBe('settings');
+    expect(profileState(base).screen).toBe('profile');
   });
 
   it('enters and leaves round flow screens', () => {

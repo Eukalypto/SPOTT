@@ -7,12 +7,14 @@ import { clearToken, getToken, isAuthenticated, saveToken } from './auth/session
 import { IS_DEV } from './env.js';
 import { DEFAULT_PRACTICE_LANGUAGE } from './constants.js';
 import { setDocumentLanguage } from './i18n/index.js';
+import { bindFooterNav, renderFooterNav } from './components/footer-nav.js';
 import {
   authState,
   endState,
   gameState,
   homeState,
   practiceSetupState,
+  profileState,
   reviewState,
   roundErrorState,
   rulesState,
@@ -23,6 +25,7 @@ import { renderEndScreen } from './screens/end-screen.js';
 import { mountGameScreen, type GameScreenHandle } from './screens/game-screen.js';
 import { renderHomeScreen } from './screens/home-screen.js';
 import { renderPracticeSetupScreen } from './screens/practice-setup-screen.js';
+import { renderProfileScreen } from './screens/profile-screen.js';
 import { renderReviewScreen } from './screens/review-screen.js';
 import { renderRoundStartErrorScreen } from './screens/round-start-error-screen.js';
 import { normalizeRulesReturnScreen, renderRulesScreen } from './screens/rules-screen.js';
@@ -100,6 +103,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
           onRules: () => goToRules('home'),
           onSettings: goToSettings,
         });
+        mountFooter(shell, 'play');
         break;
       case 'practice-setup':
         renderPracticeSetupScreen(shell, {
@@ -123,22 +127,30 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
         renderSettingsScreen(shell, {
           locale: state.selectedLanguage,
           selectedLanguage: state.selectedLanguage,
+          onLanguageChange: applyLanguageChange,
+          onResetLanguage: resetLanguageToDefault,
+          onBack: goToProfile,
+        });
+        break;
+      case 'profile':
+        renderProfileScreen(shell, {
+          locale: state.selectedLanguage,
           authStatus: state.auth.status,
           username: state.auth.user?.username ?? null,
           authToken: state.auth.token,
-          onLanguageChange: applyLanguageChange,
-          onResetLanguage: resetLanguageToDefault,
+          sessionStats: state.sessionStats,
           onGoToAuth: goToAuth,
           onLogout: handleLogout,
-          onBack: goHome,
+          onOpenSettings: goToSettings,
         });
+        mountFooter(shell, 'profile');
         break;
       case 'auth':
         renderAuthScreen(shell, {
           locale: state.selectedLanguage,
           onAuthenticated: handleAuthenticated,
           onContinueAsGuest: goHome,
-          onBack: goToSettings,
+          onBack: goToProfile,
         });
         break;
       case 'round-error':
@@ -249,6 +261,27 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     render();
   };
 
+  const goToProfile = (): void => {
+    stopRoundTimer();
+    state = profileState(state);
+    render();
+  };
+
+  const mountFooter = (shell: HTMLElement, activeTab: 'play' | 'profile'): void => {
+    shell.classList.add('app-shell--with-footer');
+    shell.insertAdjacentHTML(
+      'beforeend',
+      renderFooterNav(activeTab, state.selectedLanguage),
+    );
+    bindFooterNav(shell, (screen) => {
+      if (screen === 'home') {
+        goHome();
+        return;
+      }
+      goToProfile();
+    });
+  };
+
   const toAuthUser = (user: {
     id: string;
     email: string;
@@ -300,7 +333,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
   const handleAuthenticated = (result: AuthResponse): void => {
     saveToken(result.token);
     applyAuthenticatedSession(result.token, toAuthUser(result.user));
-    goHome();
+    goToProfile();
   };
 
   const handleLogout = (): void => {
@@ -312,7 +345,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     }
     clearToken();
     applyGuestSession();
-    goHome();
+    goToProfile();
   };
 
   const syncLanguagePrefIfAuthenticated = (language: LanguageCode): void => {
@@ -389,7 +422,15 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
 
   const handleRoundEnded = (roundState: NonNullable<AppState['roundState']>): void => {
     stopRoundTimer();
-    state = endState(state, roundState);
+    const roundStats = getRoundStats(roundState);
+    state = {
+      ...endState(state, roundState),
+      sessionStats: {
+        gamesPlayed: state.sessionStats.gamesPlayed + 1,
+        bestScore: Math.max(state.sessionStats.bestScore, roundStats.finalScore),
+        totalScore: state.sessionStats.totalScore + roundStats.finalScore,
+      },
+    };
     render();
     void syncPracticeRoundIfAuthenticated(roundState);
   };

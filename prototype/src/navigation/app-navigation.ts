@@ -6,6 +6,7 @@ export const SHELL_SCREENS = [
   'practice-setup',
   'rules',
   'settings',
+  'profile',
   'auth',
   'round-error',
 ] as const satisfies readonly AppScreen[];
@@ -60,6 +61,10 @@ export function rulesState(
 
 export function settingsState(state: AppState): AppState {
   return withShellScreen(state, 'settings');
+}
+
+export function profileState(state: AppState): AppState {
+  return withShellScreen(state, 'profile');
 }
 
 export function authState(state: AppState): AppState {
