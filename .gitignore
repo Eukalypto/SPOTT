@@ -1,4 +1,7 @@
 node_modules/
 dist/
 prototype/dist/
+server/dist/
+server/.env
+server/data/
 *.tsbuildinfo

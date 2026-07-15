@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "validate:wordsets": "npm run build --silent && node scripts/validate-wordsets.mjs",
     "prototype:dev": "npm run dev --prefix prototype",
-    "prototype:build": "npm run build --prefix prototype"
+    "prototype:build": "npm run build --prefix prototype",
+    "server:dev": "cd server && npm run dev",
+    "server:build": "cd server && npm run build"
   },
   "devDependencies": {
     "typescript": "^5.8.3",
