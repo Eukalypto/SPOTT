@@ -1,9 +1,14 @@
 import { skipGrid, submitSwipe, type LanguageCode } from '@spott/engine';
 
+import { getMe, logout, type AuthResponse } from './api/auth-api.js';
+import { updateLanguagePref } from './api/settings-api.js';
+import { submitRound } from './api/stats-api.js';
+import { clearToken, getToken, isAuthenticated, saveToken } from './auth/session.js';
 import { IS_DEV } from './env.js';
 import { DEFAULT_PRACTICE_LANGUAGE } from './constants.js';
 import { setDocumentLanguage } from './i18n/index.js';
 import {
+  authState,
   endState,
   gameState,
   homeState,
@@ -13,6 +18,7 @@ import {
   rulesState,
   settingsState,
 } from './navigation/app-navigation.js';
+import { renderAuthScreen } from './screens/auth-screen.js';
 import { renderEndScreen } from './screens/end-screen.js';
 import { mountGameScreen, type GameScreenHandle } from './screens/game-screen.js';
 import { renderHomeScreen } from './screens/home-screen.js';
@@ -22,13 +28,18 @@ import { renderRoundStartErrorScreen } from './screens/round-start-error-screen.
 import { normalizeRulesReturnScreen, renderRulesScreen } from './screens/rules-screen.js';
 import { renderSettingsScreen } from './screens/settings-screen.js';
 import { startPracticeRoundState } from './utils/round-setup.js';
-import { savePersistedLanguage, resetPersistedLanguage } from './utils/language-persistence.js';
+import {
+  isValidLanguageCode,
+  savePersistedLanguage,
+  resetPersistedLanguage,
+} from './utils/language-persistence.js';
+import { getRoundStats } from './utils/round-stats.js';
 import {
   createRoundTimerController,
   isRoundFinished,
   type RoundTimerController,
 } from './utils/round-timer.js';
-import { createInitialAppState, type AppState } from './types.js';
+import { createInitialAppState, type AppState, type AuthUser } from './types.js';
 
 type DevToolsHandle = {
   update: () => void;
@@ -70,6 +81,17 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     shell.className = 'app-shell';
     root.appendChild(shell);
 
+    if (state.auth.status === 'loading') {
+      shell.innerHTML = `
+        <section class="screen screen--home" aria-busy="true">
+          <div class="home-hero">
+            <p class="app-loading" role="status">…</p>
+          </div>
+        </section>
+      `;
+      return;
+    }
+
     switch (state.screen) {
       case 'home':
         renderHomeScreen(shell, {
@@ -101,9 +123,22 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
         renderSettingsScreen(shell, {
           locale: state.selectedLanguage,
           selectedLanguage: state.selectedLanguage,
+          authStatus: state.auth.status,
+          username: state.auth.user?.username ?? null,
+          authToken: state.auth.token,
           onLanguageChange: applyLanguageChange,
           onResetLanguage: resetLanguageToDefault,
+          onGoToAuth: goToAuth,
+          onLogout: handleLogout,
           onBack: goHome,
+        });
+        break;
+      case 'auth':
+        renderAuthScreen(shell, {
+          locale: state.selectedLanguage,
+          onAuthenticated: handleAuthenticated,
+          onContinueAsGuest: goHome,
+          onBack: goToSettings,
         });
         break;
       case 'round-error':
@@ -214,6 +249,83 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     render();
   };
 
+  const toAuthUser = (user: {
+    id: string;
+    email: string;
+    username: string;
+    languagePref: string;
+  }): AuthUser => {
+    const languagePref: LanguageCode = isValidLanguageCode(user.languagePref)
+      ? user.languagePref
+      : DEFAULT_PRACTICE_LANGUAGE;
+
+    return {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      languagePref,
+    };
+  };
+
+  const applyAuthenticatedSession = (token: string, user: AuthUser): void => {
+    savePersistedLanguage(user.languagePref);
+    state = {
+      ...state,
+      selectedLanguage: user.languagePref,
+      auth: {
+        status: 'authenticated',
+        user,
+        token,
+      },
+    };
+  };
+
+  const applyGuestSession = (): void => {
+    state = {
+      ...state,
+      auth: {
+        status: 'guest',
+        user: null,
+        token: null,
+      },
+    };
+  };
+
+  const goToAuth = (): void => {
+    stopRoundTimer();
+    state = authState(state);
+    render();
+  };
+
+  const handleAuthenticated = (result: AuthResponse): void => {
+    saveToken(result.token);
+    applyAuthenticatedSession(result.token, toAuthUser(result.user));
+    goHome();
+  };
+
+  const handleLogout = (): void => {
+    const token = state.auth.token;
+    if (token) {
+      void logout(token).catch(() => {
+        // Fire-and-forget; local session is cleared regardless.
+      });
+    }
+    clearToken();
+    applyGuestSession();
+    goHome();
+  };
+
+  const syncLanguagePrefIfAuthenticated = (language: LanguageCode): void => {
+    if (!isAuthenticated(state) || !state.auth.token) {
+      return;
+    }
+
+    const token = state.auth.token;
+    void updateLanguagePref(token, language).catch((error: unknown) => {
+      console.warn('[Spott] Failed to sync language preference', error);
+    });
+  };
+
   const applyLanguageChange = (language: LanguageCode): void => {
     if (language === state.selectedLanguage) {
       return;
@@ -225,6 +337,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
       selectedLanguage: language,
       roundStartError: null,
     };
+    syncLanguagePrefIfAuthenticated(language);
     render();
   };
 
@@ -235,6 +348,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
       selectedLanguage: DEFAULT_PRACTICE_LANGUAGE,
       roundStartError: null,
     };
+    syncLanguagePrefIfAuthenticated(DEFAULT_PRACTICE_LANGUAGE);
     render();
   };
 
@@ -246,10 +360,38 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     render();
   };
 
+  const syncPracticeRoundIfAuthenticated = async (
+    roundState: NonNullable<AppState['roundState']>,
+  ): Promise<void> => {
+    if (!isAuthenticated(state) || !state.auth.token) {
+      return;
+    }
+
+    const token = state.auth.token;
+    const stats = getRoundStats(roundState);
+
+    try {
+      await submitRound(token, {
+        language: roundState.round.language,
+        finalScore: stats.finalScore,
+        wordsFound: stats.wordsFound,
+        totalWords: stats.totalWords,
+        gridsCompleted: stats.gridsCompleted,
+        totalGrids: stats.totalGrids,
+        remainingSeconds: stats.remainingSeconds,
+        timeBonus: stats.timeBonus,
+        status: roundState.round.status === 'expired' ? 'expired' : 'completed',
+      });
+    } catch (error: unknown) {
+      console.warn('[Spott] Failed to sync practice round', error);
+    }
+  };
+
   const handleRoundEnded = (roundState: NonNullable<AppState['roundState']>): void => {
     stopRoundTimer();
     state = endState(state, roundState);
     render();
+    void syncPracticeRoundIfAuthenticated(roundState);
   };
 
   const handleRoundStartFailure = (
@@ -409,7 +551,36 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     }
   };
 
-  render();
+  const resolveAuthSession = async (): Promise<void> => {
+    const token = getToken();
+    if (!token) {
+      applyGuestSession();
+      render();
+      return;
+    }
+
+    state = {
+      ...state,
+      auth: {
+        status: 'loading',
+        user: null,
+        token,
+      },
+    };
+    render();
+
+    try {
+      const { user } = await getMe(token);
+      applyAuthenticatedSession(token, toAuthUser(user));
+    } catch {
+      clearToken();
+      applyGuestSession();
+    }
+
+    render();
+  };
+
+  void resolveAuthSession();
 
   return {
     getState: () => state,

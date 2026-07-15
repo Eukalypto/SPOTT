@@ -11,9 +11,31 @@ export type AppScreen =
   | 'review'
   | 'rules'
   | 'settings'
+  | 'auth'
   | 'round-error';
 
 export type RulesReturnScreen = 'home' | 'practice-setup';
+
+export type AuthStatus = 'guest' | 'authenticated' | 'loading';
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  username: string;
+  languagePref: LanguageCode;
+};
+
+export type AuthState = {
+  status: AuthStatus;
+  user: AuthUser | null;
+  token: string | null;
+};
+
+export const DEFAULT_AUTH_STATE: AuthState = {
+  status: 'guest',
+  user: null,
+  token: null,
+};
 
 export interface AppState {
   screen: AppScreen;
@@ -27,6 +49,7 @@ export interface AppState {
   debugRevealWords: boolean;
   /** Dev-only: pause the round timer without ending the round. */
   timerPaused: boolean;
+  auth: AuthState;
 }
 
 export function createInitialAppState(): AppState {
@@ -39,5 +62,6 @@ export function createInitialAppState(): AppState {
     rulesReturnScreen: 'home',
     debugRevealWords: false,
     timerPaused: false,
+    auth: { ...DEFAULT_AUTH_STATE },
   };
 }

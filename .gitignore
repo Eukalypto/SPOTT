@@ -2,6 +2,8 @@ node_modules/
 dist/
 prototype/dist/
 server/dist/
+server/node_modules/
 server/.env
 server/data/
+server/data/spott.sqlite
 *.tsbuildinfo

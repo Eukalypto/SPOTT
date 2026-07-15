@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run && npm test --prefix server",
     "test:watch": "vitest",
     "validate:wordsets": "npm run build --silent && node scripts/validate-wordsets.mjs",
     "dev": "concurrently \"npm run server:dev\" \"npm run prototype:dev\"",
