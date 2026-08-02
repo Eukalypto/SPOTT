@@ -127,7 +127,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
       case 'settings':
         renderSettingsScreen(shell, {
           locale: state.selectedLanguage,
-          onBack: goToProfile,
+          onBack: goHome,
         });
         break;
       case 'profile':
