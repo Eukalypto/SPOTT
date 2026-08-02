@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { t } from '../i18n/index.js';
+import { t, tFormat } from '../i18n/index.js';
 import { buildEndScreenHtml } from './end-screen.js';
 
 function createRoundState(
@@ -45,47 +45,79 @@ function createRoundState(
 }
 
 describe('buildEndScreenHtml', () => {
-  it('shows a prominent final score and round totals', () => {
+  it('shows the Finished Game Status heading and the final score', () => {
     const html = buildEndScreenHtml({
       locale: 'en',
-      roundState: createRoundState({ total: 280, remainingSeconds: 12 }),
+      roundState: createRoundState({ total: 280 }),
       onReviewGrids: () => {},
       onStartAnotherRound: () => {},
       onBackToStart: () => {},
     });
 
-    expect(html).toContain('end-score-hero__value');
+    expect(html).toContain(t('finishedGameStatus', 'en'));
+    expect(html).toContain(t('finalScore', 'en'));
     expect(html).toContain('>280<');
-    expect(html).toContain('10 / 42');
-    expect(html).toContain('1 / 7');
-    expect(html).toContain(formatTimePlaceholder(12));
   });
 
-  it('hides the time bonus when the round expired without bonus points', () => {
+  it('shows "Time is up" when the round expired', () => {
     const html = buildEndScreenHtml({
       locale: 'en',
-      roundState: createRoundState({ status: 'expired', timeBonus: 0 }),
+      roundState: createRoundState({ status: 'expired' }),
       onReviewGrids: () => {},
       onStartAnotherRound: () => {},
       onBackToStart: () => {},
     });
 
-    expect(html).not.toContain('end-stat--bonus');
-    expect(html).not.toContain(t('timeBonus', 'en'));
+    expect(html).toContain(t('timeIsUp', 'en'));
   });
 
-  it('shows the time bonus only for completed rounds with bonus points', () => {
+  it('shows "Grids completed" without a bonus when there is none', () => {
     const html = buildEndScreenHtml({
       locale: 'en',
-      roundState: createRoundState({ status: 'completed', timeBonus: 180, total: 280 }),
+      roundState: createRoundState({ status: 'completed', timeBonus: 0 }),
       onReviewGrids: () => {},
       onStartAnotherRound: () => {},
       onBackToStart: () => {},
     });
 
-    expect(html).toContain('end-stat--bonus');
-    expect(html).toContain('+180');
-    expect(html).toContain(t('endScoreIncludesBonus', 'en').replace('{bonus}', '180'));
+    expect(html).toContain(t('statusGridsCompleted', 'en'));
+    expect(html).not.toContain('bonus =');
+  });
+
+  it('shows the seconds-spared and bonus format when grids finish with time to spare', () => {
+    const html = buildEndScreenHtml({
+      locale: 'en',
+      roundState: createRoundState({ status: 'completed', remainingSeconds: 15, timeBonus: 225 }),
+      onReviewGrids: () => {},
+      onStartAnotherRound: () => {},
+      onBackToStart: () => {},
+    });
+
+    expect(html).toContain(
+      tFormat('statusGridsCompletedWithBonus', 'en', { seconds: 15, bonus: 225 }),
+    );
+  });
+
+  it('shows "Play Solo Again" for solo games and "Challenge the same opponent" for challenges', () => {
+    const solo = buildEndScreenHtml({
+      locale: 'en',
+      roundState: createRoundState(),
+      gameMode: 'solo',
+      onReviewGrids: () => {},
+      onStartAnotherRound: () => {},
+      onBackToStart: () => {},
+    });
+    const challenge = buildEndScreenHtml({
+      locale: 'en',
+      roundState: createRoundState(),
+      gameMode: 'challenge',
+      onReviewGrids: () => {},
+      onStartAnotherRound: () => {},
+      onBackToStart: () => {},
+    });
+
+    expect(solo).toContain(t('playSoloAgain', 'en'));
+    expect(challenge).toContain(t('challengeSameOpponent', 'en'));
   });
 
   it('provides review, restart, and back-to-start actions', () => {
@@ -101,11 +133,10 @@ describe('buildEndScreenHtml', () => {
     expect(html).toContain('data-action="restart"');
     expect(html).toContain('data-action="back-to-start"');
     expect(html).toContain(t('reviewGrids', 'en'));
-    expect(html).toContain(t('startNewRound', 'en'));
-    expect(html).toContain(t('backToStart', 'en'));
+    expect(html).toContain(t('home', 'en'));
   });
 
-  it('lists per-grid summaries', () => {
+  it('shows an empty Player Statistics placeholder and nothing else', () => {
     const html = buildEndScreenHtml({
       locale: 'en',
       roundState: createRoundState({
@@ -119,15 +150,8 @@ describe('buildEndScreenHtml', () => {
       onBackToStart: () => {},
     });
 
-    expect(html).toContain('Forest');
-    expect(html).toContain('Ocean');
-    expect(html).toContain('end-grid-item--complete');
-    expect(html).toContain('end-grid-item--incomplete');
+    expect(html).toContain(t('playerStatistics', 'en'));
+    expect(html).not.toContain('Forest');
+    expect(html).not.toContain('Ocean');
   });
 });
-
-function formatTimePlaceholder(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  const remainder = seconds % 60;
-  return `${minutes}:${String(remainder).padStart(2, '0')}`;
-}

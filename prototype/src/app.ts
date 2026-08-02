@@ -1,4 +1,4 @@
-import { skipGrid, submitSwipe, type LanguageCode } from '@spott/engine';
+import { interruptRound, skipGrid, submitSwipe, type LanguageCode } from '@spott/engine';
 
 import { getMe, logout, type AuthResponse } from './api/auth-api.js';
 import { updateLanguagePref } from './api/settings-api.js';
@@ -99,7 +99,9 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
       case 'home':
         renderHomeScreen(shell, {
           locale: state.selectedLanguage,
-          onPractice: goToPracticeSetup,
+          selectedLanguage: state.selectedLanguage,
+          onLanguageChange: applyLanguageChange,
+          onPlaySolo: goToPracticeSetup,
           onRules: () => goToRules('home'),
           onSettings: goToSettings,
         });
@@ -194,6 +196,16 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
             }
             applyRoundState(result.state, { fromSwipe: true });
             return true;
+          },
+          onStopGame: () => {
+            if (!state.roundState) {
+              return;
+            }
+            const interrupted = interruptRound(state.roundState);
+            if (interrupted === state.roundState) {
+              return;
+            }
+            handleRoundEnded(interrupted);
           },
         });
         mountDevTools(shell, generation);
@@ -413,7 +425,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
         totalGrids: stats.totalGrids,
         remainingSeconds: stats.remainingSeconds,
         timeBonus: stats.timeBonus,
-        status: roundState.round.status === 'expired' ? 'expired' : 'completed',
+        status: roundState.round.status === 'completed' ? 'completed' : 'expired',
       });
     } catch (error: unknown) {
       console.warn('[Spott] Failed to sync practice round', error);

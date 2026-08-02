@@ -4,25 +4,29 @@ import { t } from '../i18n/index.js';
 import { buildHomeScreenHtml } from './home-screen.js';
 
 describe('buildHomeScreenHtml', () => {
-  it('shows the Spott title and primary Practice action', () => {
+  it('shows the Spott logo and primary Play Solo action', () => {
     const html = buildHomeScreenHtml({
       locale: 'en',
-      onPractice: () => {},
+      selectedLanguage: 'en',
+      onLanguageChange: () => {},
+      onPlaySolo: () => {},
       onRules: () => {},
       onSettings: () => {},
     });
 
-    expect(html).toContain(t('appTitle', 'en'));
     expect(html).toContain('id="app-title"');
-    expect(html).toContain(t('navPractice', 'en'));
-    expect(html).toContain('data-action="practice"');
+    expect(html).toContain(t('appTitle', 'en'));
+    expect(html).toContain(t('navPlaySolo', 'en'));
+    expect(html).toContain('data-action="play-solo"');
     expect(html).toContain('home-actions__primary');
   });
 
   it('renders secondary navigation actions', () => {
     const html = buildHomeScreenHtml({
       locale: 'en',
-      onPractice: () => {},
+      selectedLanguage: 'en',
+      onLanguageChange: () => {},
+      onPlaySolo: () => {},
       onRules: () => {},
       onSettings: () => {},
     });
@@ -33,17 +37,33 @@ describe('buildHomeScreenHtml', () => {
     expect(html).toContain('data-action="settings"');
   });
 
-  it('marks Challenge as coming later and disabled', () => {
+  it('marks challenge modes as coming soon and disabled', () => {
     const html = buildHomeScreenHtml({
       locale: 'en',
-      onPractice: () => {},
+      selectedLanguage: 'en',
+      onLanguageChange: () => {},
+      onPlaySolo: () => {},
       onRules: () => {},
       onSettings: () => {},
     });
 
-    expect(html).toContain(t('navChallengeComingLater', 'en'));
-    expect(html).toContain(t('homeFutureModes', 'en'));
+    expect(html).toContain(t('navChallengeRandom', 'en'));
+    expect(html).toContain(t('navChallengeFriend', 'en'));
     expect(html).toContain('disabled');
     expect(html).toContain('aria-disabled="true"');
+  });
+
+  it('renders a language dropdown with the selected language chosen', () => {
+    const html = buildHomeScreenHtml({
+      locale: 'en',
+      selectedLanguage: 'fr',
+      onLanguageChange: () => {},
+      onPlaySolo: () => {},
+      onRules: () => {},
+      onSettings: () => {},
+    });
+
+    expect(html).toContain('data-action="language"');
+    expect(html).toMatch(/value="fr"[^>]*selected/);
   });
 });

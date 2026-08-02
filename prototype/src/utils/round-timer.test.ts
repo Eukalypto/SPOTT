@@ -8,9 +8,9 @@ import {
 } from './round-timer.js';
 
 describe('round timer helpers', () => {
-  it('starts at ninety seconds for a Classic round', () => {
-    expect(ROUND_DURATION_SECONDS).toBe(90);
-    expect(formatRemainingTime(ROUND_DURATION_SECONDS)).toBe('1:30');
+  it('starts at two minutes thirty seconds for a Classic round', () => {
+    expect(ROUND_DURATION_SECONDS).toBe(150);
+    expect(formatRemainingTime(ROUND_DURATION_SECONDS)).toBe('2:30');
   });
 
   it('formats remaining time as m:ss', () => {
@@ -28,6 +28,7 @@ describe('round timer helpers', () => {
   it('detects completed and expired round endings', () => {
     expect(isRoundFinished({ round: { status: 'completed' } } as never)).toBe(true);
     expect(isRoundFinished({ round: { status: 'expired' } } as never)).toBe(true);
+    expect(isRoundFinished({ round: { status: 'interrupted' } } as never)).toBe(true);
     expect(isRoundFinished({ round: { status: 'active' } } as never)).toBe(false);
   });
 });

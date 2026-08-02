@@ -27,6 +27,7 @@ export interface GameScreenOptions {
   getViewOptions?: () => GameScreenViewOptions;
   onSkip: () => void;
   onSubmitSwipe: (coordinates: Coordinate[]) => boolean;
+  onStopGame: () => void;
 }
 
 export interface GameScreenHandle {
@@ -56,6 +57,30 @@ export function mountGameScreen(
   container.querySelector<HTMLButtonElement>('[data-action="skip"]')?.addEventListener(
     'click',
     options.onSkip,
+  );
+
+  const stopGameDialog = container.querySelector<HTMLElement>('[data-stop-game-dialog]');
+  const showStopGameDialog = (): void => {
+    stopGameDialog?.removeAttribute('hidden');
+  };
+  const hideStopGameDialog = (): void => {
+    stopGameDialog?.setAttribute('hidden', '');
+  };
+
+  container.querySelector<HTMLButtonElement>('[data-action="stop-game"]')?.addEventListener(
+    'click',
+    showStopGameDialog,
+  );
+  container.querySelector<HTMLButtonElement>('[data-action="stop-game-cancel"]')?.addEventListener(
+    'click',
+    hideStopGameDialog,
+  );
+  container.querySelector<HTMLButtonElement>('[data-action="stop-game-confirm"]')?.addEventListener(
+    'click',
+    () => {
+      hideStopGameDialog();
+      options.onStopGame();
+    },
   );
 
   const playSkipTransition = (): void => {
@@ -204,7 +229,17 @@ function buildGameScreenHtml(
         </div>
       </header>
 
-      <p class="game-theme" data-theme-label>${escapeHtml(grid.themeLabel)}</p>
+      <div class="game-theme-row">
+        <button
+          type="button"
+          class="stop-game-button"
+          data-action="stop-game"
+          aria-label="${escapeHtml(t('stopGame', locale))}"
+        >
+          <span aria-hidden="true">✕</span>
+        </button>
+        <p class="game-theme" data-theme-label>${escapeHtml(grid.themeLabel)}</p>
+      </div>
 
       <div class="word-gauge-block">
         <p class="word-gauge__summary" data-gauge-summary aria-live="polite">${escapeHtml(getGaugeSummaryText(grid, locale))}</p>
@@ -232,6 +267,29 @@ function buildGameScreenHtml(
         <span class="skip-button__arrow" aria-hidden="true">→</span>
       </button>
       <p class="skip-button__hint" data-skip-hint${skippable ? ' hidden' : ''}>${escapeHtml(t('skipHintUnavailable', locale))}</p>
+
+      <div
+        class="confirm-dialog"
+        data-stop-game-dialog
+        hidden
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="stop-game-dialog-message"
+      >
+        <div class="confirm-dialog__panel">
+          <p id="stop-game-dialog-message" class="confirm-dialog__message">
+            ${escapeHtml(t('confirmStopGameMessage', locale))}
+          </p>
+          <div class="confirm-dialog__actions">
+            <button type="button" class="secondary-button" data-action="stop-game-cancel">
+              ${escapeHtml(t('confirmStopGameCancel', locale))}
+            </button>
+            <button type="button" class="primary-button" data-action="stop-game-confirm">
+              ${escapeHtml(t('confirmStopGameConfirm', locale))}
+            </button>
+          </div>
+        </div>
+      </div>
     </section>
   `;
 }

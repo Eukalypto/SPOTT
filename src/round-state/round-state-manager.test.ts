@@ -9,6 +9,7 @@ import {
   completeRound,
   createInitialRoundState,
   expireRound,
+  interruptRound,
   skipGrid,
   startRound,
   submitSwipe,
@@ -233,7 +234,7 @@ describe('tickTimer', () => {
     state = tickTimer(state, START_MS + 30_000);
 
     expect(state.round.status).toBe('active');
-    expect(state.remainingSeconds).toBe(60);
+    expect(state.remainingSeconds).toBe(GAME_CONFIG.roundDurationSeconds - 30);
   });
 
   it('expires the round when time reaches zero', () => {
@@ -263,6 +264,34 @@ describe('expireRound', () => {
     expect(state.remainingSeconds).toBe(0);
     expect(state.score.timeBonus).toBe(0);
     expect(state.score.total).toBe(state.score.wordPoints);
+  });
+});
+
+describe('interruptRound', () => {
+  it('freezes score without a time bonus and keeps remaining time as-is', () => {
+    let state = activateRound();
+    const findResult = findNextWordOnCurrentGrid(state);
+    expect(findResult.applied).toBe(true);
+    if (!findResult.applied) {
+      return;
+    }
+
+    state = tickTimer(findResult.state, START_MS + 10_000);
+    const remainingBeforeInterrupt = state.remainingSeconds;
+    state = interruptRound(state);
+
+    expect(state.round.status).toBe('interrupted');
+    expect(state.remainingSeconds).toBe(remainingBeforeInterrupt);
+    expect(state.score.timeBonus).toBe(0);
+    expect(state.score.total).toBe(state.score.wordPoints);
+  });
+
+  it('is a no-op when the round is not active', () => {
+    const pending = createInitialRoundState(buildRound());
+    expect(interruptRound(pending)).toBe(pending);
+
+    const expired = expireRound(activateRound());
+    expect(interruptRound(expired)).toBe(expired);
   });
 });
 

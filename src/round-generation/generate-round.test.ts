@@ -54,15 +54,6 @@ describe('generateRound', () => {
     const uniqueThemeIds = new Set(round.themeIds);
 
     expect(uniqueThemeIds.size).toBe(7);
-    expect(round.themeIds).toEqual([
-      'en-forest',
-      'en-kitchen',
-      'en-space',
-      'en-music',
-      'en-sports',
-      'en-travel',
-      'en-ocean',
-    ]);
 
     round.grids.forEach((grid, index) => {
       expect(grid.themeId).toBe(round.themeIds[index]);
@@ -242,6 +233,38 @@ describe('selectThemesForRound', () => {
 
     const ids = themes.map((entry) => entry.themeId);
     expect(new Set(ids).size).toBe(GAME_CONFIG.gridsPerRound);
+  });
+
+  it('varies theme selection across seeds instead of always picking the same order', () => {
+    const orders = new Set(
+      [1, 2, 3, 4, 5].map((seed) => {
+        const themes = selectThemesForRound(
+          ENGLISH_SAMPLE_WORD_SET,
+          DIFFICULTY_SEQUENCE,
+          createSeededRandom(seed),
+        );
+        return themes?.map((theme) => theme.themeId).join(',');
+      }),
+    );
+
+    expect(orders.size).toBeGreaterThan(1);
+  });
+
+  it('is deterministic for a given seed', () => {
+    const first = selectThemesForRound(
+      ENGLISH_SAMPLE_WORD_SET,
+      DIFFICULTY_SEQUENCE,
+      createSeededRandom(42),
+    );
+    const second = selectThemesForRound(
+      ENGLISH_SAMPLE_WORD_SET,
+      DIFFICULTY_SEQUENCE,
+      createSeededRandom(42),
+    );
+
+    expect(first?.map((theme) => theme.themeId)).toEqual(
+      second?.map((theme) => theme.themeId),
+    );
   });
 });
 

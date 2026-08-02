@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a2e1f" />
+  <title>Spott — Grid randomness check</title>
+  <style>
+    :root {
+      --bg0: #1a2e1f;
+      --bg1: #243d2a;
+      --ink: #f4efe4;
+      --muted: #b7c4b5;
+      --accent: #e8c547;
+      --cell: #2f4a36;
+      --cell-border: #3d5c45;
+      --ok: #7dcea0;
+      --word-0: #f07178;
+      --word-1: #7ec8e3;
+      --word-2: #e8c547;
+      --word-3: #c39bd3;
+      --word-4: #76d7c4;
+      --word-5: #f5b041;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 0%, #2a4a32 0%, transparent 55%),
+        radial-gradient(ellipse 70% 45% at 90% 100%, #1e3a28 0%, transparent 50%),
+        var(--bg0);
+      padding: 16px;
+      padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 4px;
+      letter-spacing: 0.02em;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin: 0 0 16px;
+      line-height: 1.4;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 1rem;
+      font-weight: 600;
+      background: var(--accent);
+      color: #1a2e1f;
+      cursor: pointer;
+      touch-action: manipulation;
+      min-height: 48px;
+      flex: 1 1 auto;
+    }
+
+    button.secondary {
+      background: var(--cell);
+      color: var(--ink);
+      border: 1px solid var(--cell-border);
+    }
+
+    button:active { transform: scale(0.98); }
+
+    .grid-wrap {
+      width: min(100%, 420px);
+      margin: 0 auto 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      aspect-ratio: 1;
+    }
+
+    .cell {
+      display: grid;
+      place-items: center;
+      background: var(--cell);
+      border: 1px solid var(--cell-border);
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: clamp(0.95rem, 4.2vw, 1.35rem);
+      user-select: none;
+    }
+
+    .cell.w0 { background: color-mix(in srgb, var(--word-0) 35%, var(--cell)); color: #fff; }
+    .cell.w1 { background: color-mix(in srgb, var(--word-1) 35%, var(--cell)); color: #fff; }
+    .cell.w2 { background: color-mix(in srgb, var(--word-2) 40%, var(--cell)); color: #1a2e1f; }
+    .cell.w3 { background: color-mix(in srgb, var(--word-3) 35%, var(--cell)); color: #fff; }
+    .cell.w4 { background: color-mix(in srgb, var(--word-4) 35%, var(--cell)); color: #1a2e1f; }
+    .cell.w5 { background: color-mix(in srgb, var(--word-5) 40%, var(--cell)); color: #1a2e1f; }
+
+    .legend {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      background: rgba(0, 0, 0, 0.18);
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .swatch.w0 { background: var(--word-0); }
+    .swatch.w1 { background: var(--word-1); }
+    .swatch.w2 { background: var(--word-2); }
+    .swatch.w3 { background: var(--word-3); }
+    .swatch.w4 { background: var(--word-4); }
+    .swatch.w5 { background: var(--word-5); }
+
+    .meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .history {
+      background: rgba(0, 0, 0, 0.22);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 8px;
+    }
+
+    .history h2 {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+    }
+
+    .history ol {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    .history .ok { color: var(--ok); }
+    .history .same { color: #f5b7b1; }
+
+    .note {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Grid randomness check</h1>
+  <p class="sub">
+    Same Forest word pool every time. Tap generate repeatedly —
+    word starts and directions should jump around, not lock to the same rows/columns.
+  </p>
+
+  <div class="actions">
+    <button id="btn-generate" type="button">Generate grid</button>
+    <button id="btn-burst" class="secondary" type="button">Generate 10</button>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="grid" id="grid" aria-label="Word search grid"></div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="history">
+    <h2>Layout history</h2>
+    <ol id="history"></ol>
+  </div>
+
+  <p class="note">
+    Standalone demo of the randomized placement idea (shuffle words, directions, and starts).
+    Not the full Spott engine — use it to eyeball variety on your phone.
+  </p>
+
+  <script>
+    const SIZE = 7;
+    const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const POOL = {
+      4: ["BEAR", "WOLF", "HAWK"],
+      5: ["TIGER", "EAGLE", "PEACH"],
+      6: ["FOREST", "BRANCH"],
+      7: ["COUNTRY", "STREAMS"],
+    };
+    const COMPOSITION = [
+      { length: 4, count: 2 },
+      { length: 5, count: 2 },
+      { length: 6, count: 1 },
+      { length: 7, count: 1 },
+    ];
+    const DIRECTIONS = [
+      { name: "→", dr: 0, dc: 1 },
+      { name: "←", dr: 0, dc: -1 },
+      { name: "↓", dr: 1, dc: 0 },
+      { name: "↑", dr: -1, dc: 0 },
+      { name: "↘", dr: 1, dc: 1 },
+      { name: "↙", dr: 1, dc: -1 },
+    ];
+
+    function shuffle(items) {
+      const arr = items.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function pickWords() {
+      const words = [];
+      for (const { length, count } of COMPOSITION) {
+        words.push(...shuffle(POOL[length]).slice(0, count));
+      }
+      return shuffle(words);
+    }
+
+    function path(start, dir, length) {
+      const cells = [];
+      for (let i = 0; i < length; i++) {
+        const r = start.r + i * dir.dr;
+        const c = start.c + i * dir.dc;
+        if (r < 0 || c < 0 || r >= SIZE || c >= SIZE) return null;
+        cells.push({ r, c });
+      }
+      return cells;
+    }
+
+    function startsFor(word, dir) {
+      const starts = [];
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          if (path({ r, c }, dir, word.length)) starts.push({ r, c });
+        }
+      }
+      return shuffle(starts);
+    }
+
+    function canPlace(cells, occupied) {
+      return cells.every(({ r, c }) => !occupied.has(`${r},${c}`));
+    }
+
+    function generate() {
+      for (let attempt = 0; attempt < 80; attempt++) {
+        const words = pickWords();
+        const dirs = shuffle(DIRECTIONS);
+        const occupied = new Set();
+        const placed = [];
+
+        let ok = true;
+        for (let i = 0; i < words.length; i++) {
+          const word = words[i];
+          const dir = dirs[i];
+          let found = null;
+          for (const start of startsFor(word, dir)) {
+            const cells = path(start, dir, word.length);
+            if (cells && canPlace(cells, occupied)) {
+              found = { word, dir, start, cells };
+              break;
+            }
+          }
+          if (!found) {
+            ok = false;
+            break;
+          }
+          for (const cell of found.cells) occupied.add(`${cell.r},${cell.c}`);
+          placed.push(found);
+        }
+        if (!ok) continue;
+
+        const letters = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+        const owners = Array.from({ length: SIZE }, () => Array(SIZE).fill(-1));
+        placed.forEach((p, idx) => {
+          p.cells.forEach((cell, i) => {
+            letters[cell.r][cell.c] = p.word[i];
+            owners[cell.r][cell.c] = idx;
+          });
+        });
+        for (let r = 0; r < SIZE; r++) {
+          for (let c = 0; c < SIZE; c++) {
+            if (!letters[r][c]) {
+              letters[r][c] = ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+            }
+          }
+        }
+
+        const fingerprint = placed
+          .map((p) => `${p.word}@${p.start.r},${p.start.c}${p.dir.name}`)
+          .sort()
+          .join(" | ");
+
+        return { letters, owners, placed, fingerprint };
+      }
+      return null;
+    }
+
+    const gridEl = document.getElementById("grid");
+    const legendEl = document.getElementById("legend");
+    const historyEl = document.getElementById("history");
+    const fingerprints = [];
+
+    function render(result) {
+      gridEl.innerHTML = "";
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          const owner = result.owners[r][c];
+          if (owner >= 0) cell.classList.add(`w${owner}`);
+          cell.textContent = result.letters[r][c];
+          gridEl.appendChild(cell);
+        }
+      }
+
+      legendEl.innerHTML = result.placed
+        .map(
+          (p, i) => `
+          <div class="legend-item">
+            <span class="swatch w${i}"></span>
+            <span><strong>${p.word}</strong> · start (${p.start.r},${p.start.c}) · ${p.dir.name}</span>
+          </div>`,
+        )
+        .join("");
+    }
+
+    function pushHistory(fingerprint) {
+      fingerprints.push(fingerprint);
+      const unique = new Set(fingerprints).size;
+      const li = document.createElement("li");
+      const isRepeat =
+        fingerprints.length > 1 &&
+        fingerprints[fingerprints.length - 1] === fingerprints[fingerprints.length - 2];
+      li.innerHTML = `<span class="${isRepeat ? "same" : "ok"}">${fingerprint}</span>
+        <div class="meta">run ${fingerprints.length} · ${unique} unique so far</div>`;
+      historyEl.prepend(li);
+    }
+
+    function generateOnce() {
+      const result = generate();
+      if (!result) {
+        alert("Could not place words this try — tap again.");
+        return;
+      }
+      render(result);
+      pushHistory(result.fingerprint);
+    }
+
+    document.getElementById("btn-generate").addEventListener("click", generateOnce);
+    document.getElementById("btn-burst").addEventListener("click", () => {
+      for (let i = 0; i < 10; i++) generateOnce();
+    });
+
+    generateOnce();
+  </script>
+</body>
+</html>

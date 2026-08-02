@@ -2,90 +2,80 @@ import type { RoundState } from '@spott/engine';
 
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { escapeHtml } from '../utils/html.js';
-import {
-  getGridSummaries,
-  getRoundStats,
-  shouldShowTimeBonus,
-  type GridSummary,
-} from '../utils/round-stats.js';
-import { formatRemainingTime } from '../utils/round-timer.js';
+import { getRoundStats, shouldShowTimeBonus } from '../utils/round-stats.js';
+
+export type EndScreenGameMode = 'solo' | 'challenge';
 
 export interface EndScreenOptions {
   roundState: RoundState;
   locale: UiLocale;
+  /** Defaults to 'solo'; challenge mode is not yet playable. */
+  gameMode?: EndScreenGameMode;
   onReviewGrids: () => void;
   onStartAnotherRound: () => void;
   onBackToStart: () => void;
 }
 
+/** One of the three Finished Game Status cases: interrupted, time out, or grids completed (+ bonus). */
+function getFinishedStatusText(options: EndScreenOptions): string {
+  const { roundState, locale } = options;
+
+  if (roundState.round.status === 'interrupted') {
+    return t('statusGameInterrupted', locale);
+  }
+
+  if (roundState.round.status === 'expired') {
+    return t('timeIsUp', locale);
+  }
+
+  if (shouldShowTimeBonus(roundState)) {
+    const stats = getRoundStats(roundState);
+    return tFormat('statusGridsCompletedWithBonus', locale, {
+      seconds: stats.remainingSeconds,
+      bonus: stats.timeBonus,
+    });
+  }
+
+  return t('statusGridsCompleted', locale);
+}
+
 export function buildEndScreenHtml(options: EndScreenOptions): string {
+  const { locale } = options;
   const stats = getRoundStats(options.roundState);
-  const gridSummaries = getGridSummaries(options.roundState);
-  const showTimeBonus = shouldShowTimeBonus(options.roundState);
-  const statusLabel =
-    options.roundState.round.status === 'completed'
-      ? t('allGridsComplete', options.locale)
-      : t('timeIsUp', options.locale);
+  const gameMode = options.gameMode ?? 'solo';
+  const playAgainLabel =
+    gameMode === 'challenge' ? t('challengeSameOpponent', locale) : t('playSoloAgain', locale);
 
   return `
-    <section class="screen screen--end" aria-labelledby="end-title">
-      <header class="end-header">
-        <h2 id="end-title">${escapeHtml(t('roundOver', options.locale))}</h2>
-        <p class="end-status">${escapeHtml(statusLabel)}</p>
+    <section class="screen screen--end" aria-labelledby="end-status-title">
+      <header class="end-status-block">
+        <h2 id="end-status-title" class="end-status-block__title">${escapeHtml(t('finishedGameStatus', locale))}</h2>
+        <p class="end-status-block__value">${escapeHtml(getFinishedStatusText(options))}</p>
       </header>
 
-      <div class="end-score-hero" aria-labelledby="end-score-label">
-        <span id="end-score-label" class="end-score-hero__label">${escapeHtml(t('finalScore', options.locale))}</span>
-        <span class="end-score-hero__value">${stats.finalScore}</span>
-        ${
-          showTimeBonus
-            ? `<span class="end-score-hero__bonus">${escapeHtml(tFormat('endScoreIncludesBonus', options.locale, { bonus: stats.timeBonus }))}</span>`
-            : ''
-        }
-      </div>
-
-      <dl class="end-stats">
-        <div class="end-stat">
-          <dt>${escapeHtml(t('wordsFound', options.locale))}</dt>
-          <dd>${stats.wordsFound} / ${stats.totalWords}</dd>
-        </div>
-        <div class="end-stat">
-          <dt>${escapeHtml(t('gridsCompleted', options.locale))}</dt>
-          <dd>${stats.gridsCompleted} / ${stats.totalGrids}</dd>
-        </div>
-        <div class="end-stat">
-          <dt>${escapeHtml(t('timeRemaining', options.locale))}</dt>
-          <dd>${formatRemainingTime(stats.remainingSeconds)}</dd>
-        </div>
-        ${
-          showTimeBonus
-            ? `
-        <div class="end-stat end-stat--bonus">
-          <dt>${escapeHtml(t('timeBonus', options.locale))}</dt>
-          <dd>+${stats.timeBonus}</dd>
-        </div>`
-            : ''
-        }
-      </dl>
-
-      <section class="end-grid-summary" aria-labelledby="grid-summary-title">
-        <h3 id="grid-summary-title" class="end-grid-summary__title">${escapeHtml(t('gridSummary', options.locale))}</h3>
-        <ul class="end-grid-summary__list">
-          ${gridSummaries.map((grid) => buildGridSummaryItemHtml(grid, options.locale)).join('')}
-        </ul>
+      <section class="end-score-block" aria-labelledby="end-score-title">
+        <h2 id="end-score-title" class="end-score-block__title">${escapeHtml(t('finalScore', locale))}</h2>
+        <p class="end-score-block__value">${stats.finalScore}</p>
       </section>
 
-      <div class="end-actions">
-        <button type="button" class="primary-button" data-action="review">
-          ${escapeHtml(t('reviewGrids', options.locale))}
+      <div class="end-actions-row">
+        <button type="button" class="secondary-button end-actions-row__button" data-action="review">
+          ${escapeHtml(t('reviewGrids', locale))}
         </button>
-        <button type="button" class="secondary-button" data-action="restart">
-          ${escapeHtml(t('startNewRound', options.locale))}
-        </button>
-        <button type="button" class="text-button end-actions__back" data-action="back-to-start">
-          ${escapeHtml(t('backToStart', options.locale))}
+        <button type="button" class="primary-button end-actions-row__button" data-action="restart">
+          ${escapeHtml(playAgainLabel)}
         </button>
       </div>
+
+      <section class="end-stats-placeholder" aria-labelledby="end-stats-placeholder-title">
+        <h3 id="end-stats-placeholder-title" class="end-stats-placeholder__title">
+          ${escapeHtml(t('playerStatistics', locale))}
+        </h3>
+      </section>
+
+      <button type="button" class="primary-button end-home-button" data-action="back-to-start">
+        ${escapeHtml(t('home', locale))}
+      </button>
     </section>
   `;
 }
@@ -105,20 +95,4 @@ export function renderEndScreen(container: HTMLElement, options: EndScreenOption
     'click',
     options.onBackToStart,
   );
-}
-
-function buildGridSummaryItemHtml(grid: GridSummary, locale: UiLocale): string {
-  const statusClass = grid.completed ? 'end-grid-item--complete' : 'end-grid-item--incomplete';
-  const statusLabel = grid.completed ? t('complete', locale) : t('incomplete', locale);
-
-  return `
-    <li class="end-grid-item ${statusClass}">
-      <div class="end-grid-item__header">
-        <span class="end-grid-item__number">${escapeHtml(t('grid', locale))} ${grid.gridNumber}</span>
-        <span class="end-grid-item__status">${escapeHtml(statusLabel)}</span>
-      </div>
-      <p class="end-grid-item__theme">${escapeHtml(grid.themeLabel)}</p>
-      <p class="end-grid-item__words">${escapeHtml(tFormat('gridWordsFoundSummary', locale, { found: grid.wordsFound, total: grid.totalWords }))}</p>
-    </li>
-  `;
 }

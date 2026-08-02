@@ -203,6 +203,26 @@ export function expireRound(state: RoundState): RoundState {
   };
 }
 
+/** Player chose to stop the round early (via the in-game quit confirmation). */
+export function interruptRound(state: RoundState): RoundState {
+  if (state.round.status !== 'active') {
+    return state;
+  }
+
+  return {
+    ...state,
+    round: {
+      ...state.round,
+      status: 'interrupted',
+    },
+    score: {
+      ...state.score,
+      timeBonus: 0,
+      total: state.score.wordPoints,
+    },
+  };
+}
+
 function markWordFound(
   grid: GridData,
   wordId: string,

@@ -38,7 +38,7 @@ export const GAME_CONFIG = {
   gridSize: 7,
   wordsPerGrid: 6,
   gridsPerRound: 7,
-  roundDurationSeconds: 90,
+  roundDurationSeconds: 150,
   wordLengthComposition: WORD_LENGTH_COMPOSITION,
   difficultySequence: DIFFICULTY_SEQUENCE,
   allowOvershoot: false,

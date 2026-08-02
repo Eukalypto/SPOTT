@@ -2,6 +2,8 @@ import type { Coordinate } from '@spott/engine';
 
 const INVALID_FLASH_MS = 220;
 const CELL_HIT_BOX_RATIO = 0.75;
+/** Max gap between consecutive cell hits to forgive one skipped cell (fast swipe, not a deliberate jump). */
+const SKIP_TOLERANCE_WINDOW_MS = 180;
 
 /** True when a pointer lies inside the centered hit box for a grid cell. */
 export function isPointInCellHitBox(
@@ -42,8 +44,21 @@ function pathContainsCoordinate(path: Coordinate[], coordinate: Coordinate): boo
   return path.some((entry) => coordinatesEqual(entry, coordinate));
 }
 
+export interface ExtendPathOptions {
+  /**
+   * Allow one skipped cell in the established direction (touchscreens can miss a
+   * cell when the finger moves fast). Gated by the caller to a short time window
+   * so it only forgives fast continuous swipes, not deliberate jumps.
+   */
+  allowSkip?: boolean;
+}
+
 /** Extend a forward-only drag path; backtracking removes the last cell. */
-export function tryExtendPath(path: Coordinate[], next: Coordinate): Coordinate[] {
+export function tryExtendPath(
+  path: Coordinate[],
+  next: Coordinate,
+  options: ExtendPathOptions = {},
+): Coordinate[] {
   if (path.length === 0) {
     return [next];
   }
@@ -81,6 +96,17 @@ export function tryExtendPath(path: Coordinate[], next: Coordinate): Coordinate[
     return [...path, next];
   }
 
+  if (options.allowSkip && !pathContainsCoordinate(path, expected)) {
+    const skipped: Coordinate = {
+      row: last.row + direction.row * 2,
+      col: last.col + direction.col * 2,
+    };
+
+    if (coordinatesEqual(skipped, next)) {
+      return [...path, expected, next];
+    }
+  }
+
   return path;
 }
 
@@ -101,6 +127,7 @@ export function attachGridSwipe(
   let isSelecting = false;
   let activePointerId: number | null = null;
   let flashTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  let lastCellTimestamp = 0;
 
   const readCoordinate = (cell: HTMLElement): Coordinate => ({
     row: Number(cell.dataset.row),
@@ -185,13 +212,15 @@ export function attachGridSwipe(
     }, INVALID_FLASH_MS);
   };
 
-  const addCellToPath = (cell: HTMLElement): void => {
-    const nextPath = tryExtendPath(activePath, readCoordinate(cell));
+  const addCellToPath = (cell: HTMLElement, timestamp: number): void => {
+    const allowSkip = timestamp - lastCellTimestamp <= SKIP_TOLERANCE_WINDOW_MS;
+    const nextPath = tryExtendPath(activePath, readCoordinate(cell), { allowSkip });
     if (nextPath === activePath) {
       return;
     }
 
     activePath = nextPath;
+    lastCellTimestamp = timestamp;
     applySelectionStyles();
   };
 
@@ -253,6 +282,7 @@ export function attachGridSwipe(
     isSelecting = true;
     activePointerId = event.pointerId;
     activePath = [readCoordinate(cell)];
+    lastCellTimestamp = event.timeStamp;
     setSelectingState(true);
     applySelectionStyles();
   };
@@ -269,7 +299,7 @@ export function attachGridSwipe(
       return;
     }
 
-    addCellToPath(cell);
+    addCellToPath(cell, event.timeStamp);
   };
 
   const handlePointerUp = (event: PointerEvent): void => {

@@ -28,7 +28,7 @@ function swipeWord(state: RoundState, wordIndex = 0): RoundState {
 }
 
 describe('Phase 2 prototype requirements', () => {
-  it('starts a Classic round with seven grids and a ninety-second timer', () => {
+  it('starts a Classic round with seven grids and a two-minute-thirty timer', () => {
     const result = startPracticeRoundState({ roundId: 'requirements-classic' });
     expect(result.success).toBe(true);
     if (!result.success) {
@@ -38,7 +38,7 @@ describe('Phase 2 prototype requirements', () => {
     expect(result.roundState.round.status).toBe('active');
     expect(result.roundState.round.grids).toHaveLength(GAME_CONFIG.gridsPerRound);
     expect(result.roundState.remainingSeconds).toBe(ROUND_DURATION_SECONDS);
-    expect(ROUND_DURATION_SECONDS).toBe(90);
+    expect(ROUND_DURATION_SECONDS).toBe(150);
     expect(result.roundState.activeGridIndices).toHaveLength(7);
   });
 
@@ -133,7 +133,10 @@ describe('Phase 2 prototype requirements', () => {
       return;
     }
 
-    const expired = tickTimer(started.roundState, Date.now() + 91_000);
+    const expired = tickTimer(
+      started.roundState,
+      Date.now() + (ROUND_DURATION_SECONDS + 1) * 1000,
+    );
     expect(expired.round.status).toBe('expired');
     expect(expired.score.timeBonus).toBe(0);
     expect(expired.score.total).toBe(expired.score.wordPoints);

@@ -4,6 +4,7 @@ export {
   createRoundState,
   difficultyForGridIndex,
   expireRound,
+  interruptRound,
   maskingPolicyForGridIndex,
   skipGrid,
   startRound,

@@ -85,4 +85,41 @@ describe('tryExtendPath', () => {
     ];
     expect(tryExtendPath(path, { row: 1, col: 2 })).toEqual(path);
   });
+
+  it('ignores a skipped cell when skip tolerance is off', () => {
+    const path = [
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+    ];
+    expect(tryExtendPath(path, { row: 0, col: 3 })).toEqual(path);
+  });
+
+  it('fills in one skipped cell in-direction when skip tolerance is on', () => {
+    const path = [
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+    ];
+    expect(tryExtendPath(path, { row: 0, col: 3 }, { allowSkip: true })).toEqual([
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+      { row: 0, col: 2 },
+      { row: 0, col: 3 },
+    ]);
+  });
+
+  it('does not forgive a two-cell skip even with skip tolerance on', () => {
+    const path = [
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+    ];
+    expect(tryExtendPath(path, { row: 0, col: 4 }, { allowSkip: true })).toEqual(path);
+  });
+
+  it('does not forgive an off-direction jump with skip tolerance on', () => {
+    const path = [
+      { row: 0, col: 0 },
+      { row: 0, col: 1 },
+    ];
+    expect(tryExtendPath(path, { row: 2, col: 1 }, { allowSkip: true })).toEqual(path);
+  });
 });

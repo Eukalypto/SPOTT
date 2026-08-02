@@ -1,0 +1,236 @@
+{
+	[
+		{	
+			"category":"Alcoholic Beverages",
+			"words":["ARAK", "BEER", "MEAD", "OUZO", "RAKI", "SAKE", "WINE", "ANISE", "CIDER", "LAGER", "PORTO", "VODKA", "BRANDY", "COGNAC", "GRAPPA", "KIRSCH", "LIQUOR", "SHERRY", "BOURBON", "CACHACA", "MASTIKA", "PASTIS", "SAMBUCA", "SANGRIA", "TEQUILA", "WHISKEY" ]
+		},
+		{
+			"category":"Animal Habitats",
+			"words":["BARN", "COOP", "HIVE", "LAIR", "NEST", "SETT", "LODGE", "SHELL", "STALL", "BURROW", "KENNEL", "PIGSTY", "TUNNEL", "WARREN", "CATTERY" ]
+		},
+		{
+			"category":"Animals with shells",
+			"words":["CLAM", "CRAB", "SNAIL", "MUSSEL", "OYSTER", "SHRIMP", "TURTLE", "URCHIN", "LOBSTER" ]
+		},
+		{
+			"category":"Artistic productions",
+			"words":["EPIC", "HYMN", "PLAY", "POEM", "SHOW", "SONG", "ALBUM", "DANCE", "ELEGY", "MOVIE", "NOVEL", "OPERA", "PHOTO", "PROSE", "PSALM", "ANTHEM", "BALLAD", "COMEDY", "EFFIGY", "LITANY", "SONATA", "SONNET", "STATUE", "TATTOO", "CONCERT", "EPIGRAM", "MUSICAL", "POTTERY", "REQUIEM" ]
+		},
+		{
+			"category":"Airport & Planes",
+			"words":["GATE", "TAIL", "VISA", "WING", "CABIN", "CRAFT", "PILOT", "FASTEN", "FLIGHT", "FLYING", "RUNWAY", "AILERON", "AIRLINE", "COPILOT", "CUSTOMS", "HORIZON", "LANDING", "STEALTH", "TAKEOFF", "TURBINE" ]
+		},
+		{
+			"category":"At the Barber",
+			"words":["COMB", "HAIR", "BRUSH", "CHAIR", "DRYER", "RAZOR", "MIRROR", "MOUSSE" ]
+		},
+		{
+			"category":"At the Beach",
+			"words":["BALL", "CLAM", "COVE", "FINS", "KELP", "PIER", "SAND", "SURF", "CONCH", "SCUBA", "SHELL", "TOWEL", "WHARF", "COOLER", "SUNTAN", "FISHING", "FRISBEE", "MUSSELS", "SANDBAR", "SEAWEED", "SNORKEL", "SUNBURN", "SHAMPOO" ]
+		},
+		{
+			"category":"At the Dentist",
+			"words":["MOLAR", "TOOTH", "ULCER", "CANINE", "CARIES", "CAVITY", "CUSPID", "ENAMEL", "GARGLE", "PLAQUE", "WHITE", "ABSCESS", "AMALGAM", "IMPLANT", "INCISOR" ]
+		},
+		{
+			"category":"At the Hospital",
+			"words":["CURE", "PILL", "DRUG", "NURSE", "DOCTOR", "BENIGN", "BIOPSY", "POISON", "BANDAGE", "INSULIN", "NEWBORN", "PATIENT", "SCANNER", "THERAPY" ]
+		},
+		{
+			"category":"Baby Earthlings",
+			"words":["CALF", "COLT", "FAWN", "FOAL", "PUPA", "CHICK", "ELVER", "LARVA", "OWLET", "POULT", "PUPPY", "SHOAT", "SQUAB", "CYGNET", "EAGLET", "KITTEN", "MAGGOT", "PIGLET", "GOSLIN", "LAMBKIN", "TADPOLE" ]
+		},
+		{
+			"category":"Birds",
+			"words":["DUCK", "GULL", "HAWK", "IBIS", "KIWI", "SWAN", "EAGLE", "GOOSE", "HERON", "MACAW", "QUAIL", "RAVEN", "STORK", "CONDOR", "CUCKOO", "GROUSE", "MAGPIE", "MARTIN", "PARROT", "PIGEON", "TOUCAN", "TURKEY", "BUZZARD", "HARRIER", "KESTREL", "PEAFOWL", "PELICAN", "PENGUIN", "SPARROW", "SWALLOW", "VULTURE", "WARBLER" ]
+		},
+		{
+			"category":"Boats and sailing",
+			"words":["AHOY", "BAIL", "BEAM", "BUOY", "CREW", "DECK", "DOCK", "FURL", "KEEL", "KNOT", "MAST", "PORT", "PUNT", "RAFT", "TACK", "YAWL", "ABEAM", "ALOFT", "BARGE", "BILGE", "HOIST", "SCULL", "SLOOP", "STERN", "WINCH", "ANCHOR", "ASTERN", "BARQUE", "BOATER", "CUTTER", "DINGHY", "DUGOUT", "LAUNCH", "LEAGUE", "MIZZEN", "PADDLE", "PIRAT", "RUDDER", "VESSEL", "WHALER", "AGROUND", "BALLAST", "CAPSIZE", "CARRIER", "CLIPPER", "DOCKING", "GANGWAY", "GUNWALE", "LEEWARD", "MOORING", "ONBOARD", "PASSAGE", "PENNANT", "RIGGING", "ROWBOAT", "SEASICK", "TOPSAIL", "TOWBOAT", "TRANSOM", "TRAWLER" ]
+		},
+		{
+			"category":"Bones",
+			"words":["RIBS", "ULNA", "FEMUR", "INCUS", "TALUS", "TIBIA", "VOMER", "COCCYX", "FIBULA", "RADIUS", "SACRUM", "STAPES", "TARSUS", "HUMERUS", "MALLEUS", "MAXILLA", "PATELLA", "SCAPULA", "STERNUM" ]
+		},
+		{
+			"category":"Chemical elements",
+			"words":["GOLD", "LEAD", "NEON", "ZINC", "ARGON", "BORON", "RADON", "XENON", "BARIUM", "CARBON", "CERIUM", "COBALT", "COPPER", "CURIUM", "ERBIUM", "HELIUM", "INDIUM", "IODINE", "NICKEL", "OXYGEN", "RADIUM", "SILVER", "SODIUM", "SULFUR", "ARSENIC", "BISMUTH", "BOHRIUM", "BROMINE", "CADMIUM", "CALCIUM", "DUBNIUM", "IRIDIUM", "KRYPTON", "LITHIUM", "MERCURY", "SILICON", "THORIUM", "URANIUM" ]
+		},
+		{
+			"category":"Communication",
+			"words":["BAUD", "CALL", "CODE", "DIAL", "MAIL", "POST", "SEAL", "TONE", "WAVE", "HERTZ", "MEDIA", "PAGER", "PHONE", "RADIO", "STAMP", "BEEPER", "LETTER", "MAILER", "MEDIUM", "MOBILE", "SIGNAL", "ADDRESS", "ANTENNA", "CHANNEL", "DECODER", "HEADSET", "MAILBOX", "MESSAGE", "POSTAGE", "POSTMAN" ]
+		},
+		{
+			"category":"Desserts and sweets",
+			"words":["FLAN", "CANDY", "FUDGE", "HONEY", "ICING", "JELLY", "SCONE", "TORTE", "CHURRO", "ECLAIR", "GELATO", "MOUSSE", "MUFFIN", "NOUGAT", "PASTRY", "SORBET", "SUNDAE", "TOFFEE", "WAFFLE", "BAKLAVA", "BROWNIE", "COBBLER", "CUPCAKE", "CUSTARD", "FRITTER", "GELATIN", "PANCAKE", "PARFAIT", "POPOVER", "PRALINE", "PUDDING", "SHERBET", "SOUFFLE", "SPUMONI", "STRUDEL", "TRUFFLE" ]
+		},
+		{
+			"category":"Dogs Breads",
+			"words":["BOXER", "DINGO", "FEIST", "HUSKY", "SPITZ", "BEAGLE", "BRIARD", "WESTI", "BASENJI", "HARRIER", "POINTER", "SPANIEL", "TERRIER" ]
+		},
+		{
+			"category":"Eat it with a spoon",
+			"words":["CAKE", "FLAN", "SOUP", "HONEY", "JELLY", "PUREE", "GELATO", "MOUSSE", "SORBET", "YOGURT", "COMPOTE", "CUSTARD" ]
+		},
+		{
+			"category":"Elections",
+			"words":["POLL", "VOTE", "ELECT", "MAYOR", "PARTY", "TALLY", "VOTER", "BALLOT", "CAUCUS", "RUNOFF", "ELECTOR", "MANDATE", "PRIMARY", "RECOUNT", "SENATOR" ]
+		},
+		{
+			"category":"Energy",
+			"words":["PEAT", "VOLT", "WATT", "JOULE", "POWER", "SHALE", "THERM", "WASTE", "ABSORB", "BOILER", "DYNAMO", "ENERGY", "PETROL", "PHOTON", "BIOFUEL", "BIOMASS", "ENTROPY", "ETHANOL", "METHANE", "NUCLEAR", "NUCLEUS", "PROPANE", "RADIANT", "REACTOR", "WATTAGE" ]
+		},
+		{
+			"category":"Fabric",
+			"words":["MINK", "SILK", "WOOL", "DENIM", "LINEN", "LYCRA", "NYLON", "TWEED", "COTTON", "MOHAIR", "VELCRO", "VELVET", "LEATHER" ]
+		},
+		{
+			"category":"Fishes",
+			"words":["BASS", "CARP", "SOLE", "TUNA", "SHARK", "TROUT", "MUSSEL", "SALMON", "TURBOT", "ANCHOVY", "CATFISH", "HADDOCK", "PIRANHA", "SARDINE" ]
+		},
+		{
+			"category":"Flowers",
+			"words":["ARUM", "IRIS", "LEAF", "LILY", "ROSE", "STEM", "BLOOM", "BROOM", "LILAC", "PEONY", "PETAL", "POPPY", "SPINE", "TULIP", "AZALEA", "MIMOSA", "ORCHID", "PISTIL", "VIOLET", "YARROW", "CAMELIA", "JASMINE", "SYRINGA", "THISTLE" ]
+		},
+		{
+			"category":"Fruits",
+			"words":["LIME", "PEAR", "PLUM", "APPLE", "GRAPE", "GUAVA", "LEMON", "MANGO", "MELON", "OLIVE", "PEACH", "PECAN", "BANANA", "CHERRY", "CITRON", "JUJUBE", "LOQUAT", "LYCHEE", "ORANGE", "PAPAYA", "PEANUT", "POMELO", "TOMATO", "APRICOT", "AVOCADO", "COCONUT", "KUMQUAT", "PUMPKIN", "RAISINS", "RHUBARB", "VANILLA" ]
+		},
+		{
+			"category":"Furry Animals",
+			"words":["BEAR", "DEER", "GOAT", "LAMB", "LION", "LYNX", "MARE", "MULE", "PONY", "PUMA", "WOLF", "ZEBU", "BISON", "HORSE", "HUSKY", "HYEN", "KOALA", "LLAMA", "MOOSE", "PANDA", "SKUNK", "TAPIR", "TIGER", "ZEBRA", "DONKEY", "ERMINE", "JACKAL", "JAGUAR", "MONKEY", "RABBIT", "WEASEL", "CARIBOU", "GORILLA", "GRIZZLY", "HAMSTER", "LEOPARD", "MUSTANG", "OPOSSUM", "PENGUIN", "RACCOON" ]
+		},
+		{
+			"category":"Geology",
+			"words":["COAL", "JADE", "LAVA", "ONYX", "OPAL", "ROCK", "RUBY", "SAND", "SOIL", "AGATE", "AMBER", "BERYL", "CHALK", "MAGMA", "SILEX", "STONE", "TOPAZ", "BASALT", "DEBRIS", "FOSSIL", "JASPER", "PEBBLE", "QUARTZ", "SCHIST", "AZURITE", "CITRINE", "CRYSTAL", "DIAMOND", "EMERALD", "GRANITE", "STRATUM" ]
+		},
+		{
+			"category":"Geometry",
+			"words":["CONE", "CUBE", "DISC", "OVAL", "SIDE", "ANGLE", "CURVE", "HELIX", "PLANE", "POINT", "PRISM", "RIDGE", "ROUND", "RULER", "SHAPE", "SINUS", "TORUS", "CENTER", "CIRCLE", "CUBOID", "LENGTH", "RADIUS", "SECTOR", "SQUARE", "ANNULUS", "DECAGON", "ELLIPSE", "HEXAGON", "LOZENGE", "NONAGON", "OCTAGON", "POLYGON" ]
+		},
+		{
+			"category":"Grains & Cereals",
+			"words":["CORN", "OATS", "RICE", "TEFF", "SPELT", "WHEAT", "BARLEY", "BULGUR", "MILLET", "MUESLI", "QUINOA" ]
+		},
+		{
+			"category":"Group of animals",
+			"words":["BEVY", "HERD", "LAIR", "PACK", "BROOD", "COVE", "FLOCK", "HORDE", "SHOAL", "SWARM", "COLONY", "LITTER", "ROOKERY" ]
+		},
+		{
+			"category":"Herbs & Spices",
+			"words":["MINT", "SAGE", "ANISE", "BASIL", "CUMIN", "SUMAC", "THYME", "CLOVES", "FENNEL", "PEPPER", "CARAWAY", "OREGANO", "PAPRIKA", "PARSLEY", "SAFFRON" ]
+		},
+		{
+			"category":"Human Head",
+			"words":["CHIN", "HAIR", "IRIS", "LIPS", "NECK", "NOSE", "SKIN", "VEIN", "BRAIN", "CHEEK", "MOLAR", "MOUTH", "NERVE", "SCALP", "SKULL", "TOOTH", "ARTERY", "CANINE", "CORNEA", "EYELID", "MUSCLE", "PALATE", "RETINA", "TONGUE", "FRECKLE", "INCISOR", "NOSTRIL" ]
+		},
+		{
+			"category":"In the Baby's Room",
+			"words":["CRIB", "DOLL", "PRAM", "TEAT", "POTTY", "BLOCKS", "CRADLE", "DIAPER", "MOBILE", "RATTLE", "WALKER", "LAYETTE", "PLAYPEN" ]
+		},
+		{
+			"category":"In the Living Room",
+			"words":["LAMP", "VASE", "CLOCK", "COUCH", "DIVAN", "SHELF", "TABLE", "BLINDS", "BUFFET", "CARPET", "MIRROR", "POSTER", "CURTAIN", "CUSHION" ]
+		},
+		{
+			"category":"In the Water",
+			"words":["BASS", "CARP", "CRAB", "SOLE", "TUNA", "PRAWN", "SHARK", "TROUT", "COCKLE", "GAMBAS", "LIMPET", "MUSSEL", "OYSTER", "SALMON", "SHRIMP", "TURBOT", "ANCHOVY", "CATFISH", "CURRENT", "HADDOCK", "LOBSTER", "MOLLUSK", "PADDOCK", "PIRANHA", "SARDINE", "SAWFISH", "SCALLOP", "SEAWEED" ]
+		},
+		{
+			"category":"Legal Terms",
+			"words":["BAIL", "JURY", "PLEA", "TORT", "WRIT", "CLAIM", "FRAUD", "ORDER", "PROXY", "THEFT", "TRIAL", "USURY", "VENUE", "ACQUIT", "ARREST", "DECREE", "DOCKET", "ESTATE", "ETHICS", "FELONY", "PAROLE", "REVOKE", "VACATE", "WAIVE", "CONFESS", "COUNSEL", "CUSTODY", "HEARING", "JUSTICE", "LARCENY", "LAWSUIT", "PERJURY", "VERDICT", "WARRANT", "WITNESS" ]
+		},
+		{
+			"category":"Liquid Containers",
+			"words":["CASK", "EWER", "TANK", "VASE", "VIAL", "CROCK", "CRUET", "FLASK", "GLASS", "STEIN", "BARRE", "BEAKER", "BOTTLE", "BUCKET", "CARAFE", "GOBLET", "KETTLE", "TEAPOT", "AMPHORA" ]
+		},
+		{
+			"category":"Makeup kit",
+			"words":["BALM", "BLUSH", "BRUSH", "CREAM", "GLOSS", "LINER", "TOWEL", "POWDER", "PRIMER", "SPONGE", "TISSUE", "MASCARA" ]
+		},
+		{
+			"category":"Mammals",
+			"words":["BEAR", "BOAR", "DEER", "GOAT", "HARE", "LION", "MOLE", "PUMA", "SEAL", "BISON", "CAMEL", "HORSE", "HYENA", "KOALA", "LEMUR", "MOOSE", "MOUSE", "OKAPI", "PANDA", "SHEEP", "SKUNK", "TAPIR", "TIGER", "WHALE", "ZEBRA", "BEAVER", "COYOTE", "DONKEY", "JAGUAR", "MARMOT", "MONKEY", "RABBIT", "WAPITI", "WEASEL", "BUFFALO", "CARIBOU", "CHEETAH", "DOLPHIN", "GAZELLE", "GIRAFFE", "GORILLA", "HAMSTER", "LEOPARD", "MACAQUE", "MAMMOTH", "OPOSSUM", "RACCOON", "WALLABY" ]
+		},
+		{
+			"category":"Metal,
+			"words":["GOLD", "IRON", "ZINC", "STEEL", "COBALT", "COPPER", "CHROME", "NICKEL", "SILVER", "LITHIUM", "MERCURY", "THORIUM", "URANIUM" ]
+		},
+		{
+			"category":"Mythology and legends,
+			"words":["OGRE", "YETI", "ANGEL", "DEMON", "DRYAD", "FAIRY", "GENIE", "GHOST", "GNOME", "GOLEM", "HARPY", "HYDRA", "NAIAD", "NYMPH", "PIXIE", "SATYR", "SIREN", "SYLPH", "TROLL", "DRAGON", "DYBBUK", "GOBLIN", "GORGON", "MERMAN", "SERAPH", "WYVERN", "ZOMBIE", "CENTAUR", "CHIMERA", "CYCLOPS", "GREMLIN", "GRIFFIN", "INCUBUS", "MERMAID", "PEGASUS", "PHOENIX", "SANDMAN", "SPHINX", "UNICORN", "VAMPIRE" ]
+		},
+		{
+			"category":"Substances,
+			"words":["GOLD", "IRON", "ZINC", "BLOOD", "RESIN", "STEEL", "WATER", "CARBON", "COBALT", "COPPER", "NICKEL", "SILVER", "SODIUM", "ACETONE", "AMMONIA", "BENZENE", "BUTANOL", "LITHIUM", "MERCURY", "NITRATE", "PROTEIN", "THORIUM", "URANIUM" ]
+		},
+		{
+			"category":"Non-vegan food,
+			"words":["BEEF", "CRAB", "DUCK", "LAMB", "PORK", "TUNA", "VEAL", "BACON", "QUAIL", "SQUAB", "SQUID", "BUTTER", "CHEESE", "MUSSEL", "MUTTON", "OMELET", "OYSTER", "PIGEON", "SALMON", "SHRIMP", "TURKEY", "CHEDDAR", "CHICKEN", "LOBSTER", "SARDINE", "SAUSAGE" ]
+		},
+		{
+			"category":"Objects containers",
+			"words":["CHEST", "PURSE", "TRUNK", "CARTON", "DRAWER", "PACKET", "PARCEL", "POCKET", "WALLET", "LUGGAGE" ]
+		},
+		{
+			"category":"Office & Work",
+			"words":["MEMO", "GLUE", "GRAPH", "LABOR", "SHEET", "SCREEN", "AGENDA", "CAREER", "COUPON", "DIARY", "ERASER", "LAPTOP", "LEDGER", "PENCIL", "SALARY", "SCREEN", "CUBICLE", "MEETING", "PRINTER", "WAYBILL" ]
+		},
+		{
+			"category":"On a shooting set",
+			"words":["CREW", "FILM", "IRIS", "LENS", "ROLE", "ZOOM", "ACTOR", "DOLLY", "FLICK", "FOCAL", "FOCUS", "PIXEL", "SCENE", "SPOOL", "STUNT", "CAMERA", "GAFFER", "RUSHES", "SCREEN", "EDITING", "FOOTAGE", "PICTURE", "SHUTTER", "STARDOM" ]
+		},
+		{
+			"category":"Outer space",
+			"words":["MARS", "MOON", "NOVA", "STAR", "VOID", "COMET", "EARTH", "LUNAR", "ORBIT", "PLUTO", "SOLAR", "VENUS", "COSMOS", "GALAXY", "METEOR", "NEBULA", "PLANET", "ROCKET", "SATURN", "URANUS", "ZODIAC", "GRAVITY", "JUPITER", "MERCURY", "NEPTUNE", "SHUTTLE" ]
+		},
+		{
+			"category":"Parts of a plant",
+			"words":["BUDS", "BULB", "LEAF", "PORE", "ROOT", "SEED", "STEM", "TWIG", "FRUIT", "PETAL", "SPINE", "THORN", "BRANCH", "FLOWER", "NECTAR", "PISTIL", "POLLEN", "STIGMA", "COROLLA" ]
+		},
+		{
+			"category":"Parts of an animal",
+			"words":["ARMS", "BEAK", "CLAW", "FANG", "FOOT", "HOOF", "HORN", "HUMP", "LEGS", "MANE", "PAWS", "SPOT", "TAIL", "TUSK", "WING", "GILLS", "SHELL", "TRUNK", "SCALES", "ANTENNA", "CUTICLE", "FEATHER", "FLIPPER", "STINGER" ]
+		},
+		{
+			"category":"Pizza toppings",
+			"words":["BEEF", "BRIE", "FETA", "PEAS", "TUNA", "BACON", "BASIL", "FUNGI", "CAPERS", "CHEESE", "CHIVES", "GARLIC", "OLIVES", "ONIONS", "PEPPER", "SALAMI", "SALMON", "TURKEY", "AVOCADO", "CHEDDAR", "CHICKEN", "CHORIZO", "OREGANO", "RICOTTA" ]
+		},
+		{
+			"category":"Place dedicated to a sport",
+			"words":["DOJO", "HALL", "POOL", "RING", "RINK", "ARENA", "COURT", "FIELD", "PISTE", "COURSE", "CIRCUIT", "STADIUM", "SAUSAGE" ]
+		},
+		{
+			"category":"Time",
+			"words":["HOUR", "LATE", "NOON", "PAST", "SOON", "THEN", "WEEK", "YEAR", "ZONE", "AFTER", "DELAY", "EARLY", "EPOCH", "MONTH", "TARDY", "TODAY", "ANNUAL", "BEFORE", "DECADE", "FUTURE", "MINUTE", "MOMENT", "PERIOD", "SECOND", "CENTURY", "JUBILEE", "MORNING", "PRESENT", "SUNDIAL", "TONIGHT" ]
+		},
+		{
+			"category":"Trees",
+			"words":["PINE", "ALDER", "BIRCH", "CEDAR", "HAZEL", "LARCH", "MAPLE", "OLIVE", "ACACIA", "BANYAN", "GINGKO", "SPRUCE", "WILLOW", "CYPRESS", "DOGWOOD", "JUNIPER", "REDWOOD", "SEQUOIA" ]
+		},
+		{
+			"category":"Vegetables",
+			"words":["CORN", "GUAR", "LEEK", "CRESS", "ONION", "CARROT", "CELERY", "CHIVES", "ENDIVE", "GARLIC", "GINGER", "LENTIL", "MANIOC", "POTATO", "RADISH", "SPROUT", "SQUASH", "TURNIP", "ARUGULA", "CABBAGE", "LETTUCE", "PARSNIP", "SHALLOT", "SOYBEAN", "SPINACH", "TRUFFLE" ]
+		},
+		{
+			"category":"War & Army",
+			"words":["AMMO", "BASE", "BOMB", "CAMP", "MINE", "NAVY", "UNIT", "ARMOR", "ENEMY", "FIGHT", "FLEET", "MAJOR", "MEDAL", "RADAR", "RIFLE", "SIEGE", "SQUAD", "TRUCE", "ATTACK", "BATTLE", "BULLET", "CANNON", "COMBAT", "DEFEAT", "ENLIST", "GUNNER", "MORTAR", "MUSKET", "TACTIC", "TARGET", "TROOPS", "WEAPON", "ADMIRAL", "ARSENAL", "CAPTAIN", "CAVALRY", "COLONEL", "DEFENSE", "GENERAL", "GRENADE", "MISSILE", "OFFICER", "RECRUIT", "RETREAT", "TORPEDO", "VETERAN" ]
+		},
+		{
+			"category":"Water on earth",
+			"words":["GULF", "LAKE", "MARE", "POND", "POOL", "CREEK", "FJORD", "OASIS", "OCEAN", "RIVER", "SWAMP", "LAGOON", "RAPIDS", "SOURCE", "SPRING", "STREAM", "ESTUARY", "GLACIER", "ICEBERG", "RIVULET", "TORRENT" ]
+		},
+		{
+			"category":"Weather & Climate",
+			"words":["COLD", "HEAT", "RAIN", "TIDE", "WIND", "CLOUD", "FROST", "STORM", "AUTUMN", "SEASON", "SPRING", "SUMMER", "WINTER", "CYCLONE", "TEMPEST", "THUNDER", "TORNADO", "TWISTER", "TYPHOON" ]
+		},
+		{
+			"category":"Yard and Backyard",
+			"words":["BUSH", "HOSE", "LAWN", "PATH", "POND", "SHED", "VINE", "EDGER", "FENCE", "PATIO", "PLANT", "PORCH", "SHRUB", "STOOP", "SWING", "AWNING", "FLOWER", "ORCHARD", "PLANTER", "TERRACE", "WALKWAY" ]
+		},
+		{
+			"category":"Calendar",
+			"words":["JULY", "JUNE", "MAY", "ARIES", "LIBRA", "MARCH", "APRIL", "CANCER", "GEMINI", "TAURUS", "VIRGO", "AUGUST", "FRIDAY", "MONDAY", "PISCES", "SCORPIO", "SUNDAY", "TUESDAY"]
+		}
+	]
+}

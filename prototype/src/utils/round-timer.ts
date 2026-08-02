@@ -15,7 +15,11 @@ export function isTimerUrgent(remainingSeconds: number): boolean {
 }
 
 export function isRoundFinished(roundState: RoundState): boolean {
-  return roundState.round.status === 'completed' || roundState.round.status === 'expired';
+  return (
+    roundState.round.status === 'completed' ||
+    roundState.round.status === 'expired' ||
+    roundState.round.status === 'interrupted'
+  );
 }
 
 export interface RoundTimerController {

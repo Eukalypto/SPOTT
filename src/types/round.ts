@@ -1,7 +1,7 @@
 import type { LanguageCode } from './language.js';
 import type { GridData } from './grid.js';
 
-export type RoundStatus = 'pending' | 'active' | 'completed' | 'expired';
+export type RoundStatus = 'pending' | 'active' | 'completed' | 'expired' | 'interrupted';
 
 /** Immutable round payload produced at setup time. */
 export interface RoundData {

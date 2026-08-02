@@ -5,6 +5,7 @@ import {
 } from '../config/index.js';
 import { generateGrid } from '../grid-generation/index.js';
 import { applyMasking } from '../masking/index.js';
+import { shuffleCopy } from '../random/index.js';
 import { getSampleWordSet } from '../sample-data/index.js';
 import type { DifficultyTier } from '../types/difficulty.js';
 import type { LanguageCode } from '../types/language.js';
@@ -44,7 +45,9 @@ export function generateRound(options: GenerateRoundOptions): GenerateRoundResul
     return { success: false, reason: 'missing-word-set' };
   }
 
-  const themes = selectThemesForRound(wordSet);
+  const random = options.random ?? Math.random;
+
+  const themes = selectThemesForRound(wordSet, GAME_CONFIG.difficultySequence, random);
   if (!themes) {
     return { success: false, reason: 'theme-selection-failed' };
   }
@@ -62,7 +65,7 @@ export function generateRound(options: GenerateRoundOptions): GenerateRoundResul
       themeWordSet: theme,
       difficulty,
       language,
-      random: options.random,
+      random,
     });
 
     if (!gridResult.success) {
@@ -89,27 +92,32 @@ export function generateRound(options: GenerateRoundOptions): GenerateRoundResul
 /**
  * Select one unique theme per grid following the Classic difficulty sequence.
  *
- * Selection is deterministic: within each tier, themes are chosen in ascending
- * `themeId` order without reuse inside the round.
+ * Within each tier, one theme is picked at random (via the injectable RNG) from
+ * the tier's remaining candidates, so replaying a round doesn't repeat the same
+ * word sets while still respecting the difficulty order and never reusing a
+ * theme inside the round.
  */
 export function selectThemesForRound(
   wordSet: LanguageWordSet,
   difficultySequence: readonly DifficultyTier[] = GAME_CONFIG.difficultySequence,
+  random: () => number = Math.random,
 ): ThemeWordSet[] | null {
   const usedThemeIds = new Set<string>();
   const selectedThemes: ThemeWordSet[] = [];
 
   for (const tier of difficultySequence) {
-    const theme = wordSet.themes
+    const candidates = wordSet.themes
       .filter(
         (candidate) =>
           candidate.difficultyTier === tier && !usedThemeIds.has(candidate.themeId),
       )
-      .sort((left, right) => left.themeId.localeCompare(right.themeId))[0];
+      .sort((left, right) => left.themeId.localeCompare(right.themeId));
 
-    if (!theme) {
+    if (candidates.length === 0) {
       return null;
     }
+
+    const theme = shuffleCopy(candidates, random)[0];
 
     usedThemeIds.add(theme.themeId);
     selectedThemes.push(theme);
