@@ -428,21 +428,11 @@ body {
   width: 100%;
 }
 
-.settings-panel__intro,
-.settings-panel__help {
+.settings-panel__intro {
   color: var(--color-text-muted);
   font-size: 0.95rem;
   line-height: 1.55;
   margin: 0;
-}
-
-.settings-panel__help {
-  font-size: 0.85rem;
-  margin-bottom: 0.35rem;
-}
-
-.settings-panel__reset {
-  width: 100%;
 }
 
 .settings-panel__version {

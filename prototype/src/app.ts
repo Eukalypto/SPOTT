@@ -34,7 +34,6 @@ import { startPracticeRoundState } from './utils/round-setup.js';
 import {
   isValidLanguageCode,
   savePersistedLanguage,
-  resetPersistedLanguage,
 } from './utils/language-persistence.js';
 import { getRoundStats } from './utils/round-stats.js';
 import {
@@ -128,9 +127,6 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
       case 'settings':
         renderSettingsScreen(shell, {
           locale: state.selectedLanguage,
-          selectedLanguage: state.selectedLanguage,
-          onLanguageChange: applyLanguageChange,
-          onResetLanguage: resetLanguageToDefault,
           onBack: goToProfile,
         });
         break;
@@ -383,17 +379,6 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
       roundStartError: null,
     };
     syncLanguagePrefIfAuthenticated(language);
-    render();
-  };
-
-  const resetLanguageToDefault = (): void => {
-    resetPersistedLanguage();
-    state = {
-      ...state,
-      selectedLanguage: DEFAULT_PRACTICE_LANGUAGE,
-      roundStartError: null,
-    };
-    syncLanguagePrefIfAuthenticated(DEFAULT_PRACTICE_LANGUAGE);
     render();
   };
 
