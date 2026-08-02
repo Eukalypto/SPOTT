@@ -144,8 +144,8 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
           onGoToAuth: goToAuth,
           onLogout: handleLogout,
           onOpenSettings: goToSettings,
+          onGoHome: goHome,
         });
-        mountFooter(shell, 'profile');
         break;
       case 'auth':
         renderAuthScreen(shell, {

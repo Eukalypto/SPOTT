@@ -19,6 +19,7 @@ const guestOptions = {
   onGoToAuth: () => {},
   onLogout: () => {},
   onOpenSettings: () => {},
+  onGoHome: () => {},
 };
 
 const sampleStats: PracticeStats = {
@@ -40,6 +41,14 @@ describe('profile screen', () => {
     expect(html).toContain(t('authLoginSignUp', 'en'));
     expect(html).toContain(t('profileNoGamesYet', 'en'));
     expect(html).toContain('data-action="go-auth"');
+  });
+
+  it('shows a centered Home button instead of the Play/Profile footer', () => {
+    const html = buildProfileScreenHtml(guestOptions);
+
+    expect(html).toContain('data-action="go-home"');
+    expect(html).toContain('profile-home-button');
+    expect(html).toContain(t('home', 'en'));
   });
 
   it('shows session stats for guests who have played', () => {

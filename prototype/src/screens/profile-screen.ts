@@ -12,6 +12,7 @@ export interface ProfileScreenOptions {
   onGoToAuth: () => void;
   onLogout: () => void;
   onOpenSettings: () => void;
+  onGoHome: () => void;
 }
 
 export type ProfileStatsView =
@@ -180,6 +181,9 @@ export function buildProfileScreenHtml(
           </h2>
         </header>
         ${body}
+        <button type="button" class="primary-button profile-home-button" data-action="go-home">
+          ${escapeHtml(t('home', options.locale))}
+        </button>
       </div>
     </section>
   `;
@@ -227,6 +231,10 @@ export function renderProfileScreen(
     container.querySelector<HTMLButtonElement>('[data-action="settings"]')?.addEventListener(
       'click',
       options.onOpenSettings,
+    );
+    container.querySelector<HTMLButtonElement>('[data-action="go-home"]')?.addEventListener(
+      'click',
+      options.onGoHome,
     );
     bindStatsActions();
   };

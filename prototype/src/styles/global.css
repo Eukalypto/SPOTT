@@ -461,6 +461,11 @@ body {
   width: 100%;
 }
 
+.profile-home-button {
+  align-self: center;
+  width: auto;
+}
+
 .profile-panel__message {
   color: var(--color-text-muted);
   font-size: 0.95rem;
