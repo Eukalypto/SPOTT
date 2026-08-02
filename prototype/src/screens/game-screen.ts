@@ -2,7 +2,7 @@ import { type Coordinate, type RoundState } from '@spott/engine';
 
 import { buildClueListHtml, renderClueList, type ClueListOptions } from '../components/clue-list.js';
 import { buildGaugeHtml, getGaugeSummaryText, renderGauge } from '../components/word-gauge.js';
-import { t, type UiLocale } from '../i18n/index.js';
+import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { attachGridSwipe } from '../interaction/grid-swipe.js';
 import { buildLetterGridHtml } from '../utils/grid-display.js';
 import {
@@ -24,6 +24,8 @@ export interface GameScreenViewOptions {
 export interface GameScreenOptions {
   roundState: RoundState;
   locale: UiLocale;
+  /** Display name shown under the player's avatar; pass the guest label for guest sessions. */
+  playerName: string;
   getViewOptions?: () => GameScreenViewOptions;
   onSkip: () => void;
   onSubmitSwipe: (coordinates: Coordinate[]) => boolean;
@@ -45,7 +47,12 @@ export function mountGameScreen(
 
   const getViewOptions = (): GameScreenViewOptions => options.getViewOptions?.() ?? {};
 
-  container.innerHTML = buildGameScreenHtml(options.roundState, options.locale, getViewOptions());
+  container.innerHTML = buildGameScreenHtml(
+    options.roundState,
+    options.locale,
+    options.playerName,
+    getViewOptions(),
+  );
 
   let swipeHandle = attachGridSwipe(
     container.querySelector<HTMLElement>('[data-letter-grid]')!,
@@ -200,6 +207,7 @@ function updateSkipButton(container: HTMLElement, roundState: RoundState, locale
 function buildGameScreenHtml(
   roundState: RoundState,
   locale: UiLocale,
+  playerName: string,
   viewOptions: GameScreenViewOptions,
 ): string {
   const grid = roundState.round.grids[roundState.currentGridIndex];
@@ -213,6 +221,21 @@ function buildGameScreenHtml(
       aria-label="${escapeHtml(t('gameAriaLabel', locale))}"
       data-current-grid="${roundState.currentGridIndex}"
     >
+      <div
+        class="game-player-badge"
+        aria-label="${escapeHtml(tFormat('playerAvatarAria', locale, { name: playerName }))}"
+      >
+        <span class="game-player-badge__avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path
+              fill="currentColor"
+              d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
+            />
+          </svg>
+        </span>
+        <span class="game-player-badge__name" data-player-name>${escapeHtml(playerName)}</span>
+      </div>
+
       <header class="game-header">
         <div class="game-stat game-stat--grid">
           <span class="game-stat__label">${escapeHtml(t('grid', locale))}</span>

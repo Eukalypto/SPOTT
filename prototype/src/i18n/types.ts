@@ -88,6 +88,8 @@ export const TRANSLATION_KEYS = [
   'nextGrid',
   'gridWordsFoundSummary',
   'gameAriaLabel',
+  'guestPlayerLabel',
+  'playerAvatarAria',
   'reviewAllWords',
   'reviewReadOnlyHint',
   'authTitle',

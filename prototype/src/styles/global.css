@@ -917,6 +917,43 @@ body {
   font-weight: 600;
 }
 
+.game-player-badge {
+  align-items: center;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 0.2rem;
+}
+
+.game-player-badge__avatar {
+  align-items: center;
+  background: var(--color-surface);
+  border: 2px solid var(--color-accent);
+  border-radius: 50%;
+  color: var(--color-accent);
+  display: flex;
+  height: 2.25rem;
+  justify-content: center;
+  width: 2.25rem;
+}
+
+.game-player-badge__avatar svg {
+  height: 1.35rem;
+  width: 1.35rem;
+}
+
+.game-player-badge__name {
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  max-width: 4.5rem;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .game-header {
   display: grid;
   flex-shrink: 0;

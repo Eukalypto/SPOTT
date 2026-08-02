@@ -6,7 +6,7 @@ import { submitRound } from './api/stats-api.js';
 import { clearToken, getToken, isAuthenticated, saveToken } from './auth/session.js';
 import { IS_DEV } from './env.js';
 import { DEFAULT_PRACTICE_LANGUAGE } from './constants.js';
-import { setDocumentLanguage } from './i18n/index.js';
+import { setDocumentLanguage, t } from './i18n/index.js';
 import { bindFooterNav, renderFooterNav } from './components/footer-nav.js';
 import {
   authState,
@@ -171,6 +171,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
         gameScreenHandle = mountGameScreen(shell, {
           roundState: state.roundState,
           locale: state.selectedLanguage,
+          playerName: getPlayerName(),
           getViewOptions: getGameViewOptions,
           onSkip: () => {
             if (!state.roundState) {
@@ -488,6 +489,11 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
       render();
     }
   };
+
+  const getPlayerName = (): string =>
+    state.auth.status === 'authenticated' && state.auth.user
+      ? state.auth.user.username
+      : t('guestPlayerLabel', state.selectedLanguage);
 
   const getGameViewOptions = () => ({
     clueListOptions: {
