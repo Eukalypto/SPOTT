@@ -72,11 +72,9 @@ export function buildReviewLetterGridHtml(grid: GridData, locale: UiLocale = 'en
     .join('');
 }
 
+/** Renders review clues in their fixed placedWords order, matching the live grid's list position. */
 export function buildReviewClueListHtml(grid: GridData, locale: UiLocale = 'en'): string {
-  const missedEntries = getReviewWordEntries(grid).filter((entry) => !entry.found);
-  const foundEntries = getReviewWordEntries(grid).filter((entry) => entry.found);
-
-  return [...missedEntries, ...foundEntries]
+  return getReviewWordEntries(grid)
     .map((entry) => buildReviewClueItemHtml(entry, locale))
     .join('');
 }

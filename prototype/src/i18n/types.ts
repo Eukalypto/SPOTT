@@ -84,7 +84,6 @@ export const TRANSLATION_KEYS = [
   'skipAriaUnavailable',
   'wordsFoundOnGrid',
   'clues',
-  'allWordsFoundOnGrid',
   'clue',
   'revealed',
   'previousGrid',

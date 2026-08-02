@@ -1,4 +1,4 @@
-import { getDisplayedClue, toDisplayUpperCase } from '@spott/engine';
+import { getDisplayedClue, toDisplayUpperCase, type PlacedWord } from '@spott/engine';
 import { describe, expect, it } from 'vitest';
 
 import { formatGridCellLetter } from './grid-display.js';
@@ -63,36 +63,36 @@ describe('word display across languages', () => {
   });
 
   it('preserves Spanish ñ in clues and grid cells when present', () => {
-    const result = startPracticeRoundState({
-      roundId: 'display-es',
-      language: 'es',
-      uiLocale: 'es',
-    });
-    expect(result.success).toBe(true);
-    if (!result.success) {
-      return;
-    }
+    // Direct unit test rather than round-generation integration: Spanish
+    // currently reuses the English (ASCII-only) word lists per the design
+    // brief, so a live-generated round has no ñ content to sample from.
+    const word: PlacedWord = {
+      id: 'w1',
+      text: 'niño',
+      normalizedText: 'niño',
+      length: 4,
+      direction: 'horizontal-right',
+      start: { row: 0, col: 0 },
+      end: { row: 0, col: 3 },
+      cells: [
+        { row: 0, col: 0 },
+        { row: 0, col: 1 },
+        { row: 0, col: 2 },
+        { row: 0, col: 3 },
+      ],
+      maskType: 'none',
+      found: false,
+      findOrder: null,
+      colorIndex: null,
+    };
 
-    const wordsWithEnye = result.roundState.round.grids.flatMap((grid) =>
-      grid.placedWords.filter((word) => word.normalizedText.includes('ñ')),
-    );
+    const clue = getDisplayedClue(word);
+    expect(clue).toBe('NIÑO');
+    expect(clue).not.toMatch(/NINO/);
 
-    expect(wordsWithEnye.length).toBeGreaterThan(0);
-
-    for (const word of wordsWithEnye) {
-      const clue = getDisplayedClue({ ...word, maskType: 'none' });
-      expect(clue).toContain('Ñ');
-      expect(clue).not.toMatch(/NINO|MANANA/);
-
-      const grid = result.roundState.round.grids.find((entry) =>
-        entry.placedWords.some((entryWord) => entryWord.id === word.id),
-      )!;
-      for (let index = 0; index < word.cells.length; index++) {
-        const normalizedChar = word.normalizedText[index];
-        const cell = grid.cells[word.cells[index].row][word.cells[index].col];
-        if (normalizedChar === 'ñ') {
-          expect(cell.letter).toBe('Ñ');
-        }
+    for (const normalizedChar of word.normalizedText) {
+      if (normalizedChar === 'ñ') {
+        expect(formatGridCellLetter(normalizedChar)).toBe('Ñ');
       }
     }
   });

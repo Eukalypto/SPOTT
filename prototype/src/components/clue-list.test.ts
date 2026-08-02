@@ -1,4 +1,4 @@
-import { getDisplayedClue } from '@spott/engine';
+import { getDisplayedClue, type PlacedWord } from '@spott/engine';
 import { describe, expect, it } from 'vitest';
 
 import { buildClueListHtml, formatClueDisplayHtml } from './clue-list.js';
@@ -12,22 +12,24 @@ function createWord(
     found: boolean;
     colorIndex: number | null;
   }> = {},
-) {
+): PlacedWord {
+  const text = overrides.text ?? 'lion';
+
   return {
     id: 'w1',
-    text: 'lion',
-    normalizedText: 'lion',
-    length: 4 as const,
-    direction: 'horizontal-right' as const,
+    text,
+    normalizedText: text,
+    length: text.length,
+    direction: 'horizontal-right',
     start: { row: 0, col: 0 },
-    end: { row: 0, col: 3 },
+    end: { row: 0, col: text.length - 1 },
     cells: [],
-    maskType: 'none' as const,
+    maskType: 'none',
     found: false,
     findOrder: null,
     colorIndex: null,
     ...overrides,
-  };
+  } as unknown as PlacedWord;
 }
 
 describe('formatClueDisplayHtml', () => {
@@ -85,7 +87,7 @@ describe('buildClueListHtml', () => {
     expect(buildClueListHtml(grid)).toContain('>Ê<');
   });
 
-  it('marks found words with strikethrough and lists them after active clues', () => {
+  it('marks found words with strikethrough without moving them out of position', () => {
     const grid = {
       placedWords: [
         createWord({ id: 'w1', text: 'lion', found: true, colorIndex: 0, maskType: 'full' }),
@@ -94,11 +96,26 @@ describe('buildClueListHtml', () => {
     } as unknown as Parameters<typeof buildClueListHtml>[0];
 
     const html = buildClueListHtml(grid);
-    const activePartialIndex = html.indexOf(formatClueDisplayHtml('###ER'));
     const foundIndex = html.indexOf('clue-item__text--found');
+    const activePartialIndex = html.indexOf(formatClueDisplayHtml('###ER'));
 
-    expect(activePartialIndex).toBeLessThan(foundIndex);
+    expect(foundIndex).toBeLessThan(activePartialIndex);
     expect(html).toContain('clue-item--found');
     expect(html).toContain('clue-item__text--found');
+  });
+
+  it('keeps every word in its original placedWords position regardless of found order', () => {
+    const grid = {
+      placedWords: [
+        createWord({ id: 'w1', text: 'lion' }),
+        createWord({ id: 'w2', text: 'tiger', found: true, colorIndex: 1 }),
+        createWord({ id: 'w3', text: 'bear' }),
+      ],
+    } as unknown as Parameters<typeof buildClueListHtml>[0];
+
+    const html = buildClueListHtml(grid);
+    const ids = [...html.matchAll(/data-word-id="([^"]+)"/g)].map((match) => match[1]);
+
+    expect(ids).toEqual(['w1', 'w2', 'w3']);
   });
 });

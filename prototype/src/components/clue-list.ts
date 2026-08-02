@@ -11,19 +11,14 @@ export interface ClueListOptions {
   revealWords?: boolean;
 }
 
+/**
+ * Renders clues in their fixed placedWords order — a word stays put and grays
+ * out in place when found, it never jumps to the end of the list.
+ */
 export function buildClueListHtml(grid: GridData, options: ClueListOptions = {}): string {
   const locale = options.locale ?? 'en';
-  const activeWords = grid.placedWords.filter((word) => !word.found);
-  const foundWords = grid.placedWords.filter((word) => word.found);
 
-  const activeSection =
-    activeWords.length > 0
-      ? activeWords.map((word) => buildClueItemHtml(word, options, locale)).join('')
-      : `<li class="clue-item clue-item--empty">${escapeHtml(t('allWordsFoundOnGrid', locale))}</li>`;
-
-  const foundSection = foundWords.map((word) => buildClueItemHtml(word, options, locale)).join('');
-
-  return `${activeSection}${foundSection}`;
+  return grid.placedWords.map((word) => buildClueItemHtml(word, options, locale)).join('');
 }
 
 export function renderClueList(

@@ -23,9 +23,17 @@ export function getSampleWordSet(language: LanguageCode): LanguageWordSet | unde
   return undefined;
 }
 
-export { ENGLISH_SAMPLE_THEMES, ENGLISH_SAMPLE_WORD_SET } from './english/index.js';
-export { FRENCH_SAMPLE_THEMES, FRENCH_SAMPLE_WORD_SET } from './french/index.js';
-export { SPANISH_SAMPLE_THEMES, SPANISH_SAMPLE_WORD_SET } from './spanish/index.js';
+export {
+  ENGLISH_SAMPLE_THEMES,
+  ENGLISH_SAMPLE_WORD_SET,
+  ENGLISH_WORD_LIST_THEMES,
+} from './english/index.js';
+export {
+  FRENCH_SAMPLE_THEMES,
+  FRENCH_SAMPLE_WORD_SET,
+  FRENCH_WORD_LIST_THEMES,
+} from './french/index.js';
+export { SPANISH_SAMPLE_WORD_SET, SPANISH_WORD_LIST_THEMES } from './spanish/index.js';
 
 export {
   toLanguageWordSet,

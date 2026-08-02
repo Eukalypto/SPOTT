@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DIFFICULTY_TIERS } from '../types/difficulty.js';
 import { validateLanguageWordSet } from '../word-set-validation/validate-language-word-set.js';
 import { ENGLISH_SAMPLE_WORD_SET } from './english/index.js';
 import { FRENCH_SAMPLE_WORD_SET } from './french/index.js';
@@ -77,11 +78,14 @@ describe('validate-sample-word-sets', () => {
   it('formats language, validity, tier counts, errors, and warnings', () => {
     const report = buildWordSetValidationReport(ENGLISH_SAMPLE_WORD_SET);
     const formatted = formatWordSetValidationReport(report);
+    const tierCounts = DIFFICULTY_TIERS.map(
+      (tier) => `${tier}=${report.themesByTier[tier]}`,
+    ).join(', ');
 
     expect(formatted).toContain('Language: en');
     expect(formatted).toContain('Valid: yes');
-    expect(formatted).toContain('Themes: 7');
-    expect(formatted).toContain('Themes by tier: A=2, B=2, C=1, D=1, E=1');
+    expect(formatted).toContain(`Themes: ${report.themeCount}`);
+    expect(formatted).toContain(`Themes by tier: ${tierCounts}`);
     expect(formatted).toContain('Errors: none');
   });
 

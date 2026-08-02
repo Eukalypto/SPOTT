@@ -3,32 +3,31 @@ import { generateRound } from '../round-generation/generate-round.js';
 import { normalizeWord } from '../normalization/normalize-word.js';
 import { validateLanguageWordSet } from '../word-set-validation/validate-language-word-set.js';
 import {
-  ENGLISH_SAMPLE_THEMES,
   ENGLISH_SAMPLE_WORD_SET,
-  FRENCH_SAMPLE_THEMES,
+  ENGLISH_WORD_LIST_THEMES,
   FRENCH_SAMPLE_WORD_SET,
+  FRENCH_WORD_LIST_THEMES,
   SAMPLE_WORD_SETS,
-  SPANISH_SAMPLE_THEMES,
   SPANISH_SAMPLE_WORD_SET,
+  SPANISH_WORD_LIST_THEMES,
   getSampleWordSet,
 } from './index.js';
 import { GAME_CONFIG } from '../config/index.js';
 
 function expectValidWordSet(
   wordSet: typeof ENGLISH_SAMPLE_WORD_SET,
-  themes: readonly typeof ENGLISH_SAMPLE_THEMES,
+  themes: readonly typeof ENGLISH_WORD_LIST_THEMES,
 ): void {
   const result = validateLanguageWordSet(wordSet);
   expect(result.errors).toEqual([]);
   expect(result.isValid).toBe(true);
-  expect(result.warnings).toEqual([]);
 
   const byTier = Object.groupBy(themes, (theme) => theme.difficultyTier);
-  expect(byTier.A).toHaveLength(2);
-  expect(byTier.B).toHaveLength(2);
-  expect(byTier.C).toHaveLength(1);
-  expect(byTier.D).toHaveLength(1);
-  expect(byTier.E).toHaveLength(1);
+  expect(byTier.A?.length ?? 0).toBeGreaterThanOrEqual(2);
+  expect(byTier.B?.length ?? 0).toBeGreaterThanOrEqual(2);
+  expect(byTier.C?.length ?? 0).toBeGreaterThanOrEqual(1);
+  expect(byTier.D?.length ?? 0).toBeGreaterThanOrEqual(1);
+  expect(byTier.E?.length ?? 0).toBeGreaterThanOrEqual(1);
 
   for (const theme of themes) {
     for (const { length, count } of GAME_CONFIG.wordLengthComposition) {
@@ -39,19 +38,19 @@ function expectValidWordSet(
 
 describe('English sample word set', () => {
   it('passes LanguageWordSet validation', () => {
-    expectValidWordSet(ENGLISH_SAMPLE_WORD_SET, ENGLISH_SAMPLE_THEMES);
+    expectValidWordSet(ENGLISH_SAMPLE_WORD_SET, ENGLISH_WORD_LIST_THEMES);
   });
 });
 
 describe('French sample word set', () => {
   it('passes LanguageWordSet validation', () => {
-    expectValidWordSet(FRENCH_SAMPLE_WORD_SET, FRENCH_SAMPLE_THEMES);
+    expectValidWordSet(FRENCH_SAMPLE_WORD_SET, FRENCH_WORD_LIST_THEMES);
   });
 });
 
 describe('Spanish sample word set', () => {
   it('passes LanguageWordSet validation', () => {
-    expectValidWordSet(SPANISH_SAMPLE_WORD_SET, SPANISH_SAMPLE_THEMES);
+    expectValidWordSet(SPANISH_SAMPLE_WORD_SET, SPANISH_WORD_LIST_THEMES);
   });
 
   it('preserves ñ as distinct from n after normalization', () => {

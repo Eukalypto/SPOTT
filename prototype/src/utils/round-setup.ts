@@ -1,6 +1,5 @@
 import {
   createInitialRoundState,
-  createSeededRandom,
   generateRound,
   startRound,
   type LanguageCode,
@@ -79,7 +78,6 @@ export function startPracticeRoundState(
     id: roundId,
     language,
     wordSet: options.wordSet,
-    random: createSeededRandom(Number(roundId) || 0),
   });
 
   if (!result.success) {

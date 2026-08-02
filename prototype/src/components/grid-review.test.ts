@@ -83,4 +83,19 @@ describe('grid review', () => {
     expect(html).toContain('review-clue--found');
     expect(html).toContain('>Missed<');
   });
+
+  it('keeps review clues in their original placedWords position, not grouped by found status', () => {
+    const grid = {
+      placedWords: [
+        createWord({ id: 'w1', text: 'lion', found: false }),
+        createWord({ id: 'w2', text: 'tiger', found: true, colorIndex: 0 }),
+        createWord({ id: 'w3', text: 'bear', found: false }),
+      ],
+    } as never;
+
+    const html = buildReviewClueListHtml(grid);
+    const ids = [...html.matchAll(/>([A-Z]+)</g)].map((match) => match[1]);
+
+    expect(ids).toEqual(['LION', 'TIGER', 'BEAR']);
+  });
 });

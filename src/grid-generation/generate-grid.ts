@@ -84,10 +84,7 @@ export function generateGrid(options: GenerateGridOptions): GridGenerationResult
     return { success: false, reason: 'invalid-word-set' };
   }
 
-  const combinations = shuffleCopy(
-    [...selectWordCombinations(buckets, wordLengthComposition)],
-    random,
-  );
+  const combinations = [...selectWordCombinations(buckets, wordLengthComposition, random)];
 
   for (const selection of combinations) {
     const placement = backtrackPlacement(
@@ -160,53 +157,39 @@ function hasSufficientWords(
   return true;
 }
 
+/** Bounds how many candidate 6-word selections are tried per grid before giving up. */
+const MAX_WORD_COMBINATION_ATTEMPTS = 40;
+
+/**
+ * Randomly sample candidate word selections rather than enumerating every
+ * possible combination — with real-sized theme pools (dozens of words per
+ * length), the full Cartesian product can reach into the hundreds of millions
+ * and exhausts memory. A bounded number of random samples is enough in
+ * practice: `backtrackPlacement` only needs one selection that fits the grid.
+ */
 function* selectWordCombinations(
   buckets: Map<WordLength, WordCandidate[]>,
   composition: readonly WordLengthCompositionEntry[],
+  random: () => number,
 ): Generator<WordCandidate[]> {
-  const groups = composition.map(({ length, count }) =>
-    choose(buckets.get(length) ?? [], count),
-  );
+  const seen = new Set<string>();
 
-  function* combine(groupIndex: number, selected: WordCandidate[]): Generator<WordCandidate[]> {
-    if (groupIndex === groups.length) {
-      yield selected;
-      return;
+  for (let attempt = 0; attempt < MAX_WORD_COMBINATION_ATTEMPTS; attempt++) {
+    const selection = composition.flatMap(
+      ({ length, count }) => shuffleCopy(buckets.get(length) ?? [], random).slice(0, count),
+    );
+
+    const key = selection
+      .map((word) => word.normalized)
+      .sort()
+      .join('|');
+    if (seen.has(key)) {
+      continue;
     }
+    seen.add(key);
 
-    for (const group of groups[groupIndex]) {
-      yield* combine(groupIndex + 1, [...selected, ...group]);
-    }
+    yield selection;
   }
-
-  yield* combine(0, []);
-}
-
-function choose(items: WordCandidate[], count: number): WordCandidate[][] {
-  if (count === 0) {
-    return [[]];
-  }
-  if (count > items.length) {
-    return [];
-  }
-
-  const results: WordCandidate[][] = [];
-
-  function backtrack(start: number, picked: WordCandidate[]): void {
-    if (picked.length === count) {
-      results.push([...picked]);
-      return;
-    }
-
-    for (let i = start; i <= items.length - (count - picked.length); i++) {
-      picked.push(items[i]);
-      backtrack(i + 1, picked);
-      picked.pop();
-    }
-  }
-
-  backtrack(0, []);
-  return results;
 }
 
 function backtrackPlacement(
