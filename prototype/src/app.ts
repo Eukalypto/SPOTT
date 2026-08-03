@@ -136,7 +136,6 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
           authStatus: state.auth.status,
           username: state.auth.user?.username ?? null,
           authToken: state.auth.token,
-          sessionStats: state.sessionStats,
           onGoToAuth: goToAuth,
           onLogout: handleLogout,
           onOpenSettings: goToSettings,
@@ -420,15 +419,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
 
   const handleRoundEnded = (roundState: NonNullable<AppState['roundState']>): void => {
     stopRoundTimer();
-    const roundStats = getRoundStats(roundState);
-    state = {
-      ...endState(state, roundState),
-      sessionStats: {
-        gamesPlayed: state.sessionStats.gamesPlayed + 1,
-        bestScore: Math.max(state.sessionStats.bestScore, roundStats.finalScore),
-        totalScore: state.sessionStats.totalScore + roundStats.finalScore,
-      },
-    };
+    state = endState(state, roundState);
     render();
     void syncPracticeRoundIfAuthenticated(roundState);
   };

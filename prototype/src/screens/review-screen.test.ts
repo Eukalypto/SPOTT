@@ -2,6 +2,7 @@ import { GAME_CONFIG } from '@spott/engine';
 import { describe, expect, it } from 'vitest';
 
 import { t } from '../i18n/index.js';
+import { formatClueDisplayHtml } from '../utils/html.js';
 import { buildReviewScreenHtml } from './review-screen.js';
 
 function createRoundState() {
@@ -65,7 +66,7 @@ describe('buildReviewScreenHtml', () => {
     expect(html).toContain('review-clue--missed');
     expect(html).toContain('review-clue__word--found');
     expect(html).toContain('review-clue__word--missed');
-    expect(html).toContain('>WORD0<');
+    expect(html).toContain(formatClueDisplayHtml('WORD0'));
   });
 
   it('provides previous and next grid navigation', () => {

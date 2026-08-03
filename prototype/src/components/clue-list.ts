@@ -3,7 +3,7 @@ import { getDisplayedClue, type GridData, type PlacedWord } from '@spott/engine'
 import { getWordHighlightColor } from '../utils/word-colors.js';
 import { revealWordText } from './grid-review.js';
 import { t, type UiLocale } from '../i18n/index.js';
-import { escapeHtml } from '../utils/html.js';
+import { escapeHtml, formatClueDisplayHtml } from '../utils/html.js';
 
 export interface ClueListOptions {
   locale?: UiLocale;
@@ -68,17 +68,4 @@ function buildClueItemHtml(word: PlacedWord, options: ClueListOptions, locale: U
   `;
 }
 
-/**
- * Render clue text from {@link getDisplayedClue}, styling `#` mask chars separately
- * so visible letters (including ñ and accents) display correctly.
- */
-export function formatClueDisplayHtml(clue: string): string {
-  return [...clue]
-    .map((character) => {
-      if (character === '#') {
-        return '<span class="clue-mask" aria-hidden="true">#</span>';
-      }
-      return `<span class="clue-letter">${escapeHtml(character)}</span>`;
-    })
-    .join('');
-}
+export { formatClueDisplayHtml } from '../utils/html.js';

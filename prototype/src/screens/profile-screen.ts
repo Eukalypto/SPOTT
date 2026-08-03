@@ -1,6 +1,6 @@
 import { getStats, type PracticeStats } from '../api/stats-api.js';
 import { t, type UiLocale } from '../i18n/index.js';
-import type { AuthStatus, SessionStats } from '../types.js';
+import type { AuthStatus } from '../types.js';
 import { escapeHtml } from '../utils/html.js';
 
 export interface ProfileScreenOptions {
@@ -8,7 +8,6 @@ export interface ProfileScreenOptions {
   authStatus: AuthStatus;
   username: string | null;
   authToken: string | null;
-  sessionStats: SessionStats;
   onGoToAuth: () => void;
   onLogout: () => void;
   onOpenSettings: () => void;
@@ -45,31 +44,6 @@ function buildStatRowHtml(label: string, value: string): string {
       <dt>${escapeHtml(label)}</dt>
       <dd>${escapeHtml(value)}</dd>
     </div>
-  `;
-}
-
-function buildSessionStatsHtml(locale: UiLocale, sessionStats: SessionStats): string {
-  if (sessionStats.gamesPlayed === 0) {
-    return `
-      <section class="profile-stats" aria-labelledby="profile-session-title">
-        <h3 id="profile-session-title" class="profile-stats__title">
-          ${escapeHtml(t('profileSessionTitle', locale))}
-        </h3>
-        <p class="profile-stats__empty">${escapeHtml(t('profileNoGamesYet', locale))}</p>
-      </section>
-    `;
-  }
-
-  return `
-    <section class="profile-stats" aria-labelledby="profile-session-title">
-      <h3 id="profile-session-title" class="profile-stats__title">
-        ${escapeHtml(t('profileSessionTitle', locale))}
-      </h3>
-      <dl class="profile-stats__list">
-        ${buildStatRowHtml(t('profileGamesPlayed', locale), String(sessionStats.gamesPlayed))}
-        ${buildStatRowHtml(t('profileBestScore', locale), String(sessionStats.bestScore))}
-      </dl>
-    </section>
   `;
 }
 
@@ -135,7 +109,6 @@ export function buildGuestProfileHtml(
       <button type="button" class="primary-button" data-action="go-auth">
         ${escapeHtml(t('authLoginSignUp', options.locale))}
       </button>
-      ${buildSessionStatsHtml(options.locale, options.sessionStats)}
       <button type="button" class="text-button" data-action="settings">
         ${escapeHtml(t('navSettings', options.locale))}
       </button>

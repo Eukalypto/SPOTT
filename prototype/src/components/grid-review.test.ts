@@ -7,6 +7,7 @@ import {
   buildReviewLetterGridHtml,
   revealWordText,
 } from './grid-review.js';
+import { formatClueDisplayHtml } from '../utils/html.js';
 import { getWordHighlightColor } from '../utils/word-colors.js';
 
 function createWord(overrides: Partial<{
@@ -17,14 +18,16 @@ function createWord(overrides: Partial<{
   maskType: 'none' | 'partial' | 'full';
   cells: { row: number; col: number }[];
 }> = {}) {
+  const text = overrides.text ?? 'lion';
+
   return {
     id: 'w1',
-    text: 'lion',
-    normalizedText: 'lion',
-    length: 4 as const,
+    text,
+    normalizedText: text,
+    length: text.length as never,
     direction: 'horizontal-right' as const,
     start: { row: 0, col: 0 },
-    end: { row: 0, col: 3 },
+    end: { row: 0, col: text.length - 1 },
     cells: [{ row: 0, col: 0 }, { row: 0, col: 1 }],
     maskType: 'full' as const,
     found: false,
@@ -69,15 +72,15 @@ describe('grid review', () => {
   it('marks found clues with strikethrough and missed clues without', () => {
     const grid = {
       placedWords: [
-        createWord({ id: 'w1', text: 'lion', found: true, colorIndex: 0 }),
-        createWord({ id: 'w2', text: 'tiger', found: false }),
+        createWord({ id: 'w1', text: 'lion', found: true, colorIndex: 0, maskType: 'none' }),
+        createWord({ id: 'w2', text: 'tiger', found: false, maskType: 'none' }),
       ],
     } as never;
 
     const html = buildReviewClueListHtml(grid);
 
     expect(html).toContain('review-clue__word--found');
-    expect(html).toContain('>TIGER<');
+    expect(html).toContain(formatClueDisplayHtml('TIGER'));
     expect(html.match(/review-clue__word--found/g)?.length).toBe(1);
     expect(html).toContain('review-clue--missed');
     expect(html).toContain('review-clue--found');
@@ -87,15 +90,32 @@ describe('grid review', () => {
   it('keeps review clues in their original placedWords position, not grouped by found status', () => {
     const grid = {
       placedWords: [
-        createWord({ id: 'w1', text: 'lion', found: false }),
-        createWord({ id: 'w2', text: 'tiger', found: true, colorIndex: 0 }),
-        createWord({ id: 'w3', text: 'bear', found: false }),
+        createWord({ id: 'w1', text: 'lion', found: false, maskType: 'none' }),
+        createWord({ id: 'w2', text: 'tiger', found: true, colorIndex: 0, maskType: 'none' }),
+        createWord({ id: 'w3', text: 'bear', found: false, maskType: 'none' }),
       ],
     } as never;
 
     const html = buildReviewClueListHtml(grid);
-    const ids = [...html.matchAll(/>([A-Z]+)</g)].map((match) => match[1]);
+    const ids = [...html.matchAll(/data-word-id="([^"]+)"/g)].map((match) => match[1]);
 
-    expect(ids).toEqual(['LION', 'TIGER', 'BEAR']);
+    expect(ids).toEqual(['w1', 'w2', 'w3']);
+  });
+
+  it('keeps missed words masked (A2h) and only reveals words the player found', () => {
+    const grid = {
+      placedWords: [
+        createWord({ id: 'w1', text: 'lion', found: true, colorIndex: 0, maskType: 'full' }),
+        createWord({ id: 'w2', text: 'tiger', found: false, maskType: 'full' }),
+        createWord({ id: 'w3', text: 'sardine', found: false, maskType: 'partial' }),
+      ],
+    } as never;
+
+    const html = buildReviewClueListHtml(grid);
+
+    expect(html).toContain(formatClueDisplayHtml('LION'));
+    expect(html).not.toContain(formatClueDisplayHtml('TIGER'));
+    expect(html).not.toContain(formatClueDisplayHtml('SARDINE'));
+    expect(html.match(/clue-mask/g)?.length).toBeGreaterThan(0);
   });
 });

@@ -129,11 +129,7 @@ export const EN_TRANSLATIONS = {
   footerPlay: 'Play',
   footerProfile: 'Profile',
   profileTitle: 'Profile',
-  profileGuestMessage: 'Log in to save your scores and track your progress',
-  profileSessionTitle: 'This session',
-  profileGamesPlayed: 'Games played',
-  profileBestScore: 'Best score',
-  profileNoGamesYet: 'No games played yet.',
+  profileGuestMessage: 'Currently playing as guest. Log in to access your statistics.',
 } satisfies TranslationDictionary;
 
 export const FR_TRANSLATIONS = {
@@ -268,11 +264,7 @@ export const FR_TRANSLATIONS = {
   footerPlay: 'Jouer',
   footerProfile: 'Profil',
   profileTitle: 'Profil',
-  profileGuestMessage: 'Connectez-vous pour enregistrer vos scores et suivre vos progrès',
-  profileSessionTitle: 'Cette session',
-  profileGamesPlayed: 'Parties jouées',
-  profileBestScore: 'Meilleur score',
-  profileNoGamesYet: 'Aucune partie jouée pour le moment.',
+  profileGuestMessage: 'Vous jouez actuellement en tant qu’invité. Connectez-vous pour accéder à vos statistiques.',
 } satisfies TranslationDictionary;
 
 export const ES_TRANSLATIONS = {
@@ -409,9 +401,5 @@ export const ES_TRANSLATIONS = {
   footerPlay: 'Jugar',
   footerProfile: 'Perfil',
   profileTitle: 'Perfil',
-  profileGuestMessage: 'Inicia sesión para guardar tus puntuaciones y seguir tu progreso',
-  profileSessionTitle: 'Esta sesión',
-  profileGamesPlayed: 'Partidas jugadas',
-  profileBestScore: 'Mejor puntuación',
-  profileNoGamesYet: 'Aún no has jugado ninguna partida.',
+  profileGuestMessage: 'Actualmente juegas como invitado. Inicia sesión para acceder a tus estadísticas.',
 } satisfies TranslationDictionary;

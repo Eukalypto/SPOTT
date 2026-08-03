@@ -1,15 +1,16 @@
 import type { GridData, PlacedWord } from '@spott/engine';
-import { toDisplayUpperCase } from '@spott/engine';
+import { getDisplayedClue, toDisplayUpperCase } from '@spott/engine';
 
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { cellKey, formatGridCellLetter, getReviewWordColor } from '../utils/grid-display.js';
-import { escapeHtml } from '../utils/html.js';
+import { escapeHtml, formatClueDisplayHtml } from '../utils/html.js';
 import { getWordHighlightColor, getWordHighlightTextColor, WORDS_PER_GRID } from '../utils/word-colors.js';
 
 export interface ReviewWordEntry {
   word: PlacedWord;
   wordIndex: number;
-  revealedText: string;
+  /** Full word when found; the word's original mask (per A2h) when missed. */
+  displayText: string;
   color: string;
   found: boolean;
 }
@@ -18,7 +19,7 @@ export function getReviewWordEntries(grid: GridData): ReviewWordEntry[] {
   return grid.placedWords.map((word, wordIndex) => ({
     word,
     wordIndex,
-    revealedText: revealWordText(word),
+    displayText: getDisplayedClue(word),
     color: getReviewWordColor(word, wordIndex),
     found: word.found,
   }));
@@ -88,10 +89,11 @@ function buildReviewClueItemHtml(entry: ReviewWordEntry, locale: UiLocale): stri
   return `
     <li
       class="review-clue review-clue--${status}"
+      data-word-id="${escapeHtml(entry.word.id)}"
       style="border-left-color:${escapeHtml(borderColor)}"
-      aria-label="${escapeHtml(tFormat('reviewWordStatusAria', locale, { word: entry.revealedText, status: statusLabel }))}"
+      aria-label="${escapeHtml(tFormat('reviewWordStatusAria', locale, { word: entry.displayText, status: statusLabel }))}"
     >
-      <span class="review-clue__word${wordClass}">${escapeHtml(entry.revealedText)}</span>
+      <span class="review-clue__word${wordClass}">${formatClueDisplayHtml(entry.displayText)}</span>
       <span class="review-clue__status">${statusLabel}</span>
     </li>
   `;

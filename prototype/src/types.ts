@@ -38,18 +38,6 @@ export const DEFAULT_AUTH_STATE: AuthState = {
   token: null,
 };
 
-export type SessionStats = {
-  gamesPlayed: number;
-  bestScore: number;
-  totalScore: number;
-};
-
-export const DEFAULT_SESSION_STATS: SessionStats = {
-  gamesPlayed: 0,
-  bestScore: 0,
-  totalScore: 0,
-};
-
 export interface AppState {
   screen: AppScreen;
   roundState: RoundState | null;
@@ -63,8 +51,6 @@ export interface AppState {
   /** Dev-only: pause the round timer without ending the round. */
   timerPaused: boolean;
   auth: AuthState;
-  /** In-memory session stats for the current app load (guest Profile). */
-  sessionStats: SessionStats;
 }
 
 export function createInitialAppState(): AppState {
@@ -78,6 +64,5 @@ export function createInitialAppState(): AppState {
     debugRevealWords: false,
     timerPaused: false,
     auth: { ...DEFAULT_AUTH_STATE },
-    sessionStats: { ...DEFAULT_SESSION_STATS },
   };
 }

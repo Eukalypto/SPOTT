@@ -125,10 +125,6 @@ export const TRANSLATION_KEYS = [
   'footerProfile',
   'profileTitle',
   'profileGuestMessage',
-  'profileSessionTitle',
-  'profileGamesPlayed',
-  'profileBestScore',
-  'profileNoGamesYet',
 ] as const;
 
 export type TranslationKey = (typeof TRANSLATION_KEYS)[number];
