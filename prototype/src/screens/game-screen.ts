@@ -181,6 +181,8 @@ function updateGridNavigation(container: HTMLElement, roundState: RoundState, lo
     getGridDisplayLabel(roundState);
   container.querySelector<HTMLElement>('[data-grid-hint]')!.textContent =
     getGridNavigationHint(roundState, locale);
+  container.querySelector<HTMLElement>('[data-grid-rank]')!.textContent =
+    getGridDisplayLabel(roundState);
 }
 
 function updateSkipButton(container: HTMLElement, roundState: RoundState, locale: UiLocale): void {
@@ -261,7 +263,6 @@ function buildGameScreenHtml(
         >
           <span aria-hidden="true">✕</span>
         </button>
-        <p class="game-theme" data-theme-label>${escapeHtml(grid.themeLabel)}</p>
       </div>
 
       <div class="word-gauge-block">
@@ -273,6 +274,11 @@ function buildGameScreenHtml(
 
       <div class="letter-grid" data-letter-grid role="grid" aria-label="${escapeHtml(t('letterGridAria', locale))}">
         ${buildLetterGridHtml(grid)}
+      </div>
+
+      <div class="grid-rank-badge">
+        <span class="grid-rank-badge__category" data-theme-label>${escapeHtml(grid.themeLabel)}</span>
+        <span class="grid-rank-badge__rank" data-grid-rank>${getGridDisplayLabel(roundState)}</span>
       </div>
 
       <ul class="clue-list" data-clue-list aria-label="${escapeHtml(t('clues', locale))}">
