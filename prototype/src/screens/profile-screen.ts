@@ -1,17 +1,29 @@
 import { getStats, type PracticeStats } from '../api/stats-api.js';
 import { t, type UiLocale } from '../i18n/index.js';
 import type { AuthStatus } from '../types.js';
+import { AVATAR_IDS, getAvatarUrl } from '../utils/avatar-assets.js';
 import { escapeHtml } from '../utils/html.js';
+
+const GENERIC_AVATAR_ICON = `
+  <svg viewBox="0 0 24 24" focusable="false">
+    <path
+      fill="currentColor"
+      d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
+    />
+  </svg>
+`;
 
 export interface ProfileScreenOptions {
   locale: UiLocale;
   authStatus: AuthStatus;
   username: string | null;
+  avatarId: string | null;
   authToken: string | null;
   onGoToAuth: () => void;
   onLogout: () => void;
   onOpenSettings: () => void;
   onGoHome: () => void;
+  onSelectAvatar: (avatarId: string) => void;
 }
 
 export type ProfileStatsView =
@@ -116,13 +128,77 @@ export function buildGuestProfileHtml(
   `;
 }
 
+function buildAvatarButtonHtml(options: ProfileScreenOptions): string {
+  const avatarUrl = getAvatarUrl(options.avatarId);
+  const image = avatarUrl
+    ? `<img class="profile-avatar-button__image" src="${escapeHtml(avatarUrl)}" alt="" />`
+    : GENERIC_AVATAR_ICON;
+
+  return `
+    <button
+      type="button"
+      class="profile-avatar-button"
+      data-action="open-avatar-picker"
+      aria-label="${escapeHtml(t('profileChangeAvatar', options.locale))}"
+    >
+      ${image}
+    </button>
+  `;
+}
+
+function buildAvatarPickerDialogHtml(options: ProfileScreenOptions): string {
+  const options_ = AVATAR_IDS.map((avatarId) => {
+    const selected = avatarId === options.avatarId;
+    const url = getAvatarUrl(avatarId);
+    return `
+      <button
+        type="button"
+        class="avatar-picker-option${selected ? ' avatar-picker-option--selected' : ''}"
+        data-avatar-id="${escapeHtml(avatarId)}"
+        aria-label="${escapeHtml(avatarId)}"
+        aria-pressed="${selected ? 'true' : 'false'}"
+      >
+        <img src="${escapeHtml(url ?? '')}" alt="" />
+      </button>
+    `;
+  }).join('');
+
+  return `
+    <div
+      class="confirm-dialog avatar-picker-dialog"
+      data-avatar-picker-dialog
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="avatar-picker-title"
+    >
+      <div class="confirm-dialog__panel avatar-picker-dialog__panel">
+        <div class="avatar-picker-dialog__header">
+          <h3 id="avatar-picker-title" class="avatar-picker-dialog__title">
+            ${escapeHtml(t('profileAvatarPickerTitle', options.locale))}
+          </h3>
+          <button type="button" class="text-button" data-action="close-avatar-picker">
+            ${escapeHtml(t('closeDialog', options.locale))}
+          </button>
+        </div>
+        <div class="avatar-picker-grid">
+          ${options_}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 export function buildAuthenticatedProfileHtml(
   options: ProfileScreenOptions,
   statsView: ProfileStatsView,
 ): string {
   return `
     <div class="profile-panel">
-      <p class="profile-panel__username">${escapeHtml(options.username ?? '')}</p>
+      <div class="profile-identity">
+        ${buildAvatarButtonHtml(options)}
+        <p class="profile-panel__username">${escapeHtml(options.username ?? '')}</p>
+      </div>
       <div data-stats-host>
         ${buildServerStatsHtml(options.locale, statsView)}
       </div>
@@ -133,6 +209,7 @@ export function buildAuthenticatedProfileHtml(
         ${escapeHtml(t('authLogOut', options.locale))}
       </button>
     </div>
+    ${buildAvatarPickerDialogHtml(options)}
   `;
 }
 
@@ -209,6 +286,31 @@ export function renderProfileScreen(
       'click',
       options.onGoHome,
     );
+
+    const dialog = container.querySelector<HTMLElement>('[data-avatar-picker-dialog]');
+    container.querySelector<HTMLButtonElement>('[data-action="open-avatar-picker"]')?.addEventListener(
+      'click',
+      () => {
+        dialog?.removeAttribute('hidden');
+      },
+    );
+    container.querySelector<HTMLButtonElement>('[data-action="close-avatar-picker"]')?.addEventListener(
+      'click',
+      () => {
+        dialog?.setAttribute('hidden', '');
+      },
+    );
+    container.querySelectorAll<HTMLButtonElement>('[data-avatar-id]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const avatarId = button.dataset.avatarId;
+        if (!avatarId) {
+          return;
+        }
+        dialog?.setAttribute('hidden', '');
+        options.onSelectAvatar(avatarId);
+      });
+    });
+
     bindStatsActions();
   };
 

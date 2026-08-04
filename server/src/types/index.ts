@@ -3,6 +3,7 @@ export type PublicUser = {
   email: string;
   username: string;
   languagePref: string;
+  avatarId: string | null;
   createdAt: number;
 };
 

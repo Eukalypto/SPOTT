@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { PracticeStats } from '../api/stats-api.js';
 import { t } from '../i18n/index.js';
 import { escapeHtml } from '../utils/html.js';
+import { AVATAR_IDS } from '../utils/avatar-assets.js';
 import {
   buildProfileScreenHtml,
   buildAuthenticatedProfileHtml,
@@ -13,11 +14,13 @@ const guestOptions = {
   locale: 'en' as const,
   authStatus: 'guest' as const,
   username: null,
+  avatarId: null,
   authToken: null,
   onGoToAuth: () => {},
   onLogout: () => {},
   onOpenSettings: () => {},
   onGoHome: () => {},
+  onSelectAvatar: () => {},
 };
 
 const sampleStats: PracticeStats = {
@@ -66,5 +69,25 @@ describe('profile screen', () => {
     expect(html).toContain('3');
     expect(html).toContain('101');
     expect(html).toContain(formatLastPlayedAt(sampleStats.lastPlayedAt, 'en'));
+  });
+
+  it('shows an avatar picker with all known avatars, marking the selected one', () => {
+    const html = buildAuthenticatedProfileHtml(
+      {
+        ...guestOptions,
+        authStatus: 'authenticated',
+        username: 'player1',
+        authToken: 'token',
+        avatarId: 'Bob',
+      },
+      { status: 'ready', stats: sampleStats },
+    );
+
+    expect(html).toContain('data-action="open-avatar-picker"');
+    expect(html).toContain('data-avatar-picker-dialog');
+    expect(html.match(/data-avatar-id="/g)?.length).toBe(AVATAR_IDS.length);
+    expect(html).toContain('avatar-picker-option--selected');
+    expect(html).toContain('data-avatar-id="Bob"');
+    expect(html).toContain('aria-pressed="true"');
   });
 });

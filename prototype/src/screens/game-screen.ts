@@ -29,8 +29,10 @@ export interface GameScreenViewOptions {
 export interface GameScreenOptions {
   roundState: RoundState;
   locale: UiLocale;
-  /** Display name shown under the player's avatar; pass the guest label for guest sessions. */
+  /** Display name shown next to the player's avatar; pass the guest label for guest sessions. */
   playerName: string;
+  /** Chosen avatar image url; falls back to a generic icon for guests or unset avatars. */
+  playerAvatarUrl?: string;
   getViewOptions?: () => GameScreenViewOptions;
   onSkip: () => void;
   onSubmitSwipe: (coordinates: Coordinate[]) => boolean;
@@ -56,6 +58,7 @@ export function mountGameScreen(
     options.roundState,
     options.locale,
     options.playerName,
+    options.playerAvatarUrl,
     getViewOptions(),
   );
 
@@ -200,12 +203,16 @@ function buildGameScreenHtml(
   roundState: RoundState,
   locale: UiLocale,
   playerName: string,
+  playerAvatarUrl: string | undefined,
   viewOptions: GameScreenViewOptions,
 ): string {
   const grid = roundState.round.grids[roundState.currentGridIndex];
   const skippable = canSkipGrid(roundState);
   const timerPaused = viewOptions.timerPaused ?? false;
   const clueListOptions = { ...viewOptions.clueListOptions, locale };
+  const avatarContent = playerAvatarUrl
+    ? `<img class="game-header__avatar-image" src="${escapeHtml(playerAvatarUrl)}" alt="" />`
+    : PLAYER_AVATAR_ICON;
 
   return `
     <section
@@ -221,7 +228,7 @@ function buildGameScreenHtml(
           aria-label="${escapeHtml(tFormat('playerAvatarAria', locale, { name: playerName }))}"
         >
           <span class="game-header__player-name" data-player-name>${escapeHtml(playerName)}</span>
-          <span class="game-header__avatar" aria-hidden="true">${PLAYER_AVATAR_ICON}</span>
+          <span class="game-header__avatar" aria-hidden="true">${avatarContent}</span>
         </div>
       </header>
 

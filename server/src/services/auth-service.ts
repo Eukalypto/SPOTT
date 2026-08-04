@@ -23,6 +23,7 @@ function toPublicUser(row: typeof users.$inferSelect): PublicUser {
     email: row.email,
     username: row.username,
     languagePref: row.languagePref,
+    avatarId: row.avatarId,
     createdAt: row.createdAt,
   };
 }

@@ -130,6 +130,9 @@ export const EN_TRANSLATIONS = {
   footerProfile: 'Profile',
   profileTitle: 'Profile',
   profileGuestMessage: 'Currently playing as guest. Log in to access your statistics.',
+  profileChangeAvatar: 'Change avatar',
+  profileAvatarPickerTitle: 'Choose an avatar',
+  closeDialog: 'Close',
 } satisfies TranslationDictionary;
 
 export const FR_TRANSLATIONS = {
@@ -265,6 +268,9 @@ export const FR_TRANSLATIONS = {
   footerProfile: 'Profil',
   profileTitle: 'Profil',
   profileGuestMessage: 'Vous jouez actuellement en tant qu’invité. Connectez-vous pour accéder à vos statistiques.',
+  profileChangeAvatar: 'Changer d’avatar',
+  profileAvatarPickerTitle: 'Choisissez un avatar',
+  closeDialog: 'Fermer',
 } satisfies TranslationDictionary;
 
 export const ES_TRANSLATIONS = {
@@ -402,4 +408,7 @@ export const ES_TRANSLATIONS = {
   footerProfile: 'Perfil',
   profileTitle: 'Perfil',
   profileGuestMessage: 'Actualmente juegas como invitado. Inicia sesión para acceder a tus estadísticas.',
+  profileChangeAvatar: 'Cambiar avatar',
+  profileAvatarPickerTitle: 'Elige un avatar',
+  closeDialog: 'Cerrar',
 } satisfies TranslationDictionary;

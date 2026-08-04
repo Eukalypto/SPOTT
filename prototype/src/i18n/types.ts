@@ -125,6 +125,9 @@ export const TRANSLATION_KEYS = [
   'footerProfile',
   'profileTitle',
   'profileGuestMessage',
+  'profileChangeAvatar',
+  'profileAvatarPickerTitle',
+  'closeDialog',
 ] as const;
 
 export type TranslationKey = (typeof TRANSLATION_KEYS)[number];

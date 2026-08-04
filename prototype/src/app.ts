@@ -1,7 +1,7 @@
 import { interruptRound, skipGrid, submitSwipe, type LanguageCode } from '@spott/engine';
 
 import { getMe, logout, type AuthResponse } from './api/auth-api.js';
-import { updateLanguagePref } from './api/settings-api.js';
+import { updateAvatar, updateLanguagePref } from './api/settings-api.js';
 import { submitRound } from './api/stats-api.js';
 import { clearToken, getToken, isAuthenticated, saveToken } from './auth/session.js';
 import { IS_DEV } from './env.js';
@@ -30,6 +30,7 @@ import { renderReviewScreen } from './screens/review-screen.js';
 import { renderRoundStartErrorScreen } from './screens/round-start-error-screen.js';
 import { normalizeRulesReturnScreen, renderRulesScreen } from './screens/rules-screen.js';
 import { renderSettingsScreen } from './screens/settings-screen.js';
+import { getAvatarUrl } from './utils/avatar-assets.js';
 import { startPracticeRoundState } from './utils/round-setup.js';
 import {
   isValidLanguageCode,
@@ -135,11 +136,13 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
           locale: state.selectedLanguage,
           authStatus: state.auth.status,
           username: state.auth.user?.username ?? null,
+          avatarId: state.auth.user?.avatarId ?? null,
           authToken: state.auth.token,
           onGoToAuth: goToAuth,
           onLogout: handleLogout,
           onOpenSettings: goToSettings,
           onGoHome: goHome,
+          onSelectAvatar: applyAvatarChange,
         });
         break;
       case 'auth':
@@ -171,6 +174,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
           roundState: state.roundState,
           locale: state.selectedLanguage,
           playerName: getPlayerName(),
+          playerAvatarUrl: getPlayerAvatarUrl(),
           getViewOptions: getGameViewOptions,
           onSkip: () => {
             if (!state.roundState) {
@@ -295,6 +299,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     email: string;
     username: string;
     languagePref: string;
+    avatarId: string | null;
   }): AuthUser => {
     const languagePref: LanguageCode = isValidLanguageCode(user.languagePref)
       ? user.languagePref
@@ -305,6 +310,7 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
       email: user.email,
       username: user.username,
       languagePref,
+      avatarId: user.avatarId,
     };
   };
 
@@ -380,6 +386,26 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     };
     syncLanguagePrefIfAuthenticated(language);
     render();
+  };
+
+  const applyAvatarChange = (avatarId: string): void => {
+    if (!isAuthenticated(state) || !state.auth.user || !state.auth.token) {
+      return;
+    }
+
+    const token = state.auth.token;
+    state = {
+      ...state,
+      auth: {
+        ...state.auth,
+        user: { ...state.auth.user, avatarId },
+      },
+    };
+    render();
+
+    void updateAvatar(token, avatarId).catch((error: unknown) => {
+      console.warn('[Spott] Failed to sync avatar', error);
+    });
   };
 
   const goToReview = (): void => {
@@ -485,6 +511,11 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     state.auth.status === 'authenticated' && state.auth.user
       ? state.auth.user.username
       : t('guestPlayerLabel', state.selectedLanguage);
+
+  const getPlayerAvatarUrl = (): string | undefined =>
+    state.auth.status === 'authenticated' && state.auth.user
+      ? getAvatarUrl(state.auth.user.avatarId)
+      : undefined;
 
   const getGameViewOptions = () => ({
     clueListOptions: {

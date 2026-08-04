@@ -5,6 +5,7 @@ export type ApiUser = {
   email: string;
   username: string;
   languagePref: string;
+  avatarId: string | null;
   createdAt: number;
 };
 

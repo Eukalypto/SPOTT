@@ -24,6 +24,7 @@ export type AuthUser = {
   email: string;
   username: string;
   languagePref: LanguageCode;
+  avatarId: string | null;
 };
 
 export type AuthState = {

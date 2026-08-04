@@ -81,4 +81,50 @@ describe('settings', () => {
     expect(res.status).toBe(401);
     expect(res.body).toEqual({ error: 'unauthorized' });
   });
+
+  it('PATCH with a valid avatarId updates and returns user', async () => {
+    const token = await signupAndToken();
+
+    const res = await request(app)
+      .patch('/api/settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ avatarId: 'Bob' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.user).toMatchObject({
+      username: 'settings-user',
+      avatarId: 'Bob',
+    });
+
+    const me = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(me.status).toBe(200);
+    expect(me.body.user.avatarId).toBe('Bob');
+  });
+
+  it('PATCH with an unknown avatarId returns 400', async () => {
+    const token = await signupAndToken();
+
+    const res = await request(app)
+      .patch('/api/settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ avatarId: 'NotARealAvatar' });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ error: 'validation-error' });
+  });
+
+  it('PATCH with neither language nor avatarId returns 400', async () => {
+    const token = await signupAndToken();
+
+    const res = await request(app)
+      .patch('/api/settings')
+      .set('Authorization', `Bearer ${token}`)
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ error: 'validation-error' });
+  });
 });
