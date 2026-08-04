@@ -4,20 +4,12 @@ import { buildClueListHtml, renderClueList, type ClueListOptions } from '../comp
 import { buildGaugeHtml, getGaugeSummaryText, renderGauge } from '../components/word-gauge.js';
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { attachGridSwipe } from '../interaction/grid-swipe.js';
+import { GENERIC_AVATAR_ICON } from '../utils/avatar-assets.js';
 import { buildLetterGridHtml } from '../utils/grid-display.js';
 import { canSkipGrid, getGridDisplayLabel } from '../utils/grid-navigation.js';
 import { escapeHtml } from '../utils/html.js';
 import { buildTimerStatHtml, updateTimerDisplay } from '../utils/timer-display.js';
 import { injectWordColorVars } from '../utils/word-colors.js';
-
-const PLAYER_AVATAR_ICON = `
-  <svg viewBox="0 0 24 24" focusable="false">
-    <path
-      fill="currentColor"
-      d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-    />
-  </svg>
-`;
 
 const SKIP_TRANSITION_MS = 200;
 
@@ -212,7 +204,7 @@ function buildGameScreenHtml(
   const clueListOptions = { ...viewOptions.clueListOptions, locale };
   const avatarContent = playerAvatarUrl
     ? `<img class="game-header__avatar-image" src="${escapeHtml(playerAvatarUrl)}" alt="" />`
-    : PLAYER_AVATAR_ICON;
+    : GENERIC_AVATAR_ICON;
 
   return `
     <section

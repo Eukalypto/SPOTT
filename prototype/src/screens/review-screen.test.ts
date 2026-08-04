@@ -7,7 +7,10 @@ import { buildReviewScreenHtml } from './review-screen.js';
 
 function createRoundState() {
   return {
+    remainingSeconds: 42,
+    score: { total: 250, wordPoints: 200, timeBonus: 50, entries: [] },
     round: {
+      status: 'completed',
       grids: Array.from({ length: GAME_CONFIG.gridsPerRound }, (_, gridIndex) => ({
         index: gridIndex,
         themeLabel: `Theme ${gridIndex + 1}`,
@@ -38,6 +41,7 @@ describe('buildReviewScreenHtml', () => {
     const html = buildReviewScreenHtml({
       locale: 'en',
       roundState: createRoundState(),
+      playerName: 'Tester',
       reviewGridIndex: 2,
       onChangeGrid: () => {},
       onClose: () => {},
@@ -54,6 +58,7 @@ describe('buildReviewScreenHtml', () => {
     const html = buildReviewScreenHtml({
       locale: 'en',
       roundState: createRoundState(),
+      playerName: 'Tester',
       reviewGridIndex: 0,
       onChangeGrid: () => {},
       onClose: () => {},
@@ -73,6 +78,7 @@ describe('buildReviewScreenHtml', () => {
     const html = buildReviewScreenHtml({
       locale: 'en',
       roundState: createRoundState(),
+      playerName: 'Tester',
       reviewGridIndex: 0,
       onChangeGrid: () => {},
       onClose: () => {},
@@ -83,5 +89,20 @@ describe('buildReviewScreenHtml', () => {
     expect(html).toContain('disabled');
     expect(html).toContain(t('backToResults', 'en'));
     expect(html).toContain(t('reviewReadOnlyHint', 'en'));
+  });
+
+  it('shows the frozen final score and the player name/avatar (A2i)', () => {
+    const html = buildReviewScreenHtml({
+      locale: 'en',
+      roundState: createRoundState(),
+      playerName: 'Tester',
+      reviewGridIndex: 0,
+      onChangeGrid: () => {},
+      onClose: () => {},
+    });
+
+    expect(html).toContain('game-header');
+    expect(html).toContain('>250<');
+    expect(html).toContain('Tester');
   });
 });

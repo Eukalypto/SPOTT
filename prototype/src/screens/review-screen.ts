@@ -5,15 +5,46 @@ import {
   buildReviewLetterGridHtml,
 } from '../components/grid-review.js';
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
+import { GENERIC_AVATAR_ICON } from '../utils/avatar-assets.js';
 import { escapeHtml } from '../utils/html.js';
+import { buildTimerStatHtml } from '../utils/timer-display.js';
 import { injectWordColorVars } from '../utils/word-colors.js';
 
 export interface ReviewScreenOptions {
   roundState: RoundState;
   reviewGridIndex: number;
   locale: UiLocale;
+  /** Display name shown next to the avatar; pass the guest label for guest sessions. */
+  playerName: string;
+  /** Chosen avatar image url; falls back to a generic icon for guests or unset avatars. */
+  playerAvatarUrl?: string;
   onChangeGrid: (index: number) => void;
   onClose: () => void;
+}
+
+/**
+ * Same header as the Game screen (A2i): score is frozen at its final value
+ * and the timer shows the time remaining when the round ended, un-ticking.
+ */
+function buildReviewHeaderHtml(options: ReviewScreenOptions): string {
+  const { roundState, locale, playerName, playerAvatarUrl } = options;
+  const avatarContent = playerAvatarUrl
+    ? `<img class="game-header__avatar-image" src="${escapeHtml(playerAvatarUrl)}" alt="" />`
+    : GENERIC_AVATAR_ICON;
+
+  return `
+    <header class="game-header">
+      ${buildTimerStatHtml(roundState.remainingSeconds, locale)}
+      <span class="game-header__score" data-score aria-label="${escapeHtml(t('score', locale))} ${roundState.score.total}">${roundState.score.total}</span>
+      <div
+        class="game-header__player"
+        aria-label="${escapeHtml(tFormat('playerAvatarAria', locale, { name: playerName }))}"
+      >
+        <span class="game-header__player-name">${escapeHtml(playerName)}</span>
+        <span class="game-header__avatar" aria-hidden="true">${avatarContent}</span>
+      </div>
+    </header>
+  `;
 }
 
 export function buildReviewScreenHtml(options: ReviewScreenOptions): string {
@@ -25,6 +56,8 @@ export function buildReviewScreenHtml(options: ReviewScreenOptions): string {
 
   return `
     <section class="screen screen--review" aria-labelledby="review-title">
+      ${buildReviewHeaderHtml(options)}
+
       <header class="review-header">
         <div class="review-header__titles">
           <h2 id="review-title">${escapeHtml(t('gridReview', locale))}</h2>

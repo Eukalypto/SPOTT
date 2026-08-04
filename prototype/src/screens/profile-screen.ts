@@ -1,17 +1,8 @@
 import { getStats, type PracticeStats } from '../api/stats-api.js';
 import { t, type UiLocale } from '../i18n/index.js';
 import type { AuthStatus } from '../types.js';
-import { AVATAR_IDS, getAvatarUrl } from '../utils/avatar-assets.js';
+import { AVATAR_IDS, GENERIC_AVATAR_ICON, getAvatarUrl } from '../utils/avatar-assets.js';
 import { escapeHtml } from '../utils/html.js';
-
-const GENERIC_AVATAR_ICON = `
-  <svg viewBox="0 0 24 24" focusable="false">
-    <path
-      fill="currentColor"
-      d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-    />
-  </svg>
-`;
 
 export interface ProfileScreenOptions {
   locale: UiLocale;

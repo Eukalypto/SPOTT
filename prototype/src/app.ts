@@ -233,6 +233,8 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
           roundState: state.roundState,
           reviewGridIndex: state.reviewGridIndex,
           locale: state.selectedLanguage,
+          playerName: getPlayerName(),
+          playerAvatarUrl: getPlayerAvatarUrl(),
           onChangeGrid: (index) => {
             state = reviewState(state, index);
             render();
