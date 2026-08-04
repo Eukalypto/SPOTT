@@ -1,11 +1,15 @@
-/** Fixed six-color palette for found words on a grid (index 0–5). */
+/**
+ * Fixed six-color palette for found words on a grid (index 0–5).
+ * Matches the Illustrator socket/gauge library order (red, orange, yellow,
+ * green, blue, purple) and the Cell01–Cell06 tile art in that same order.
+ */
 export const WORD_HIGHLIGHT_COLORS = [
-  '#e63946',
-  '#457b9d',
-  '#2a9d8f',
-  '#d4a017',
-  '#9b5de5',
-  '#f4845f',
+  '#fd5827',
+  '#ffae00',
+  '#fff43d',
+  '#93df1f',
+  '#49dbff',
+  '#b149f2',
 ] as const;
 
 export const WORDS_PER_GRID = WORD_HIGHLIGHT_COLORS.length;

@@ -8,7 +8,7 @@ import {
   revealWordText,
 } from './grid-review.js';
 import { formatClueDisplayHtml } from '../utils/html.js';
-import { getWordHighlightColor } from '../utils/word-colors.js';
+import { getCellTileUrl } from '../utils/tile-assets.js';
 
 function createWord(overrides: Partial<{
   id: string;
@@ -65,7 +65,7 @@ describe('grid review', () => {
     } as never;
 
     expect(buildReviewLetterGridHtml(grid)).toContain('grid-cell--review-missed');
-    expect(buildReviewLetterGridHtml(grid)).toContain(`background-color:${getWordHighlightColor(0)}`);
+    expect(buildReviewLetterGridHtml(grid)).toContain(`--cell-tile-url:url('${getCellTileUrl(0)}')`);
     expect(buildReviewLetterGridHtml(grid)).not.toContain('--cell-color:var(--word-color-0)');
   });
 

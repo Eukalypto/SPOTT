@@ -1266,7 +1266,11 @@ body {
 .grid-cell {
   align-items: center;
   aspect-ratio: 1;
-  background: var(--color-surface-muted);
+  background-color: var(--color-surface-muted);
+  background-image: var(--cell-tile-url, none);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
@@ -1279,6 +1283,13 @@ body {
   text-transform: uppercase;
   user-select: none;
   width: 100%;
+}
+
+.grid-cell__letter {
+  height: 62%;
+  object-fit: contain;
+  pointer-events: none;
+  width: 62%;
 }
 
 .grid-cell--selected {

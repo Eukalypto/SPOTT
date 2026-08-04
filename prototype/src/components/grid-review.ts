@@ -2,9 +2,15 @@ import type { GridData, PlacedWord } from '@spott/engine';
 import { getDisplayedClue, toDisplayUpperCase } from '@spott/engine';
 
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
-import { cellKey, formatGridCellLetter, getReviewWordColor } from '../utils/grid-display.js';
+import {
+  buildGridCellContentHtml,
+  cellKey,
+  formatGridCellLetter,
+  getReviewWordColor,
+} from '../utils/grid-display.js';
 import { escapeHtml, formatClueDisplayHtml } from '../utils/html.js';
-import { getWordHighlightColor, getWordHighlightTextColor, WORDS_PER_GRID } from '../utils/word-colors.js';
+import { getCellTileUrl } from '../utils/tile-assets.js';
+import { WORDS_PER_GRID } from '../utils/word-colors.js';
 
 export interface ReviewWordEntry {
   word: PlacedWord;
@@ -54,18 +60,18 @@ export function buildReviewLetterGridHtml(grid: GridData, locale: UiLocale = 'en
     .map((row, rowIndex) => {
       const cells = row
         .map((cell, colIndex) => {
+          const letter = formatGridCellLetter(cell.letter);
           const meta = cellMeta.get(cellKey(rowIndex, colIndex));
           if (!meta) {
-            return `<span class="grid-cell grid-cell--review">${escapeHtml(formatGridCellLetter(cell.letter))}</span>`;
+            return `<span class="grid-cell grid-cell--review" style="--cell-tile-url:url('${escapeHtml(getCellTileUrl(null))}')">${buildGridCellContentHtml(letter)}</span>`;
           }
 
           const stateClass = meta.found
             ? ' grid-cell--review-found'
             : ' grid-cell--review-missed';
-          const color = getWordHighlightColor(meta.colorIndex);
-          const textColor = getWordHighlightTextColor(meta.colorIndex);
+          const tileUrl = getCellTileUrl(meta.colorIndex);
           const missedLabel = meta.found ? '' : ` aria-label="${escapeHtml(t('missed', locale))}"`;
-          return `<span class="grid-cell grid-cell--review${stateClass}" style="background-color:${color};color:${textColor}"${missedLabel}>${escapeHtml(formatGridCellLetter(cell.letter))}</span>`;
+          return `<span class="grid-cell grid-cell--review${stateClass}" style="--cell-tile-url:url('${escapeHtml(tileUrl)}')"${missedLabel}>${buildGridCellContentHtml(letter)}</span>`;
         })
         .join('');
       return `<div class="grid-row">${cells}</div>`;

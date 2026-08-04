@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { getWordHighlightColor, WORDS_PER_GRID } from '../utils/word-colors.js';
 import { buildGaugeHtml, getFilledGaugeNotches } from './word-gauge.js';
 import { buildLetterGridHtml, getFoundCellColorIndexes } from '../utils/grid-display.js';
+import { getCellTileUrl } from '../utils/tile-assets.js';
 
 function createFoundWord(
   id: string,
@@ -66,7 +67,7 @@ describe('word gauge and found-word coloring', () => {
     const colorIndexes = getFoundCellColorIndexes(grid);
     expect(colorIndexes.get('2,2')).toBe(0);
     expect(colorIndexes.get('2,3')).toBe(0);
-    expect(buildLetterGridHtml(grid)).toContain(`background-color:${getWordHighlightColor(0)}`);
+    expect(buildLetterGridHtml(grid)).toContain(`--cell-tile-url:url('${getCellTileUrl(0)}')`);
   });
 
   it('keeps found-word colors when revisiting a skipped grid', () => {
