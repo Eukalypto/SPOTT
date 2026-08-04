@@ -5,14 +5,19 @@ import { buildGaugeHtml, getGaugeSummaryText, renderGauge } from '../components/
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { attachGridSwipe } from '../interaction/grid-swipe.js';
 import { buildLetterGridHtml } from '../utils/grid-display.js';
-import {
-  canSkipGrid,
-  getGridDisplayLabel,
-  getGridNavigationHint,
-} from '../utils/grid-navigation.js';
+import { canSkipGrid, getGridDisplayLabel } from '../utils/grid-navigation.js';
 import { escapeHtml } from '../utils/html.js';
 import { buildTimerStatHtml, updateTimerDisplay } from '../utils/timer-display.js';
 import { injectWordColorVars } from '../utils/word-colors.js';
+
+const PLAYER_AVATAR_ICON = `
+  <svg viewBox="0 0 24 24" focusable="false">
+    <path
+      fill="currentColor"
+      d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
+    />
+  </svg>
+`;
 
 const SKIP_TRANSITION_MS = 200;
 
@@ -144,16 +149,11 @@ function updateGameScreenDom(
     roundState.currentGridIndex,
   );
 
-  updateGridNavigation(container, roundState, locale);
+  updateGridNavigation(container, roundState);
 
   const gauge = container.querySelector<HTMLElement>('[data-gauge]');
   if (gauge) {
     renderGauge(gauge, grid, locale);
-  }
-
-  const gaugeSummary = container.querySelector<HTMLElement>('[data-gauge-summary]');
-  if (gaugeSummary) {
-    gaugeSummary.textContent = getGaugeSummaryText(grid, locale);
   }
 
   const clueList = container.querySelector<HTMLElement>('[data-clue-list]');
@@ -176,11 +176,7 @@ function updateGameScreenDom(
   updateTimerDisplay(container, roundState.remainingSeconds, locale, { timerPaused });
 }
 
-function updateGridNavigation(container: HTMLElement, roundState: RoundState, locale: UiLocale): void {
-  container.querySelector<HTMLElement>('[data-grid-number]')!.textContent =
-    getGridDisplayLabel(roundState);
-  container.querySelector<HTMLElement>('[data-grid-hint]')!.textContent =
-    getGridNavigationHint(roundState, locale);
+function updateGridNavigation(container: HTMLElement, roundState: RoundState): void {
   container.querySelector<HTMLElement>('[data-grid-rank]')!.textContent =
     getGridDisplayLabel(roundState);
 }
@@ -197,13 +193,7 @@ function updateSkipButton(container: HTMLElement, roundState: RoundState, locale
     'aria-label',
     skippable ? t('skipAriaAvailable', locale) : t('skipAriaUnavailable', locale),
   );
-  skipButton.classList.toggle('skip-button--disabled', !skippable);
-
-  const skipHint = container.querySelector<HTMLElement>('[data-skip-hint]');
-  if (skipHint) {
-    skipHint.hidden = skippable;
-    skipHint.textContent = t('skipHintUnavailable', locale);
-  }
+  skipButton.classList.toggle('next-grid-button--disabled', !skippable);
 }
 
 function buildGameScreenHtml(
@@ -223,34 +213,15 @@ function buildGameScreenHtml(
       aria-label="${escapeHtml(t('gameAriaLabel', locale))}"
       data-current-grid="${roundState.currentGridIndex}"
     >
-      <div
-        class="game-player-badge"
-        aria-label="${escapeHtml(tFormat('playerAvatarAria', locale, { name: playerName }))}"
-      >
-        <span class="game-player-badge__avatar" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
-            <path
-              fill="currentColor"
-              d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"
-            />
-          </svg>
-        </span>
-        <span class="game-player-badge__name" data-player-name>${escapeHtml(playerName)}</span>
-      </div>
-
       <header class="game-header">
-        <div class="game-stat game-stat--grid">
-          <span class="game-stat__label">${escapeHtml(t('grid', locale))}</span>
-          <span class="game-stat__value" data-grid-number aria-live="polite">${getGridDisplayLabel(roundState)}</span>
-          <span class="game-stat__hint" data-grid-hint>${escapeHtml(getGridNavigationHint(roundState, locale))}</span>
-        </div>
-        <div class="game-stat">
-          <span class="game-stat__label">${escapeHtml(t('time', locale))}</span>
-          ${buildTimerStatHtml(roundState.remainingSeconds, locale, { timerPaused })}
-        </div>
-        <div class="game-stat">
-          <span class="game-stat__label">${escapeHtml(t('score', locale))}</span>
-          <span class="game-stat__value" data-score>${roundState.score.total}</span>
+        ${buildTimerStatHtml(roundState.remainingSeconds, locale, { timerPaused })}
+        <span class="game-header__score" data-score aria-label="${escapeHtml(t('score', locale))} ${roundState.score.total}">${roundState.score.total}</span>
+        <div
+          class="game-header__player"
+          aria-label="${escapeHtml(tFormat('playerAvatarAria', locale, { name: playerName }))}"
+        >
+          <span class="game-header__player-name" data-player-name>${escapeHtml(playerName)}</span>
+          <span class="game-header__avatar" aria-hidden="true">${PLAYER_AVATAR_ICON}</span>
         </div>
       </header>
 
@@ -263,13 +234,6 @@ function buildGameScreenHtml(
         >
           <span aria-hidden="true">✕</span>
         </button>
-      </div>
-
-      <div class="word-gauge-block">
-        <p class="word-gauge__summary" data-gauge-summary aria-live="polite">${escapeHtml(getGaugeSummaryText(grid, locale))}</p>
-        <div class="word-gauge" data-gauge aria-label="${escapeHtml(getGaugeSummaryText(grid, locale))}">
-          ${buildGaugeHtml(grid)}
-        </div>
       </div>
 
       <div class="letter-grid" data-letter-grid role="grid" aria-label="${escapeHtml(t('letterGridAria', locale))}">
@@ -285,17 +249,23 @@ function buildGameScreenHtml(
         ${buildClueListHtml(grid, clueListOptions)}
       </ul>
 
-      <button
-        type="button"
-        class="skip-button${skippable ? '' : ' skip-button--disabled'}"
-        data-action="skip"
-        ${skippable ? '' : 'disabled'}
-        aria-label="${escapeHtml(skippable ? t('skipAriaAvailable', locale) : t('skipAriaUnavailable', locale))}"
-      >
-        <span class="skip-button__label">${escapeHtml(t('skip', locale))}</span>
-        <span class="skip-button__arrow" aria-hidden="true">→</span>
-      </button>
-      <p class="skip-button__hint" data-skip-hint${skippable ? ' hidden' : ''}>${escapeHtml(t('skipHintUnavailable', locale))}</p>
+      <div class="next-grid-row">
+        <button
+          type="button"
+          class="next-grid-button${skippable ? '' : ' next-grid-button--disabled'}"
+          data-action="skip"
+          ${skippable ? '' : 'disabled'}
+          aria-label="${escapeHtml(skippable ? t('skipAriaAvailable', locale) : t('skipAriaUnavailable', locale))}"
+        >
+          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path fill="currentColor" d="M9.4 6.6 15.8 12l-6.4 5.4V6.6z" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="word-gauge" data-gauge aria-label="${escapeHtml(getGaugeSummaryText(grid, locale))}">
+        ${buildGaugeHtml(grid)}
+      </div>
 
       <div
         class="confirm-dialog"
