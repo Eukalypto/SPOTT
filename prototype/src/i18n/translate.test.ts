@@ -6,9 +6,9 @@ import { TRANSLATION_KEYS } from './types.js';
 
 describe('i18n translate', () => {
   it('returns localized strings for English, French, and Spanish', () => {
-    expect(t('startPracticeRound', 'en')).toBe('Start Practice Round');
-    expect(t('startPracticeRound', 'fr')).toContain('entraînement');
-    expect(t('startPracticeRound', 'es')).toContain('práctica');
+    expect(t('navPlaySolo', 'en')).toBe('Play Solo');
+    expect(t('navPlaySolo', 'fr')).toBe('Jouer seul');
+    expect(t('navPlaySolo', 'es')).toBe('Jugar solo');
   });
 
   it('returns different copy for the same key across locales when localized', () => {

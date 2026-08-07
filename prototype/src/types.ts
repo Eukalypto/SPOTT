@@ -5,7 +5,6 @@ import type { RoundStartError } from './utils/round-start-error.js';
 
 export type AppScreen =
   | 'home'
-  | 'practice-setup'
   | 'game'
   | 'end'
   | 'review'
@@ -14,8 +13,6 @@ export type AppScreen =
   | 'profile'
   | 'auth'
   | 'round-error';
-
-export type RulesReturnScreen = 'home' | 'practice-setup';
 
 export type AuthStatus = 'guest' | 'authenticated' | 'loading';
 
@@ -45,8 +42,6 @@ export interface AppState {
   roundStartError: RoundStartError | null;
   selectedLanguage: LanguageCode;
   reviewGridIndex: number;
-  /** Screen to return to when leaving Rules. */
-  rulesReturnScreen: RulesReturnScreen;
   /** Dev-only: show full words in the clue list for the current grid. */
   debugRevealWords: boolean;
   /** Dev-only: pause the round timer without ending the round. */
@@ -61,7 +56,6 @@ export function createInitialAppState(): AppState {
     roundStartError: null,
     selectedLanguage: loadPersistedLanguage(),
     reviewGridIndex: 0,
-    rulesReturnScreen: 'home',
     debugRevealWords: false,
     timerPaused: false,
     auth: { ...DEFAULT_AUTH_STATE },

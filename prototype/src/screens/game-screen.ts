@@ -29,6 +29,9 @@ export interface GameScreenOptions {
   onSkip: () => void;
   onSubmitSwipe: (coordinates: Coordinate[]) => boolean;
   onStopGame: () => void;
+  /** Pause/resume the round timer while the stop-game confirm dialog is open (fb#9). */
+  onStopGameDialogOpen?: () => void;
+  onStopGameDialogClose?: () => void;
 }
 
 export interface GameScreenHandle {
@@ -69,9 +72,11 @@ export function mountGameScreen(
   const stopGameDialog = container.querySelector<HTMLElement>('[data-stop-game-dialog]');
   const showStopGameDialog = (): void => {
     stopGameDialog?.removeAttribute('hidden');
+    options.onStopGameDialogOpen?.();
   };
   const hideStopGameDialog = (): void => {
     stopGameDialog?.setAttribute('hidden', '');
+    options.onStopGameDialogClose?.();
   };
 
   container.querySelector<HTMLButtonElement>('[data-action="stop-game"]')?.addEventListener(
@@ -240,8 +245,9 @@ function buildGameScreenHtml(
       </div>
 
       <div class="grid-rank-badge">
-        <span class="grid-rank-badge__category" data-theme-label>${escapeHtml(grid.themeLabel)}</span>
         <span class="grid-rank-badge__rank" data-grid-rank>${getGridDisplayLabel(roundState)}</span>
+        <span class="grid-rank-badge__separator" aria-hidden="true">–</span>
+        <span class="grid-rank-badge__category" data-theme-label>${escapeHtml(grid.themeLabel)}</span>
       </div>
 
       <ul class="clue-list" data-clue-list aria-label="${escapeHtml(t('clues', locale))}">

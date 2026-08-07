@@ -4,22 +4,16 @@ import { t } from '../i18n/index.js';
 import { bindFooterNav, renderFooterNav } from './footer-nav.js';
 
 describe('footer nav', () => {
-  it('renders play and profile tabs with active state', () => {
-    const playHtml = renderFooterNav('play', 'en');
-    const profileHtml = renderFooterNav('profile', 'fr');
+  it('renders a single centered Profile button (fb#10)', () => {
+    const html = renderFooterNav('en');
 
-    expect(playHtml).toContain(t('footerPlay', 'en'));
-    expect(playHtml).toContain(t('footerProfile', 'en'));
-    expect(playHtml).toContain('footer-nav__tab--active');
-    expect(playHtml).toContain('data-footer-tab="play"');
-    expect(playHtml).toContain('aria-current="page"');
-
-    expect(profileHtml).toContain(t('footerPlay', 'fr'));
-    expect(profileHtml).toContain('data-footer-tab="profile"');
+    expect(html).toContain(t('footerProfile', 'en'));
+    expect(html).toContain('data-footer-tab="profile"');
+    expect(html).not.toContain('data-footer-tab="play"');
   });
 
-  it('binds navigation callbacks', () => {
-    const navigate = vi.fn();
+  it('binds the profile navigation callback', () => {
+    const onProfile = vi.fn();
     const listeners = new Map<string, () => void>();
 
     const makeButton = (key: string) => ({
@@ -30,9 +24,6 @@ describe('footer nav', () => {
 
     const root = {
       querySelector: (selector: string) => {
-        if (selector.includes('="play"')) {
-          return makeButton('play');
-        }
         if (selector.includes('="profile"')) {
           return makeButton('profile');
         }
@@ -40,11 +31,9 @@ describe('footer nav', () => {
       },
     } as unknown as ParentNode;
 
-    bindFooterNav(root, navigate);
-    listeners.get('play')?.();
+    bindFooterNav(root, onProfile);
     listeners.get('profile')?.();
 
-    expect(navigate).toHaveBeenCalledWith('home');
-    expect(navigate).toHaveBeenCalledWith('profile');
+    expect(onProfile).toHaveBeenCalledTimes(1);
   });
 });

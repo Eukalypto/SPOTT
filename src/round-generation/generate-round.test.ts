@@ -266,6 +266,56 @@ describe('selectThemesForRound', () => {
       second?.map((theme) => theme.themeId),
     );
   });
+
+  it('avoids recently played themes when the tier has another candidate (fb#13)', () => {
+    // A and B each need 2 unique themes since DIFFICULTY_SEQUENCE uses each tier twice.
+    const wordSet: LanguageWordSet = {
+      language: 'en',
+      themes: [
+        theme('theme-a1', 'A1', 'A'),
+        theme('theme-a2', 'A2', 'A'),
+        theme('theme-b1', 'B1', 'B'),
+        theme('theme-b2', 'B2', 'B'),
+        theme('theme-c', 'C', 'C'),
+        theme('theme-d', 'D', 'D'),
+        theme('theme-e', 'E', 'E'),
+      ],
+    };
+
+    const themes = selectThemesForRound(
+      wordSet,
+      DIFFICULTY_SEQUENCE,
+      Math.random,
+      new Set(['theme-a1']),
+    );
+
+    expect(themes?.find((entry) => entry.difficultyTier === 'A')?.themeId).toBe('theme-a2');
+  });
+
+  it('falls back to a recently played theme rather than failing when it is the only candidate', () => {
+    const wordSet: LanguageWordSet = {
+      language: 'en',
+      themes: [
+        theme('theme-a1', 'A1', 'A'),
+        theme('theme-a2', 'A2', 'A'),
+        theme('theme-b1', 'B1', 'B'),
+        theme('theme-b2', 'B2', 'B'),
+        theme('theme-c', 'C', 'C'),
+        theme('theme-d', 'D', 'D'),
+        theme('theme-e', 'E', 'E'),
+      ],
+    };
+
+    // Both C candidates (there's only one) are "recently played" -- must still be used.
+    const themes = selectThemesForRound(
+      wordSet,
+      DIFFICULTY_SEQUENCE,
+      Math.random,
+      new Set(['theme-c']),
+    );
+
+    expect(themes?.find((entry) => entry.difficultyTier === 'C')?.themeId).toBe('theme-c');
+  });
 });
 
 function theme(themeId: string, label: string, difficultyTier: DifficultyTier): ThemeWordSet {

@@ -1,9 +1,7 @@
-import { GAME_CONFIG, type RoundState } from '@spott/engine';
+import type { RoundState } from '@spott/engine';
 
-import {
-  buildReviewClueListHtml,
-  buildReviewLetterGridHtml,
-} from '../components/grid-review.js';
+import { buildClueListHtml } from '../components/clue-list.js';
+import { buildReviewLetterGridHtml } from '../components/grid-review.js';
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { GENERIC_AVATAR_ICON } from '../utils/avatar-assets.js';
 import { escapeHtml } from '../utils/html.js';
@@ -85,7 +83,7 @@ export function buildReviewScreenHtml(options: ReviewScreenOptions): string {
             found: grid.placedWords.filter((word) => word.found).length,
             total: grid.placedWords.length,
           }))}
-          · ${escapeHtml(t('grid', locale))} ${gridNumber}/${GAME_CONFIG.gridsPerRound} · ${escapeHtml(grid.themeLabel)}
+          · ${gridNumber} – ${escapeHtml(grid.themeLabel)}
         </p>
         <button
           type="button"
@@ -109,8 +107,8 @@ export function buildReviewScreenHtml(options: ReviewScreenOptions): string {
 
       <section class="review-words" aria-labelledby="review-words-title">
         <h3 id="review-words-title" class="review-words__title">${escapeHtml(t('reviewAllWords', locale))}</h3>
-        <ul class="review-clue-list" aria-label="${escapeHtml(t('reviewAllWords', locale))}">
-          ${buildReviewClueListHtml(grid, locale)}
+        <ul class="clue-list" aria-label="${escapeHtml(t('reviewAllWords', locale))}">
+          ${buildClueListHtml(grid, { locale })}
         </ul>
       </section>
     </section>

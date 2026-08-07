@@ -51,7 +51,7 @@ describe('buildReviewScreenHtml', () => {
     expect(html).toContain('review-tab--active');
     expect(html).toContain('aria-current="page"');
     expect(html).toContain(`${t('reviewTabSelected', 'en')}`);
-    expect(html).toContain(`${t('grid', 'en')} 3/${GAME_CONFIG.gridsPerRound}`);
+    expect(html).toContain('3 – Theme 3');
   });
 
   it('reveals all target words in read-only review mode', () => {
@@ -67,10 +67,8 @@ describe('buildReviewScreenHtml', () => {
     expect(html).toContain('letter-grid--review');
     expect(html).toContain('aria-readonly="true"');
     expect(html).toContain(t('reviewAllWords', 'en'));
-    expect(html).toContain('review-clue--found');
-    expect(html).toContain('review-clue--missed');
-    expect(html).toContain('review-clue__word--found');
-    expect(html).toContain('review-clue__word--missed');
+    expect(html).toContain('clue-item--found');
+    expect(html).toContain('clue-item__text--found');
     expect(html).toContain(formatClueDisplayHtml('WORD0'));
   });
 

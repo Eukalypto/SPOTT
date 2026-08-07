@@ -1,9 +1,8 @@
-import type { AppState, AppScreen, RulesReturnScreen } from '../types.js';
+import type { AppState, AppScreen } from '../types.js';
 
 /** Screens that do not require an active round. */
 export const SHELL_SCREENS = [
   'home',
-  'practice-setup',
   'rules',
   'settings',
   'profile',
@@ -45,18 +44,8 @@ export function homeState(state: AppState): AppState {
   return withShellScreen(state, 'home');
 }
 
-export function practiceSetupState(state: AppState): AppState {
-  return withShellScreen(state, 'practice-setup');
-}
-
-export function rulesState(
-  state: AppState,
-  returnScreen: RulesReturnScreen = 'home',
-): AppState {
-  return {
-    ...withShellScreen(state, 'rules'),
-    rulesReturnScreen: returnScreen,
-  };
+export function rulesState(state: AppState): AppState {
+  return withShellScreen(state, 'rules');
 }
 
 export function settingsState(state: AppState): AppState {

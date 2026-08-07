@@ -28,6 +28,12 @@ export interface GenerateRoundOptions {
   wordSet?: LanguageWordSet;
   /** Injectable RNG passed through to each grid generation call. */
   random?: () => number;
+  /**
+   * Theme ids to avoid when a tier has another untried candidate (fb#13: widen
+   * category variety across rounds). Ignored per-tier once it would otherwise
+   * leave no candidate, so round generation never fails because of it.
+   */
+  recentlyPlayedThemeIds?: ReadonlySet<string> | readonly string[];
 }
 
 /**
@@ -46,8 +52,14 @@ export function generateRound(options: GenerateRoundOptions): GenerateRoundResul
   }
 
   const random = options.random ?? Math.random;
+  const recentlyPlayedThemeIds = new Set(options.recentlyPlayedThemeIds ?? []);
 
-  const themes = selectThemesForRound(wordSet, GAME_CONFIG.difficultySequence, random);
+  const themes = selectThemesForRound(
+    wordSet,
+    GAME_CONFIG.difficultySequence,
+    random,
+    recentlyPlayedThemeIds,
+  );
   if (!themes) {
     return { success: false, reason: 'theme-selection-failed' };
   }
@@ -95,12 +107,15 @@ export function generateRound(options: GenerateRoundOptions): GenerateRoundResul
  * Within each tier, one theme is picked at random (via the injectable RNG) from
  * the tier's remaining candidates, so replaying a round doesn't repeat the same
  * word sets while still respecting the difficulty order and never reusing a
- * theme inside the round.
+ * theme inside the round. Candidates in `recentlyPlayedThemeIds` are preferred
+ * against (fb#13), but only when the tier has another option — a tier never
+ * fails selection just because every remaining candidate was played recently.
  */
 export function selectThemesForRound(
   wordSet: LanguageWordSet,
   difficultySequence: readonly DifficultyTier[] = GAME_CONFIG.difficultySequence,
   random: () => number = Math.random,
+  recentlyPlayedThemeIds: ReadonlySet<string> = new Set(),
 ): ThemeWordSet[] | null {
   const usedThemeIds = new Set<string>();
   const selectedThemes: ThemeWordSet[] = [];
@@ -117,7 +132,12 @@ export function selectThemesForRound(
       return null;
     }
 
-    const theme = shuffleCopy(candidates, random)[0];
+    const freshCandidates = candidates.filter(
+      (candidate) => !recentlyPlayedThemeIds.has(candidate.themeId),
+    );
+    const pool = freshCandidates.length > 0 ? freshCandidates : candidates;
+
+    const theme = shuffleCopy(pool, random)[0];
 
     usedThemeIds.add(theme.themeId);
     selectedThemes.push(theme);

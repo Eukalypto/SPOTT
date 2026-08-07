@@ -2,12 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { PlacedWord } from '@spott/engine';
 
-import {
-  buildReviewClueListHtml,
-  buildReviewLetterGridHtml,
-  revealWordText,
-} from './grid-review.js';
-import { formatClueDisplayHtml } from '../utils/html.js';
+import { buildReviewLetterGridHtml, revealWordText } from './grid-review.js';
 import { getCellTileUrl } from '../utils/tile-assets.js';
 
 function createWord(overrides: Partial<{
@@ -55,67 +50,59 @@ describe('grid review', () => {
     expect(revealWordText(asPlacedWord({ text: 'señor', maskType: 'full' }))).toBe('SEÑOR');
   });
 
-  it('colors all target words on the review grid', () => {
+  it('gives an unfound word the neutral default tile, not a colored one', () => {
     const grid = {
       cells: [
         [{ letter: 'L', wordId: 'w1' }, { letter: 'I', wordId: 'w1' }],
         [{ letter: 'X', wordId: null }, { letter: 'X', wordId: null }],
       ],
-      placedWords: [createWord({ cells: [{ row: 0, col: 0 }, { row: 0, col: 1 }] })],
+      placedWords: [createWord({ cells: [{ row: 0, col: 0 }, { row: 0, col: 1 }], found: false })],
     } as never;
 
-    expect(buildReviewLetterGridHtml(grid)).toContain('grid-cell--review-missed');
-    expect(buildReviewLetterGridHtml(grid)).toContain(`--cell-tile-url:url('${getCellTileUrl(0)}')`);
-    expect(buildReviewLetterGridHtml(grid)).not.toContain('--cell-color:var(--word-color-0)');
+    const html = buildReviewLetterGridHtml(grid);
+
+    expect(html).toContain('grid-cell--review-missed');
+    expect(html).toContain(`--cell-tile-url:url('${getCellTileUrl(null)}')`);
   });
 
-  it('marks found clues with strikethrough and missed clues without', () => {
+  it('gives a found word its real find-order color', () => {
     const grid = {
+      cells: [[{ letter: 'L', wordId: 'w1' }, { letter: 'I', wordId: 'w1' }]],
       placedWords: [
-        createWord({ id: 'w1', text: 'lion', found: true, colorIndex: 0, maskType: 'none' }),
-        createWord({ id: 'w2', text: 'tiger', found: false, maskType: 'none' }),
+        createWord({ cells: [{ row: 0, col: 0 }, { row: 0, col: 1 }], found: true, colorIndex: 3 }),
       ],
     } as never;
 
-    const html = buildReviewClueListHtml(grid);
+    const html = buildReviewLetterGridHtml(grid);
 
-    expect(html).toContain('review-clue__word--found');
-    expect(html).toContain(formatClueDisplayHtml('TIGER'));
-    expect(html.match(/review-clue__word--found/g)?.length).toBe(1);
-    expect(html).toContain('review-clue--missed');
-    expect(html).toContain('review-clue--found');
-    expect(html).toContain('>Missed<');
+    expect(html).toContain('grid-cell--review-found');
+    expect(html).toContain(`--cell-tile-url:url('${getCellTileUrl(3)}')`);
   });
 
-  it('keeps review clues in their original placedWords position, not grouped by found status', () => {
+  it('never lets an unfound word collide with a found word\'s color (fb#12)', () => {
+    // Regression: the old fallback colored unfound words by their array
+    // position (wordIndex % WORDS_PER_GRID), which could coincidentally equal
+    // another word's real find-order colorIndex and paint both the same color.
+    // Here the found word (array position 0) has real colorIndex 2, and the
+    // unfound word (array position 2) would have collided under the old
+    // `wordIndex % WORDS_PER_GRID` formula (2 % 6 = 2).
     const grid = {
+      cells: [
+        [{ letter: 'L', wordId: 'w1' }, { letter: 'I', wordId: 'w1' }],
+        [{ letter: 'B', wordId: 'w3' }, { letter: 'E', wordId: 'w3' }],
+      ],
       placedWords: [
-        createWord({ id: 'w1', text: 'lion', found: false, maskType: 'none' }),
-        createWord({ id: 'w2', text: 'tiger', found: true, colorIndex: 0, maskType: 'none' }),
-        createWord({ id: 'w3', text: 'bear', found: false, maskType: 'none' }),
+        createWord({ id: 'w1', cells: [{ row: 0, col: 0 }, { row: 0, col: 1 }], found: true, colorIndex: 2 }),
+        createWord({ id: 'w2', text: 'noop', cells: [], found: false }),
+        createWord({ id: 'w3', text: 'bear', cells: [{ row: 1, col: 0 }, { row: 1, col: 1 }], found: false }),
       ],
     } as never;
 
-    const html = buildReviewClueListHtml(grid);
-    const ids = [...html.matchAll(/data-word-id="([^"]+)"/g)].map((match) => match[1]);
+    const html = buildReviewLetterGridHtml(grid);
+    const foundTileUrl = getCellTileUrl(2);
 
-    expect(ids).toEqual(['w1', 'w2', 'w3']);
-  });
-
-  it('keeps missed words masked (A2h) and only reveals words the player found', () => {
-    const grid = {
-      placedWords: [
-        createWord({ id: 'w1', text: 'lion', found: true, colorIndex: 0, maskType: 'full' }),
-        createWord({ id: 'w2', text: 'tiger', found: false, maskType: 'full' }),
-        createWord({ id: 'w3', text: 'sardine', found: false, maskType: 'partial' }),
-      ],
-    } as never;
-
-    const html = buildReviewClueListHtml(grid);
-
-    expect(html).toContain(formatClueDisplayHtml('LION'));
-    expect(html).not.toContain(formatClueDisplayHtml('TIGER'));
-    expect(html).not.toContain(formatClueDisplayHtml('SARDINE'));
-    expect(html.match(/clue-mask/g)?.length).toBeGreaterThan(0);
+    // Only the found word's own 2 cells may use its color; the unfound word must not.
+    const foundTileOccurrences = html.split(`--cell-tile-url:url('${foundTileUrl}')`).length - 1;
+    expect(foundTileOccurrences).toBe(2);
   });
 });

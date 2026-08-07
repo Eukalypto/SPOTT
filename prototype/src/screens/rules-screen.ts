@@ -1,5 +1,4 @@
 import { t, type UiLocale } from '../i18n/index.js';
-import type { RulesReturnScreen } from '../types.js';
 import type { TranslationKey } from '../i18n/types.js';
 import { escapeHtml } from '../utils/html.js';
 
@@ -17,24 +16,12 @@ export const CLASSIC_PRACTICE_RULE_KEYS = [
   'rulesTimeBonus',
 ] as const satisfies readonly TranslationKey[];
 
-const RULES_BACK_LABEL_KEYS: Record<RulesReturnScreen, TranslationKey> = {
-  home: 'backToHome',
-  'practice-setup': 'backToPracticeSetup',
-};
-
-export function normalizeRulesReturnScreen(returnScreen: unknown): RulesReturnScreen {
-  return returnScreen === 'practice-setup' ? 'practice-setup' : 'home';
-}
-
 export interface RulesScreenOptions {
   locale: UiLocale;
-  returnScreen: RulesReturnScreen;
   onBack: () => void;
 }
 
 export function buildRulesScreenHtml(options: RulesScreenOptions): string {
-  const returnScreen = normalizeRulesReturnScreen(options.returnScreen);
-  const backLabelKey = RULES_BACK_LABEL_KEYS[returnScreen];
   const ruleItems = CLASSIC_PRACTICE_RULE_KEYS.map(
     (key) => `<li>${escapeHtml(t(key, options.locale))}</li>`,
   ).join('');
@@ -44,7 +31,7 @@ export function buildRulesScreenHtml(options: RulesScreenOptions): string {
       <div class="screen-centered__stack">
         <header class="screen-header">
           <button type="button" class="text-button screen-header__back" data-action="back">
-            ${escapeHtml(t(backLabelKey, options.locale))}
+            ${escapeHtml(t('backToHome', options.locale))}
           </button>
           <h2 id="rules-title" class="screen-header__title">${escapeHtml(t('navRules', options.locale))}</h2>
         </header>

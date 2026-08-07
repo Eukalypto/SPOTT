@@ -1,17 +1,6 @@
 import { t, type UiLocale } from '../i18n/index.js';
 import { escapeHtml } from '../utils/html.js';
 
-export type FooterTab = 'play' | 'profile';
-
-/** Screens the footer can navigate to. */
-export type FooterNavScreen = 'home' | 'profile';
-
-const PLAY_ICON = `
-  <svg class="footer-nav__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <path fill="currentColor" d="M8 5v14l11-7L8 5z"/>
-  </svg>
-`;
-
 const PROFILE_ICON = `
   <svg class="footer-nav__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
     <path
@@ -21,27 +10,11 @@ const PROFILE_ICON = `
   </svg>
 `;
 
-export function renderFooterNav(activeTab: FooterTab, locale: UiLocale): string {
-  const playActive = activeTab === 'play' ? ' footer-nav__tab--active' : '';
-  const profileActive = activeTab === 'profile' ? ' footer-nav__tab--active' : '';
-
+/** Single centered Profile button (fb#10) — Home's own Play Solo button already covers Play. */
+export function renderFooterNav(locale: UiLocale): string {
   return `
     <nav class="footer-nav" aria-label="${escapeHtml(t('footerNavLabel', locale))}">
-      <button
-        type="button"
-        class="footer-nav__tab${playActive}"
-        data-footer-tab="play"
-        aria-current="${activeTab === 'play' ? 'page' : 'false'}"
-      >
-        ${PLAY_ICON}
-        <span class="footer-nav__label">${escapeHtml(t('footerPlay', locale))}</span>
-      </button>
-      <button
-        type="button"
-        class="footer-nav__tab${profileActive}"
-        data-footer-tab="profile"
-        aria-current="${activeTab === 'profile' ? 'page' : 'false'}"
-      >
+      <button type="button" class="footer-nav__tab" data-footer-tab="profile">
         ${PROFILE_ICON}
         <span class="footer-nav__label">${escapeHtml(t('footerProfile', locale))}</span>
       </button>
@@ -49,21 +22,9 @@ export function renderFooterNav(activeTab: FooterTab, locale: UiLocale): string 
   `;
 }
 
-export function bindFooterNav(
-  root: ParentNode,
-  navigate: (screen: FooterNavScreen) => void,
-): void {
-  root.querySelector<HTMLButtonElement>('[data-footer-tab="play"]')?.addEventListener(
-    'click',
-    () => {
-      navigate('home');
-    },
-  );
-
+export function bindFooterNav(root: ParentNode, onProfile: () => void): void {
   root.querySelector<HTMLButtonElement>('[data-footer-tab="profile"]')?.addEventListener(
     'click',
-    () => {
-      navigate('profile');
-    },
+    onProfile,
   );
 }

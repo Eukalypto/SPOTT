@@ -1,9 +1,8 @@
-import type { GridData, PlacedWord } from '@spott/engine';
+import type { GridData } from '@spott/engine';
 import { toDisplayUpperCase } from '@spott/engine';
 
 import { escapeHtml } from './html.js';
 import { getCellTileUrl, getLetterTileUrl } from './tile-assets.js';
-import { getWordHighlightColor, WORDS_PER_GRID } from './word-colors.js';
 
 export function cellKey(row: number, col: number): string {
   return `${row},${col}`;
@@ -57,12 +56,4 @@ export function buildLetterGridHtml(grid: GridData): string {
       return `<div class="grid-row">${cells}</div>`;
     })
     .join('');
-}
-
-export function getReviewWordColor(word: PlacedWord, wordIndex: number): string {
-  if (word.found && word.colorIndex !== null) {
-    return getWordHighlightColor(word.colorIndex);
-  }
-
-  return getWordHighlightColor(wordIndex % WORDS_PER_GRID);
 }

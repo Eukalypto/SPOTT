@@ -10,6 +10,7 @@ import {
 import { DEFAULT_PRACTICE_LANGUAGE } from '../constants.js';
 import { IS_DEV } from '../env.js';
 import { getLanguageLabel, tFormat, type UiLocale } from '../i18n/index.js';
+import { loadCategoryHistory, recordPlayedCategories } from './category-history.js';
 import {
   normalizeRoundStartFailureReason,
   type RoundStartFailureReason,
@@ -78,6 +79,7 @@ export function startPracticeRoundState(
     id: roundId,
     language,
     wordSet: options.wordSet,
+    recentlyPlayedThemeIds: loadCategoryHistory(),
   });
 
   if (!result.success) {
@@ -95,6 +97,8 @@ export function startPracticeRoundState(
       message: formatRoundStartError(reason, language, uiLocale),
     };
   }
+
+  recordPlayedCategories(result.round.themeIds);
 
   return {
     success: true,

@@ -106,7 +106,6 @@
   /* Layout */
   --screen-max-width: 26rem;
   --content-max-width: 20rem;
-  --game-grid-max-width: 24rem;
   --tap-min: 2.75rem;
   --screen-pad-x: clamp(0.65rem, 3.5vw, 1rem);
   --screen-pad-y: clamp(0.65rem, 2.5vw, 1rem);
@@ -170,8 +169,8 @@ body {
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   bottom: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  justify-content: center;
   left: 0;
   padding-bottom: env(safe-area-inset-bottom);
   position: absolute;
@@ -197,11 +196,6 @@ body {
   padding: 0.35rem 0.5rem;
 }
 
-.footer-nav__tab--active {
-  color: var(--color-accent);
-  box-shadow: inset 0 3px 0 var(--color-accent);
-}
-
 .footer-nav__icon {
   display: block;
   height: 1.35rem;
@@ -220,7 +214,6 @@ body {
 }
 
 .screen--home,
-.screen--practice-setup,
 .screen--rules,
 .screen--settings,
 .screen--profile,
@@ -242,6 +235,17 @@ body {
 .screen--home,
 .screen--start {
   gap: clamp(1.25rem, 5vw, 2rem);
+}
+
+/**
+ * Anchor Home to the top instead of vertically centering (fb#11): centering let the
+ * SPOTT logo get clipped by the top edge on short viewports since any excess height
+ * split evenly above and below it, leaving zero clearance once content nearly filled
+ * the viewport.
+ */
+.screen--home {
+  justify-content: flex-start;
+  padding-top: clamp(1.5rem, 6vh, 3rem);
 }
 
 .home-hero {
@@ -363,14 +367,12 @@ body {
 }
 
 .screen-centered__stack .screen-header,
-.screen-centered__stack .practice-setup-panel,
 .screen-centered__stack .rules-panel,
 .screen-centered__stack .settings-panel {
   width: 100%;
 }
 
 .info-panel,
-.practice-setup-panel,
 .settings-panel,
 .rules-panel {
   background: var(--color-surface);
@@ -388,34 +390,6 @@ body {
 
 .info-panel p {
   margin: 0;
-}
-
-.practice-setup__description {
-  color: var(--color-text-muted);
-  font-size: 0.95rem;
-  line-height: 1.55;
-  margin: 0;
-  text-align: left;
-}
-
-.practice-setup-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  padding: 1.15rem;
-  width: 100%;
-}
-
-.practice-setup__actions {
-  display: grid;
-  gap: 0.65rem;
-  justify-items: center;
-}
-
-.practice-setup__back,
-.practice-setup__rules {
-  min-height: var(--tap-min);
-  padding-block: var(--space-2);
 }
 
 .settings-panel {
@@ -734,7 +708,6 @@ body {
   :root {
     --screen-max-width: 32rem;
     --content-max-width: 22rem;
-    --game-grid-max-width: 26rem;
   }
 
   .app-shell {
@@ -745,17 +718,18 @@ body {
 
 @media (max-height: 40rem) {
   .letter-grid {
-    width: min(100%, calc(100dvh - 11.5rem), var(--game-grid-max-width));
+    width: min(calc(100% + 2 * var(--screen-pad-x)), calc(100dvh - 11.5rem));
   }
 
-  .screen--game .clue-list {
+  .screen--game .clue-list,
+  .screen--review .clue-list {
     min-height: 3.5rem;
   }
 }
 
 @media (max-height: 32rem) {
   .letter-grid {
-    width: min(100%, calc(100dvh - 10rem), var(--game-grid-max-width));
+    width: min(calc(100% + 2 * var(--screen-pad-x)), calc(100dvh - 10rem));
   }
 }
 
@@ -861,7 +835,6 @@ body {
 .next-grid-button:focus-visible,
 .review-tab:focus-visible,
 .review-nav-button:focus-visible,
-.language-option:focus-within,
 .debug-button:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 3px;
@@ -939,67 +912,6 @@ body {
   gap: var(--space-5);
   width: 100%;
   max-width: var(--content-max-width);
-}
-
-.language-picker {
-  border: none;
-  margin: 0;
-  padding: 0;
-  text-align: left;
-}
-
-.language-picker__legend {
-  color: var(--color-text-muted);
-  font-size: 0.85rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  margin-bottom: var(--space-2);
-  padding: 0;
-  text-transform: uppercase;
-}
-
-.language-picker__options {
-  display: grid;
-  gap: var(--space-2);
-}
-
-.language-option {
-  align-items: center;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  display: flex;
-  gap: 0.65rem;
-  min-height: var(--tap-min);
-  padding: 0.75rem 0.85rem;
-  transition:
-    border-color 120ms ease,
-    box-shadow 120ms ease,
-    background-color 120ms ease;
-}
-
-.language-option:hover {
-  background: var(--color-surface-muted);
-}
-
-.language-option--selected {
-  background: var(--color-accent-soft);
-  border-color: var(--color-accent);
-  box-shadow: inset 0 0 0 1px var(--color-accent);
-}
-
-.language-option input {
-  accent-color: var(--color-accent);
-  cursor: pointer;
-  margin: 0;
-  min-height: 1.1rem;
-  min-width: 1.1rem;
-}
-
-.language-option__label {
-  font-size: 1rem;
-  font-weight: 600;
 }
 
 .game-header {
@@ -1147,7 +1059,7 @@ body {
   align-self: flex-start;
   display: flex;
   flex-shrink: 0;
-  gap: 0.4rem;
+  gap: 0.3rem;
 }
 
 .grid-rank-badge__category {
@@ -1160,6 +1072,11 @@ body {
   color: var(--color-text-muted);
   font-size: clamp(0.75rem, 2.2vw, 0.8125rem);
   font-weight: 700;
+}
+
+.grid-rank-badge__separator {
+  color: var(--color-text-muted);
+  font-size: clamp(0.75rem, 2.2vw, 0.8125rem);
 }
 
 .stop-game-button {
@@ -1236,6 +1153,7 @@ body {
   background: var(--notch-color, var(--color-border));
 }
 
+/** Full-bleed, edge-to-edge grid (fb#5), breaking out of the screen's side padding like .word-gauge. */
 .letter-grid {
   align-self: center;
   aspect-ratio: 1;
@@ -1249,14 +1167,13 @@ body {
   flex-direction: column;
   flex-shrink: 0;
   gap: clamp(0.15rem, 1vw, 0.25rem);
-  margin-inline: auto;
-  max-width: min(100%, var(--game-grid-max-width));
+  margin-inline: calc(-1 * var(--screen-pad-x));
   padding: clamp(0.35rem, 1.5vw, 0.5rem);
   touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-  width: min(100%, calc(100dvh - 14rem), var(--game-grid-max-width));
+  width: min(calc(100% + 2 * var(--screen-pad-x)), calc(100dvh - 14rem));
 }
 
 .letter-grid--selecting {
@@ -1391,8 +1308,7 @@ body {
   }
 }
 
-.clue-list,
-.review-clue-list {
+.clue-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1400,11 +1316,17 @@ body {
   gap: clamp(0.3rem, 1vw, 0.35rem);
 }
 
-.screen--game .clue-list {
-  flex: 1 1 auto;
+/** Same two-column word-list layout on Game and Review screens (fb#8). */
+.screen--game .clue-list,
+.screen--review .clue-list {
   grid-auto-flow: row;
   grid-template-columns: repeat(2, 1fr);
   column-gap: clamp(0.75rem, 4vw, 1.5rem);
+  row-gap: clamp(0.05rem, 0.4vw, 0.1rem);
+}
+
+.screen--game .clue-list {
+  flex: 1 1 auto;
   min-height: 4.5rem;
   overflow-x: hidden;
   overflow-y: auto;
@@ -1448,14 +1370,12 @@ body {
   font-weight: 800;
 }
 
-.clue-item--found .clue-item__label {
-  color: var(--color-success);
+.clue-item--found {
+  opacity: 0.3;
 }
 
 .clue-item__text--found {
-  color: var(--color-success);
-  text-decoration: line-through;
-  text-decoration-thickness: 2px;
+  color: var(--color-text);
 }
 
 .clue-item--empty {
@@ -1684,17 +1604,6 @@ body {
   margin-left: 0.1rem;
 }
 
-.review-clue__word--found {
-  color: var(--color-success);
-  text-decoration: line-through;
-  text-decoration-thickness: 2px;
-}
-
-.review-clue__word--missed {
-  color: var(--color-text);
-  font-weight: 800;
-}
-
 .review-header {
   align-items: flex-start;
   display: flex;
@@ -1779,40 +1688,3 @@ body {
   margin: 0;
 }
 
-.review-clue {
-  align-items: center;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-left-width: 4px;
-  border-radius: var(--radius-md);
-  display: flex;
-  gap: var(--space-2);
-  justify-content: space-between;
-  min-width: 0;
-  padding: clamp(0.45rem, 1.5vw, 0.5rem) clamp(0.55rem, 2vw, 0.75rem);
-}
-
-.review-clue__word {
-  flex: 1 1 auto;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.review-clue__status {
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.review-clue--found .review-clue__status {
-  color: var(--color-success);
-}
-
-.review-clue--missed .review-clue__status {
-  color: var(--color-danger);
-}

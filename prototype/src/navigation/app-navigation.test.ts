@@ -4,7 +4,6 @@ import { createInitialAppState } from '../types.js';
 import {
   gameState,
   homeState,
-  practiceSetupState,
   profileState,
   reviewState,
   rulesState,
@@ -32,9 +31,7 @@ describe('app navigation state helpers', () => {
   it('moves between shell screens without a round', () => {
     const base = { ...createInitialAppState(), selectedLanguage: 'es' as const };
 
-    expect(practiceSetupState(base).screen).toBe('practice-setup');
     expect(rulesState(base).screen).toBe('rules');
-    expect(rulesState(base, 'practice-setup').rulesReturnScreen).toBe('practice-setup');
     expect(settingsState(base).screen).toBe('settings');
     expect(profileState(base).screen).toBe('profile');
   });

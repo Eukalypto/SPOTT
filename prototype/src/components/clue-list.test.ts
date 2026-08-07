@@ -97,7 +97,9 @@ describe('buildClueListHtml', () => {
 
     const html = buildClueListHtml(grid);
     const foundIndex = html.indexOf('clue-item__text--found');
-    const activePartialIndex = html.indexOf(formatClueDisplayHtml('###ER'));
+    const activePartialIndex = html.indexOf(
+      formatClueDisplayHtml(getDisplayedClue(grid.placedWords[1])),
+    );
 
     expect(foundIndex).toBeLessThan(activePartialIndex);
     expect(html).toContain('clue-item--found');

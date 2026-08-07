@@ -68,9 +68,9 @@ describe('Phase 3: multilingual Classic Practice', () => {
 
   describe('translation helper', () => {
     it('returns localized strings for supported locales', () => {
-      expect(t('startPracticeRound', 'en')).toBe('Start Practice Round');
-      expect(t('startPracticeRound', 'fr')).toContain('entraînement');
-      expect(t('startPracticeRound', 'es')).toContain('práctica');
+      expect(t('navPlaySolo', 'en')).toBe('Play Solo');
+      expect(t('navPlaySolo', 'fr')).toBe('Jouer seul');
+      expect(t('navPlaySolo', 'es')).toBe('Jugar solo');
       expect(tFormat('unfinishedGrids', 'es', { count: 2 })).toContain('2');
     });
 

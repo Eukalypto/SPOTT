@@ -1,23 +1,20 @@
 import type { GridData, PlacedWord } from '@spott/engine';
 import { getDisplayedClue, toDisplayUpperCase } from '@spott/engine';
 
-import { t, tFormat, type UiLocale } from '../i18n/index.js';
+import { t, type UiLocale } from '../i18n/index.js';
 import {
   buildGridCellContentHtml,
   cellKey,
   formatGridCellLetter,
-  getReviewWordColor,
 } from '../utils/grid-display.js';
-import { escapeHtml, formatClueDisplayHtml } from '../utils/html.js';
+import { escapeHtml } from '../utils/html.js';
 import { getCellTileUrl } from '../utils/tile-assets.js';
-import { WORDS_PER_GRID } from '../utils/word-colors.js';
 
 export interface ReviewWordEntry {
   word: PlacedWord;
   wordIndex: number;
   /** Full word when found; the word's original mask (per A2h) when missed. */
   displayText: string;
-  color: string;
   found: boolean;
 }
 
@@ -26,7 +23,6 @@ export function getReviewWordEntries(grid: GridData): ReviewWordEntry[] {
     word,
     wordIndex,
     displayText: getDisplayedClue(word),
-    color: getReviewWordColor(word, wordIndex),
     found: word.found,
   }));
 }
@@ -40,13 +36,14 @@ export function buildReviewLetterGridHtml(grid: GridData, locale: UiLocale = 'en
   const entries = getReviewWordEntries(grid);
   const cellMeta = new Map<
     string,
-    { colorIndex: number; found: boolean }
+    { colorIndex: number | null; found: boolean }
   >();
 
   entries.forEach((entry) => {
-    const colorIndex = entry.word.found && entry.word.colorIndex !== null
-      ? entry.word.colorIndex
-      : entry.wordIndex % WORDS_PER_GRID;
+    // Only found words carry a real colorIndex (their find-order color); unfound
+    // words get the neutral default tile — a fallback based on array position
+    // could collide with an actual found word's colorIndex (fb#12).
+    const colorIndex = entry.word.found ? entry.word.colorIndex : null;
 
     for (const cell of entry.word.cells) {
       cellMeta.set(cellKey(cell.row, cell.col), {
@@ -77,30 +74,4 @@ export function buildReviewLetterGridHtml(grid: GridData, locale: UiLocale = 'en
       return `<div class="grid-row">${cells}</div>`;
     })
     .join('');
-}
-
-/** Renders review clues in their fixed placedWords order, matching the live grid's list position. */
-export function buildReviewClueListHtml(grid: GridData, locale: UiLocale = 'en'): string {
-  return getReviewWordEntries(grid)
-    .map((entry) => buildReviewClueItemHtml(entry, locale))
-    .join('');
-}
-
-function buildReviewClueItemHtml(entry: ReviewWordEntry, locale: UiLocale): string {
-  const status = entry.found ? 'found' : 'missed';
-  const statusLabel = entry.found ? t('found', locale) : t('missed', locale);
-  const wordClass = entry.found ? ' review-clue__word--found' : ' review-clue__word--missed';
-  const borderColor = entry.found ? entry.color : 'var(--danger)';
-
-  return `
-    <li
-      class="review-clue review-clue--${status}"
-      data-word-id="${escapeHtml(entry.word.id)}"
-      style="border-left-color:${escapeHtml(borderColor)}"
-      aria-label="${escapeHtml(tFormat('reviewWordStatusAria', locale, { word: entry.displayText, status: statusLabel }))}"
-    >
-      <span class="review-clue__word${wordClass}">${formatClueDisplayHtml(entry.displayText)}</span>
-      <span class="review-clue__status">${statusLabel}</span>
-    </li>
-  `;
 }

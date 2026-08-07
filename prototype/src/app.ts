@@ -13,7 +13,6 @@ import {
   endState,
   gameState,
   homeState,
-  practiceSetupState,
   profileState,
   reviewState,
   roundErrorState,
@@ -24,11 +23,10 @@ import { renderAuthScreen } from './screens/auth-screen.js';
 import { renderEndScreen } from './screens/end-screen.js';
 import { mountGameScreen, type GameScreenHandle } from './screens/game-screen.js';
 import { renderHomeScreen } from './screens/home-screen.js';
-import { renderPracticeSetupScreen } from './screens/practice-setup-screen.js';
 import { renderProfileScreen } from './screens/profile-screen.js';
 import { renderReviewScreen } from './screens/review-screen.js';
 import { renderRoundStartErrorScreen } from './screens/round-start-error-screen.js';
-import { normalizeRulesReturnScreen, renderRulesScreen } from './screens/rules-screen.js';
+import { renderRulesScreen } from './screens/rules-screen.js';
 import { renderSettingsScreen } from './screens/settings-screen.js';
 import { getAvatarUrl } from './utils/avatar-assets.js';
 import { startPracticeRoundState } from './utils/round-setup.js';
@@ -101,28 +99,16 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
           locale: state.selectedLanguage,
           selectedLanguage: state.selectedLanguage,
           onLanguageChange: applyLanguageChange,
-          onPlaySolo: goToPracticeSetup,
-          onRules: () => goToRules('home'),
+          onPlaySolo: startPracticeRound,
+          onRules: goToRules,
           onSettings: goToSettings,
         });
-        mountFooter(shell, 'play');
-        break;
-      case 'practice-setup':
-        renderPracticeSetupScreen(shell, {
-          locale: state.selectedLanguage,
-          selectedLanguage: state.selectedLanguage,
-          onLanguageChange: applyLanguageChange,
-          onStartPracticeRound: startPracticeRound,
-          onRules: () => goToRules('practice-setup'),
-          onBack: goHome,
-        });
+        mountFooter(shell);
         break;
       case 'rules':
         renderRulesScreen(shell, {
           locale: state.selectedLanguage,
-          returnScreen: state.rulesReturnScreen,
-          onBack:
-            state.rulesReturnScreen === 'practice-setup' ? goToPracticeSetup : goHome,
+          onBack: goHome,
         });
         break;
       case 'settings':
@@ -207,6 +193,8 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
             }
             handleRoundEnded(interrupted);
           },
+          onStopGameDialogOpen: () => roundTimer?.pause(),
+          onStopGameDialogClose: () => roundTimer?.resume(),
         });
         mountDevTools(shell, generation);
         startRoundTimer();
@@ -257,15 +245,9 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     render();
   };
 
-  const goToPracticeSetup = (): void => {
+  const goToRules = (): void => {
     stopRoundTimer();
-    state = practiceSetupState(state);
-    render();
-  };
-
-  const goToRules = (returnScreen: unknown = 'home'): void => {
-    stopRoundTimer();
-    state = rulesState(state, normalizeRulesReturnScreen(returnScreen));
+    state = rulesState(state);
     render();
   };
 
@@ -281,19 +263,10 @@ export function createApp(root: HTMLElement): { getState: () => AppState } {
     render();
   };
 
-  const mountFooter = (shell: HTMLElement, activeTab: 'play' | 'profile'): void => {
+  const mountFooter = (shell: HTMLElement): void => {
     shell.classList.add('app-shell--with-footer');
-    shell.insertAdjacentHTML(
-      'beforeend',
-      renderFooterNav(activeTab, state.selectedLanguage),
-    );
-    bindFooterNav(shell, (screen) => {
-      if (screen === 'home') {
-        goHome();
-        return;
-      }
-      goToProfile();
-    });
+    shell.insertAdjacentHTML('beforeend', renderFooterNav(state.selectedLanguage));
+    bindFooterNav(shell, goToProfile);
   };
 
   const toAuthUser = (user: {

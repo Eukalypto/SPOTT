@@ -131,20 +131,38 @@ describe('getDisplayedClue', () => {
     ).toBe('#####');
   });
 
-  it('shows partial mask hiding the first half rounded up', () => {
-    expect(
-      getDisplayedClue({
-        ...createPlacedWord('w1', 'lion'),
-        maskType: 'partial',
-      }),
-    ).toBe('##ON');
+  it('hides half the letters (rounded up) as one contiguous block at a random-but-stable position', () => {
+    const clue = getDisplayedClue({
+      ...createPlacedWord('w1', 'lion'),
+      maskType: 'partial',
+    });
 
-    expect(
-      getDisplayedClue({
-        ...createPlacedWord('w2', 'tiger'),
-        maskType: 'partial',
-      }),
-    ).toBe('###ER');
+    expect(clue).toHaveLength(4);
+    expect(clue.match(/#/g)).toHaveLength(2);
+
+    const candidates = ['##ON', 'L##N', 'LI##'];
+    expect(candidates).toContain(clue);
+
+    // Same word id always yields the same mask position (no jumping on re-render).
+    const again = getDisplayedClue({
+      ...createPlacedWord('w1', 'lion'),
+      maskType: 'partial',
+    });
+    expect(again).toBe(clue);
+  });
+
+  it('does not always hide the same block position across different words', () => {
+    const offsets = new Set(
+      Array.from({ length: 30 }, (_, index) =>
+        getDisplayedClue({
+          ...createPlacedWord(`word-${index}`, 'tiger'),
+          maskType: 'partial',
+        }),
+      ),
+    );
+
+    // Range is 5 - 3 + 1 = 3 possible positions; 30 different ids should hit more than one.
+    expect(offsets.size).toBeGreaterThan(1);
   });
 
   it('shows unmasked words in uppercase', () => {
@@ -161,14 +179,21 @@ describe('getDisplayedClue', () => {
     ).toBe('LION');
   });
 
+  /** Every valid partial-mask rendering for a word, one per possible hidden-block position. */
+  function partialMaskCandidates(displayLetters: string[], hiddenCount: number): string[] {
+    const range = displayLetters.length - hiddenCount + 1;
+    return Array.from({ length: range }, (_, offset) => {
+      const before = displayLetters.slice(0, offset).join('').toUpperCase();
+      const after = displayLetters.slice(offset + hiddenCount).join('').toUpperCase();
+      return `${before}${'#'.repeat(hiddenCount)}${after}`;
+    });
+  }
+
   it('preserves Spanish ñ in visible partial clue letters', () => {
     const word = createPlacedWord('w1', 'señor', 'señor');
-    expect(
-      getDisplayedClue({
-        ...word,
-        maskType: 'partial',
-      }),
-    ).toBe('###OR');
+    const clue = getDisplayedClue({ ...word, maskType: 'partial' });
+
+    expect(partialMaskCandidates([...'señor'], 3)).toContain(clue);
   });
 
   it('counts ñ as one character for full-mask length', () => {
@@ -181,21 +206,23 @@ describe('getDisplayedClue', () => {
   });
 
   it('preserves French accents in visible partial clue letters', () => {
-    expect(
-      getDisplayedClue({
-        ...createPlacedWord('w1', 'fête', 'fete'),
-        maskType: 'partial',
-      }),
-    ).toBe('##TE');
+    const clue = getDisplayedClue({
+      ...createPlacedWord('w1', 'fête', 'fete'),
+      maskType: 'partial',
+    });
+
+    expect(partialMaskCandidates([...'fête'], 2)).toContain(clue);
   });
 
   it('aligns partial clues to normalized length for French ligatures', () => {
-    expect(
-      getDisplayedClue({
-        ...createPlacedWord('w1', 'cœur', 'coeur'),
-        maskType: 'partial',
-      }),
-    ).toBe('###UR');
+    const clue = getDisplayedClue({
+      ...createPlacedWord('w1', 'cœur', 'coeur'),
+      maskType: 'partial',
+    });
+
+    // "cœur" -> normalized "coeur" (5 letters); hidden block is 3 letters.
+    expect(clue).toHaveLength(5);
+    expect(clue.match(/#/g)).toHaveLength(3);
   });
 });
 

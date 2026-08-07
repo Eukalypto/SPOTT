@@ -21,9 +21,9 @@ function createRoundState(activeGridIndices: number[], currentGridIndex = active
 }
 
 describe('grid navigation helpers', () => {
-  it('shows the absolute grid number out of seven', () => {
+  it('shows the absolute grid rank (fb#7: no "n/7" suffix)', () => {
     const state = createRoundState([0, 1, 2, 3, 4, 5, 6], 2);
-    expect(getGridDisplayLabel(state)).toBe('3/7');
+    expect(getGridDisplayLabel(state)).toBe('3');
   });
 
   it('allows skip only when more than one unfinished grid remains', () => {
