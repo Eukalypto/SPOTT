@@ -1,8 +1,7 @@
 [
   {
-    "category": "Musical Styles",
+    "category": "Styles musicaux",
     "words": [
-      "ACID",
       "FOLK",
       "FUNK",
       "JAZZ",
@@ -25,8 +24,10 @@
       "TANGO",
       "VALSE",
       "BOLÉRO",
+      "GARAGE",
       "GOSPEL",
       "GRUNGE",
+      "HIPHOP",
       "MOTOWN",
       "REGGAE",
       "TECHNO",
@@ -36,15 +37,17 @@
       "CALYPSO",
       "COUNTRY",
       "DUBSTEP",
-      "RAGTIME"
+      "RAGTIME",
+      "ÉLECTRO"
     ]
   },
   {
-    "category": "Light Sources",
+    "category": "Sources de lumière",
     "words": [
-      "LAVE",
+      "HALO",
       "LUNE",
       "NÉON",
+      "FANAL",
       "FLASH",
       "LAMPE",
       "LASER",
@@ -60,11 +63,13 @@
       "ÉTOILE",
       "AMPOULE",
       "BRIQUET",
+      "LAMPION",
+      "LUCIOLE",
       "MÉTÉORE"
     ]
   },
   {
-    "category": "Leaders",
+    "category": "Chefs & Leaders",
     "words": [
       "CHAH",
       "DOGE",
@@ -85,13 +90,12 @@
       "RÉGENT",
       "SHOGUN",
       "SULTAN",
-      "INFANTE",
       "PHARAON",
       "TSARINE"
     ]
   },
   {
-    "category": "Car Parts",
+    "category": "Pièces de voiture",
     "words": [
       "PNEU",
       "ROUE",
@@ -99,6 +103,7 @@
       "CAPOT",
       "JAUGE",
       "JOINT",
+      "PHARE",
       "PORTE",
       "RÉTRO",
       "VITRE",
@@ -108,6 +113,7 @@
       "FILTRE",
       "FREINS",
       "JANTES",
+      "KLAXON",
       "LEVIER",
       "MOTEUR",
       "PISTON",
@@ -117,44 +123,50 @@
       "CAPTEUR",
       "CHÂSSIS",
       "CONSOLE",
-      "ESSENCE",
       "FUSIBLE",
       "SERRURE"
     ]
   },
   {
-    "category": "Animal Body Parts",
+    "category": "Anatomie animale",
     "words": [
       "AILE",
       "BRAS",
       "CROC",
       "DARD",
+      "OEIL",
+      "POIL",
       "BOSSE",
       "CORNE",
+      "DUVET",
       "ERGOT",
       "PATTE",
       "PLUME",
       "QUEUE",
       "SABOT",
-      "TACHE",
+      "SERRE",
+      "GRIFFE",
       "MUSEAU",
       "PATTES",
       "PELAGE",
       "TROMPE",
+      "ÉLYTRE",
       "ANTENNE",
       "DÉFENSE",
       "ÉCAILLE"
     ]
   },
   {
-    "category": "Animal Babies",
+    "category": "Bébés animaux",
     "words": [
       "FAON",
       "VEAU",
       "CHIOT",
       "LARVE",
       "OISON",
+      "TACON",
       "AIGLON",
+      "ALEVIN",
       "CHATON",
       "NYMPHE",
       "OURSON",
@@ -166,11 +178,12 @@
       "CYGNEAU",
       "GIRAFON",
       "LEVRAUT",
+      "POULAIN",
       "POUSSIN"
     ]
   },
   {
-    "category": "Pizza Toppings",
+    "category": "Garnitures de pizza",
     "words": [
       "BRIE",
       "FETA",
@@ -178,7 +191,9 @@
       "THON",
       "BACON",
       "BOEUF",
+      "CRÈME",
       "DINDE",
+      "PESTO",
       "ANANAS",
       "AVOCAT",
       "CÂPRES",
@@ -200,32 +215,11 @@
     ]
   },
   {
-    "category": "The Calendar",
+    "category": "Races de chiens",
     "words": [
-      "AOÛT",
-      "JUIN",
-      "MARS",
-      "AVRIL",
-      "JEUDI",
-      "LUNDI",
-      "MARDI",
-      "BÉLIER",
-      "CANCER",
-      "SAMEDI",
-      "VIERGE",
-      "BALANCE",
-      "FÉVRIER",
-      "GÉMEAUX",
-      "JANVIER",
-      "JUILLET",
-      "OCTOBRE",
-      "TAUREAU"
-    ]
-  },
-  {
-    "category": "Dog Breeds",
-    "words": [
+      "AKITA",
       "BOXER",
+      "CORGI",
       "DINGO",
       "HUSKY",
       "SPITZ",
@@ -238,13 +232,14 @@
       "CANICHE",
       "HARRIER",
       "LEVRIER",
+      "MALTAIS",
       "POINTER",
       "SPANIEL",
       "TERRIER"
     ]
   },
   {
-    "category": "Weather & Climate",
+    "category": "Climat & Météo",
     "words": [
       "VENT",
       "BRUME",
@@ -252,11 +247,11 @@
       "GIVRE",
       "GRÊLE",
       "HIVER",
-      "MARÉE",
       "NEIGE",
       "NUAGE",
       "ORAGE",
       "PLUIE",
+      "BRUINE",
       "RAFALE",
       "SAISON",
       "TYPHON",
@@ -266,11 +261,12 @@
       "CYCLONE",
       "OURAGAN",
       "TEMPÊTE",
-      "TORNADE"
+      "TORNADE",
+      "VERGLAS"
     ]
   },
   {
-    "category": "Fish",
+    "category": "Poissons",
     "words": [
       "SOLE",
       "THON",
@@ -278,6 +274,8 @@
       "MORUE",
       "MULET",
       "DORADE",
+      "HARENG",
+      "PERCHE",
       "REQUIN",
       "SAUMON",
       "SILURE",
@@ -291,7 +289,7 @@
     ]
   },
   {
-    "category": "Famous Brands",
+    "category": "Marques Célèbres",
     "words": [
       "ACER",
       "AVON",
@@ -302,12 +300,10 @@
       "FILA",
       "FUJI",
       "LEGO",
-      "LION",
       "MARS",
       "NIKE",
       "OLAY",
       "OREO",
-      "POLO",
       "PUMA",
       "SONY",
       "TWIX",
@@ -323,6 +319,8 @@
       "GUCCI",
       "HALLS",
       "HEINZ",
+      "HONDA",
+      "INTEL",
       "KNORR",
       "KRAFT",
       "LINDT",
@@ -336,12 +334,14 @@
       "SANYO",
       "SHARP",
       "TEFAL",
+      "TESLA",
       "TWIRL",
       "UMBRO",
       "VICHY",
       "WELLA",
       "XEROX",
       "ADIDAS",
+      "AMAZON",
       "ARMANI",
       "BOUNTY",
       "CHANEL",
@@ -350,6 +350,7 @@
       "GALAXY",
       "GIBSON",
       "GODIVA",
+      "GOOGLE",
       "HENKEL",
       "HERMES",
       "HOOVER",
@@ -357,6 +358,7 @@
       "LOREAL",
       "MATTEL",
       "MENTOS",
+      "ORACLE",
       "RAYBAN",
       "REEBOK",
       "REVLON",
@@ -396,9 +398,10 @@
     ]
   },
   {
-    "category": "Music",
+    "category": "Musique",
     "words": [
       "ALTO",
+      "ARIA",
       "CLEF",
       "NOTE",
       "SOLO",
@@ -420,15 +423,17 @@
       "MESURE",
       "OCTAVE",
       "RYTHME",
+      "SONATE",
       "TIMBRE",
-      "VOLUME",
       "BALLADE",
       "CADENCE",
       "CANTATE",
       "CHANSON",
       "CONCERT",
       "MÉLODIE",
+      "PRÉLUDE",
       "QUATUOR",
+      "REFRAIN",
       "RÉCITAL",
       "SILENCE",
       "SOLFÈGE",

@@ -1,6 +1,6 @@
 [
   {
-    "category": "Plant Anatomy",
+    "category": "Anatomie des plantes",
     "words": [
       "PORE",
       "SÈVE",
@@ -9,6 +9,7 @@
       "FLEUR",
       "FRUIT",
       "LIMBE",
+      "NOEUD",
       "ÉPINE",
       "GRAINE",
       "NECTAR",
@@ -17,14 +18,16 @@
       "PÉTALE",
       "RACINE",
       "RAMEAU",
+      "SÉPALE",
       "BRANCHE",
       "COROLLE",
       "FEUILLE",
+      "STOMATE",
       "ÉTAMINE"
     ]
   },
   {
-    "category": "Liquid Containers",
+    "category": "Conteneurs de liquides",
     "words": [
       "SEAU",
       "VASE",
@@ -32,7 +35,9 @@
       "BIDON",
       "CHOPE",
       "FIOLE",
+      "JARRE",
       "OUTRE",
+      "TASSE",
       "VERRE",
       "BÉCHER",
       "CARAFE",
@@ -42,16 +47,18 @@
       "AMPHORE",
       "BURETTE",
       "CITERNE",
+      "CUVETTE",
       "GOBELET",
       "MARMITE",
-      "TERRINE",
+      "PIPETTE",
       "THÉIÈRE",
       "TONNEAU"
     ]
   },
   {
-    "category": "Solid Containers",
+    "category": "Conteneurs de solides",
     "words": [
+      "ÉTUI",
       "BOÎTE",
       "COLIS",
       "MALLE",
@@ -60,6 +67,7 @@
       "BOURSE",
       "CAISSE",
       "CARTON",
+      "CASIER",
       "COFFRE",
       "PANIER",
       "PAQUET",
@@ -68,12 +76,13 @@
     ]
   },
   {
-    "category": "Colors",
+    "category": "Couleurs",
     "words": [
       "AQUA",
       "AZUR",
       "BLEU",
       "CYAN",
+      "DORÉ",
       "GRIS",
       "JADE",
       "KAKI",
@@ -88,7 +97,9 @@
       "JAUNE",
       "LILAS",
       "MAUVE",
+      "OLIVE",
       "PÊCHE",
+      "ROUGE",
       "SÉPIA",
       "AMANDE",
       "ARGENT",
@@ -102,14 +113,12 @@
       "ORANGE",
       "VIOLET",
       "ABRICOT",
-      "AMAZONE",
       "FUCHSIA",
-      "MAGENTA",
-      "POURPRE"
+      "MAGENTA"
     ]
   },
   {
-    "category": "Chemical Elements",
+    "category": "Éléments chimiques",
     "words": [
       "BORE",
       "IODE",
@@ -122,6 +131,7 @@
       "PLOMB",
       "RADON",
       "XÉNON",
+      "ÉTAIN",
       "ARGENT",
       "BARYUM",
       "CHLORE",
@@ -129,10 +139,12 @@
       "CUIVRE",
       "CURIUM",
       "CÉRIUM",
+      "CÉSIUM",
       "ERBIUM",
       "HÉLIUM",
       "INDIUM",
       "NICKEL",
+      "OSMIUM",
       "RADIUM",
       "SODIUM",
       "SOUFRE",
@@ -144,38 +156,42 @@
       "CALCIUM",
       "CARBONE",
       "DUBNIUM",
+      "GALLIUM",
+      "HAFNIUM",
       "IRIDIUM",
       "KRYPTON",
       "LITHIUM",
       "MERCURE",
       "OXYGÈNE",
       "THORIUM",
-      "URANIUM"
+      "URANIUM",
+      "YTTRIUM"
     ]
   },
   {
-    "category": "Animal Groups",
+    "category": "Groupes d'amimaux",
     "words": [
       "BANC",
+      "CLAN",
       "NUÉE",
       "BANDE",
       "HORDE",
       "MEUTE",
       "COUVÉE",
       "ESSAIM",
+      "HARDÉE",
       "PORTÉE",
       "TROUPE",
       "COLONIE"
     ]
   },
   {
-    "category": "Human Bones",
+    "category": "Le Squelette humain",
     "words": [
       "CRÂNE",
       "CÔTES",
       "FÉMUR",
       "TALUS",
-      "TARSE",
       "TIBIA",
       "VOMER",
       "COCCYX",
@@ -193,7 +209,7 @@
     ]
   },
   {
-    "category": "Metals",
+    "category": "Métaux",
     "words": [
       "ZINC",
       "ACIER",
@@ -204,8 +220,8 @@
       "CHROME",
       "COBALT",
       "CUIVRE",
-      "LAITON",
       "NICKEL",
+      "TITANE",
       "LITHIUM",
       "MERCURE",
       "THORIUM",
@@ -213,7 +229,7 @@
     ]
   },
   {
-    "category": "Works of Art",
+    "category": "Œuvres d'art",
     "words": [
       "FILM",
       "ALBUM",
@@ -240,21 +256,22 @@
       "CROQUIS",
       "EFFIGIE",
       "FRESQUE",
-      "LITANIE",
-      "POTERIE",
+      "GRAVURE",
       "REQUIEM"
     ]
   },
   {
-    "category": "Birds",
+    "category": "Oiseaux",
     "words": [
       "BUSE",
+      "GRUE",
       "IBIS",
       "KIWI",
       "AIGLE",
       "CYGNE",
       "HIBOU",
       "HÉRON",
+      "MERLE",
       "AUTOUR",
       "BUSARD",
       "CAILLE",
@@ -263,9 +280,11 @@
       "COUCOU",
       "DINDON",
       "FAISAN",
+      "FAUCON",
       "PAONNE",
       "PIGEON",
       "PINSON",
+      "PIVERT",
       "TOUCAN",
       "TÉTRAS",
       "CIGOGNE",
@@ -280,7 +299,7 @@
     ]
   },
   {
-    "category": "Lakes and Rivers",
+    "category": "Cours d'eau",
     "words": [
       "ERIE",
       "NESS",
@@ -294,6 +313,7 @@
       "NIGER",
       "SAÔNE",
       "SEINE",
+      "TIGRE",
       "VOLGA",
       "VOLTA",
       "BAÏKAL",
@@ -307,13 +327,12 @@
       "MOSELLE",
       "ONTARIO",
       "VISTULE",
-      "WHEATON",
       "YANGTSÉ",
       "ZAMBÈZE"
     ]
   },
   {
-    "category": "Currencies",
+    "category": "Monnaies",
     "words": [
       "BAHT",
       "DIME",
@@ -326,7 +345,6 @@
       "MARK",
       "PESO",
       "REAL",
-      "SHAH",
       "YANG",
       "YUAN",
       "BUDJU",
@@ -350,6 +368,7 @@
       "GINEIH",
       "GOURDE",
       "KORUNA",
+      "KWACHA",
       "PESETA",
       "ROUBLE",
       "ROUPIE",
@@ -364,14 +383,14 @@
       "DRACHME",
       "PENNING",
       "PIASTRE",
-      "RINGGIT"
+      "RINGGIT",
+      "ROUPIAH"
     ]
   },
   {
-    "category": "Languages",
+    "category": "Langues",
     "words": [
       "GREC",
-      "MAYA",
       "THAÏ",
       "TURC",
       "ARABE",
@@ -379,7 +398,9 @@
       "HAKKA",
       "HINDI",
       "KURDE",
+      "LATIN",
       "MAORI",
+      "PERSE",
       "RUSSE",
       "SERBE",
       "SWATI",
@@ -416,6 +437,7 @@
       "MALTAIS",
       "OCCITAN",
       "QUECHUA",
+      "ROUMAIN",
       "SLOVÈNE",
       "SUÉDOIS",
       "SWAHILI",
@@ -424,7 +446,7 @@
     ]
   },
   {
-    "category": "African Cities",
+    "category": "Villes africaines",
     "words": [
       "KANO",
       "LAMU",
@@ -443,6 +465,7 @@
       "TUNIS",
       "WARRI",
       "AGADIR",
+      "BAMAKO",
       "BANGUI",
       "DOUALA",
       "DURBAN",
@@ -467,11 +490,10 @@
     ]
   },
   {
-    "category": "Asian Cities",
+    "category": "Villes asiatiques",
     "words": [
       "ALEP",
       "DOHA",
-      "OMAN",
       "XIAN",
       "DELHI",
       "DHAKA",
@@ -479,6 +501,7 @@
       "HANOI",
       "KABUL",
       "KYOTO",
+      "MACAO",
       "OSAKA",
       "RIYAD",
       "SANAA",
@@ -493,6 +516,8 @@
       "LAHORE",
       "MADRAS",
       "MOSCOU",
+      "MUMBAI",
+      "TAIPEI",
       "BAGHDAD",
       "BANGKOK",
       "BEIJING",
@@ -509,13 +534,14 @@
     ]
   },
   {
-    "category": "European Cities",
+    "category": "Villes européennes",
     "words": [
       "BALE",
       "BONN",
       "HAMM",
       "LYON",
       "NICE",
+      "OSLO",
       "RIGA",
       "ROME",
       "VIGO",
@@ -557,6 +583,7 @@
       "MUNICH",
       "NANTES",
       "NAPLES",
+      "ODESSA",
       "PADOUE",
       "PRAGUE",
       "RENNES",
@@ -595,7 +622,7 @@
     ]
   },
   {
-    "category": "North-American Cities",
+    "category": "Villes nord-américaines",
     "words": [
       "MIAMI",
       "AUSTIN",
@@ -611,11 +638,14 @@
       "PUEBLA",
       "QUEBEC",
       "TOLUCA",
+      "ATLANTA",
       "CALGARY",
       "CHICAGO",
       "DETROIT",
       "HOUSTON",
       "MANAGUA",
+      "MEMPHIS",
+      "ORLANDO",
       "PHOENIX",
       "SEATTLE",
       "TIJUANA",
@@ -624,15 +654,15 @@
     ]
   },
   {
-    "category": "South-American Cities",
+    "category": "Villes sud-américaines",
     "words": [
       "CALI",
-      "LEON",
       "LIMA",
       "BÉLEM",
       "CUZCO",
       "NATAL",
       "QUITO",
+      "SUCRE",
       "BOGOTA",
       "MANAUS",
       "RECIFE",
@@ -646,9 +676,10 @@
     ]
   },
   {
-    "category": "World Cities",
+    "category": "Villes du monde",
     "words": [
       "ALEP",
+      "APIA",
       "BERN",
       "BONN",
       "DOHA",
@@ -690,6 +721,7 @@
       "RIYAD",
       "SANAA",
       "SOFIA",
+      "SUCRE",
       "SÉOUL",
       "TOKYO",
       "TUNIS",
@@ -784,7 +816,7 @@
     ]
   },
   {
-    "category": "World Capitals",
+    "category": "Capitales du monde",
     "words": [
       "APIA",
       "BERN",
@@ -814,6 +846,7 @@
       "RIYAD",
       "SANAA",
       "SOFIA",
+      "SUCRE",
       "SÉOUL",
       "TOKYO",
       "TUNIS",
@@ -845,6 +878,8 @@
       "NIAMEY",
       "OTTAWA",
       "PRAGUE",
+      "SKOPJE",
+      "TIRANA",
       "VIENNE",
       "ZAGREB",
       "ATHÈNES",
@@ -872,13 +907,15 @@
     ]
   },
   {
-    "category": "God & Goddesses",
+    "category": "Dieux & Déesses",
     "words": [
       "ARÈS",
+      "EROS",
       "HÉRA",
       "ISIS",
       "LOKI",
       "MARS",
+      "MAÂT",
       "ODIN",
       "RAMA",
       "THOR",
@@ -888,6 +925,7 @@
       "DIANE",
       "FREYA",
       "HADÈS",
+      "HORUS",
       "JANUS",
       "JUNON",
       "SHIVA",
@@ -895,6 +933,7 @@
       "VÉNUS",
       "ANUBIS",
       "ATHÉNA",
+      "GANESH",
       "HERMÈS",
       "HESTIA",
       "ISHTAR",
@@ -913,17 +952,16 @@
     ]
   },
   {
-    "category": "Famous Bands",
+    "category": "Groupes célèbres",
     "words": [
       "BLUR",
       "KISS",
       "MUSE",
       "RUSH",
-      "TOOL",
-      "TOTO",
       "OASIS",
       "QUEEN",
       "WILCO",
+      "EAGLES",
       "PIXIES",
       "WEEZER",
       "BAUHAUS",
@@ -941,7 +979,7 @@
     ]
   },
   {
-    "category": "Car Manufacturers",
+    "category": "Marques de voiture",
     "words": [
       "AUDI",
       "FIAT",
@@ -976,6 +1014,7 @@
       "CITROËN",
       "FERRARI",
       "HYUNDAI",
+      "MCLAREN",
       "PEUGEOT",
       "PONTIAC",
       "PORSCHE",
