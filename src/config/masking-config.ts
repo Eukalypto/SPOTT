@@ -12,7 +12,7 @@ export const GRID_MASKING_POLICIES = [
   { fullCount: 1, partialCount: 1 }, // Grid 3 — 1 full, 1 partial
   { fullCount: 0, partialCount: 0 }, // Grid 4 — no masking
   { fullCount: 2, partialCount: 2 }, // Grid 5 — 2 full, 2 partial
-  { fullCount: 1, partialCount: 1 }, // Grid 6 — 1 full, 1 partial
+  { fullCount: 0, partialCount: 0 }, // Grid 6 — no masking (fb#1g)
   { fullCount: 2, partialCount: 2 }, // Grid 7 — 2 full, 2 partial
 ] as const satisfies readonly GridMaskingPolicy[];
 

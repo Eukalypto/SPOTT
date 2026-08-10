@@ -69,7 +69,7 @@ describe('applyMasking — Classic schedule', () => {
     { gridNumber: 3, index: 2, full: 1, partial: 1, none: 4 },
     { gridNumber: 4, index: 3, full: 0, partial: 0, none: 6 },
     { gridNumber: 5, index: 4, full: 2, partial: 2, none: 2 },
-    { gridNumber: 6, index: 5, full: 1, partial: 1, none: 4 },
+    { gridNumber: 6, index: 5, full: 0, partial: 0, none: 6 },
     { gridNumber: 7, index: 6, full: 2, partial: 2, none: 2 },
   ])(
     'grid $gridNumber applies $full full, $partial partial, and $none none masks',

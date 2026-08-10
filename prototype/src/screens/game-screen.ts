@@ -12,6 +12,10 @@ import { buildTimerStatHtml, updateTimerDisplay } from '../utils/timer-display.j
 import { injectWordColorVars } from '../utils/word-colors.js';
 
 const SKIP_TRANSITION_MS = 200;
+/** Stop-game dialog auto-resumes play if left untouched (fb#1d). */
+const STOP_GAME_AUTO_RESUME_MS = 3000;
+/** The Nth press of X in one round skips the dialog and stops immediately (fb#1d). */
+const STOP_GAME_INSTANT_STOP_ATTEMPT = 3;
 
 export interface GameScreenViewOptions {
   clueListOptions?: ClueListOptions;
@@ -70,13 +74,38 @@ export function mountGameScreen(
   );
 
   const stopGameDialog = container.querySelector<HTMLElement>('[data-stop-game-dialog]');
-  const showStopGameDialog = (): void => {
-    stopGameDialog?.removeAttribute('hidden');
-    options.onStopGameDialogOpen?.();
+  let stopGameAttempts = 0;
+  let autoResumeTimeout: ReturnType<typeof setTimeout> | null = null;
+
+  const clearAutoResumeTimeout = (): void => {
+    if (autoResumeTimeout !== null) {
+      clearTimeout(autoResumeTimeout);
+      autoResumeTimeout = null;
+    }
   };
+
   const hideStopGameDialog = (): void => {
+    clearAutoResumeTimeout();
     stopGameDialog?.setAttribute('hidden', '');
     options.onStopGameDialogClose?.();
+  };
+
+  const showStopGameDialog = (): void => {
+    stopGameAttempts += 1;
+
+    // Third press in the same round skips the confirm step entirely (fb#1d).
+    if (stopGameAttempts >= STOP_GAME_INSTANT_STOP_ATTEMPT) {
+      options.onStopGame();
+      return;
+    }
+
+    stopGameDialog?.removeAttribute('hidden');
+    options.onStopGameDialogOpen?.();
+
+    clearAutoResumeTimeout();
+    autoResumeTimeout = setTimeout(() => {
+      hideStopGameDialog();
+    }, STOP_GAME_AUTO_RESUME_MS);
   };
 
   container.querySelector<HTMLButtonElement>('[data-action="stop-game"]')?.addEventListener(
@@ -129,6 +158,7 @@ export function mountGameScreen(
       if (skipTransitionTimeout !== null) {
         clearTimeout(skipTransitionTimeout);
       }
+      clearAutoResumeTimeout();
       swipeHandle.destroy();
     },
   };
@@ -281,6 +311,9 @@ function buildGameScreenHtml(
         aria-labelledby="stop-game-dialog-message"
       >
         <div class="confirm-dialog__panel">
+          <svg class="confirm-dialog__hourglass" viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path fill="currentColor" d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zM12 11.5l-4-4V4h8v3.5l-4 4z" />
+          </svg>
           <p id="stop-game-dialog-message" class="confirm-dialog__message">
             ${escapeHtml(t('confirmStopGameMessage', locale))}
           </p>

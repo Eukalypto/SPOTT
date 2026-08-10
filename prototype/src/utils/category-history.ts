@@ -3,11 +3,12 @@
  * Solo rounds can favor categories the player hasn't seen in a while (fb#13).
  * Storage is a flat, capped list — lightweight, no server round-trip needed.
  */
+import { GAME_CONFIG } from '@spott/engine';
 
 export const CATEGORY_HISTORY_STORAGE_KEY = 'spott.recentCategoryHistory';
 
-/** How many recently played theme ids to remember before the oldest roll off. */
-export const MAX_CATEGORY_HISTORY = 40;
+/** How many recently played theme ids to remember before the oldest roll off — 5 games' worth (fb#3b). */
+export const MAX_CATEGORY_HISTORY = GAME_CONFIG.gridsPerRound * 5;
 
 export interface CategoryHistoryStorage {
   getItem(key: string): string | null;

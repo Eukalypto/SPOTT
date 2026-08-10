@@ -9,6 +9,7 @@ import {
 } from '../utils/grid-display.js';
 import { escapeHtml } from '../utils/html.js';
 import { getCellTileUrl } from '../utils/tile-assets.js';
+import { getWordHighlightColor, WORDS_PER_GRID } from '../utils/word-colors.js';
 
 export interface ReviewWordEntry {
   word: PlacedWord;
@@ -74,4 +75,58 @@ export function buildReviewLetterGridHtml(grid: GridData, locale: UiLocale = 'en
       return `<div class="grid-row">${cells}</div>`;
     })
     .join('');
+}
+
+/** Cheap string hash (djb2), used to seed a deterministic shuffle. */
+function hashString(value: string): number {
+  let hash = 5381;
+  for (let i = 0; i < value.length; i++) {
+    hash = (hash * 33) ^ value.charCodeAt(i);
+  }
+  return hash >>> 0;
+}
+
+function seededShuffle<T>(items: readonly T[], seed: number): T[] {
+  const result = [...items];
+  let state = seed >>> 0;
+  const random = (): number => {
+    state = (Math.imul(1664525, state) + 1013904223) >>> 0;
+    return state / 0x1_0000_0000;
+  };
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
+/**
+ * Assign each not-found word one of the gauge's unused colors (fb#2j), in a
+ * random-but-stable order (seeded by grid id, so it doesn't reshuffle on
+ * re-render) — the remaining colors always exactly cover the missed words,
+ * since found + missed always add up to all 6 gauge colors.
+ */
+export function getUnfoundWordColors(grid: GridData): Map<string, string> {
+  const usedColorIndexes = new Set(
+    grid.placedWords
+      .filter((word): word is PlacedWord & { colorIndex: number } => word.found && word.colorIndex !== null)
+      .map((word) => word.colorIndex),
+  );
+  const remainingColorIndexes = Array.from({ length: WORDS_PER_GRID }, (_, i) => i).filter(
+    (index) => !usedColorIndexes.has(index),
+  );
+  const unfoundWords = grid.placedWords.filter((word) => !word.found);
+  const shuffledColorIndexes = seededShuffle(remainingColorIndexes, hashString(grid.id));
+
+  const colors = new Map<string, string>();
+  unfoundWords.forEach((word, index) => {
+    const colorIndex = shuffledColorIndexes[index % shuffledColorIndexes.length];
+    if (colorIndex !== undefined) {
+      colors.set(word.id, getWordHighlightColor(colorIndex));
+    }
+  });
+
+  return colors;
 }

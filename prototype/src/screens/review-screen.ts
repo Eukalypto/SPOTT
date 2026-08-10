@@ -1,11 +1,12 @@
 import type { RoundState } from '@spott/engine';
 
 import { buildClueListHtml } from '../components/clue-list.js';
-import { buildReviewLetterGridHtml } from '../components/grid-review.js';
+import { buildGaugeHtml, getGaugeSummaryText } from '../components/word-gauge.js';
+import { buildReviewLetterGridHtml, getUnfoundWordColors } from '../components/grid-review.js';
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { GENERIC_AVATAR_ICON } from '../utils/avatar-assets.js';
 import { escapeHtml } from '../utils/html.js';
-import { buildTimerStatHtml } from '../utils/timer-display.js';
+import { getRoundStats } from '../utils/round-stats.js';
 import { injectWordColorVars } from '../utils/word-colors.js';
 
 export interface ReviewScreenOptions {
@@ -20,19 +21,57 @@ export interface ReviewScreenOptions {
   onClose: () => void;
 }
 
+/** mm:ss, matching the live timer's formatting. */
+function formatTime(totalSeconds: number): string {
+  const seconds = Math.max(0, totalSeconds);
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${minutes}:${secs.toString().padStart(2, '0')}`;
+}
+
 /**
- * Same header as the Game screen (A2i): score is frozen at its final value
- * and the timer shows the time remaining when the round ended, un-ticking.
+ * Same header as the Game screen (A2i), except the timer slot shows how the
+ * round ended instead of ticking (fb#2i):
+ *  - completed: remaining/bonus time in green, "All Grids Completed"
+ *  - interrupted: remaining time in red, "Game Stopped"
+ *  - anything else (expired): 0:00 in orange, "{n} words found out of 42"
  */
 function buildReviewHeaderHtml(options: ReviewScreenOptions): string {
   const { roundState, locale, playerName, playerAvatarUrl } = options;
+  const stats = getRoundStats(roundState);
+  const status = roundState.round.status;
+
+  let timeValue: string;
+  let statusModifier: string;
+  let statusMessage: string;
+
+  if (status === 'completed') {
+    timeValue = formatTime(stats.remainingSeconds);
+    statusModifier = 'completed';
+    statusMessage = t('reviewStatusAllCompleted', locale);
+  } else if (status === 'interrupted') {
+    timeValue = formatTime(stats.remainingSeconds);
+    statusModifier = 'stopped';
+    statusMessage = t('reviewStatusGameStopped', locale);
+  } else {
+    timeValue = formatTime(0);
+    statusModifier = 'expired';
+    statusMessage = tFormat('reviewWordsFoundOfTotal', locale, {
+      found: stats.wordsFound,
+      total: stats.totalWords,
+    });
+  }
+
   const avatarContent = playerAvatarUrl
     ? `<img class="game-header__avatar-image" src="${escapeHtml(playerAvatarUrl)}" alt="" />`
     : GENERIC_AVATAR_ICON;
 
   return `
     <header class="game-header">
-      ${buildTimerStatHtml(roundState.remainingSeconds, locale)}
+      <div class="game-stat__timer" data-timer-wrap aria-label="${escapeHtml(`${timeValue}, ${statusMessage}`)}">
+        <span class="game-stat__value game-stat__value--review-${statusModifier}">${escapeHtml(timeValue)}</span>
+        <span class="game-stat__badge game-stat__badge--review-${statusModifier}">${escapeHtml(statusMessage)}</span>
+      </div>
       <span class="game-header__score" data-score aria-label="${escapeHtml(t('score', locale))} ${roundState.score.total}">${roundState.score.total}</span>
       <div
         class="game-header__player"
@@ -48,69 +87,72 @@ function buildReviewHeaderHtml(options: ReviewScreenOptions): string {
 export function buildReviewScreenHtml(options: ReviewScreenOptions): string {
   const { roundState, reviewGridIndex, locale } = options;
   const grid = roundState.round.grids[reviewGridIndex];
-  const gridNumber = reviewGridIndex + 1;
   const hasPrevious = reviewGridIndex > 0;
   const hasNext = reviewGridIndex < roundState.round.grids.length - 1;
+  const unfoundWordColors = getUnfoundWordColors(grid);
 
   return `
-    <section class="screen screen--review" aria-labelledby="review-title">
+    <section class="screen screen--review" aria-label="${escapeHtml(t('gridReview', locale))}">
       ${buildReviewHeaderHtml(options)}
 
-      <header class="review-header">
-        <div class="review-header__titles">
-          <h2 id="review-title">${escapeHtml(t('gridReview', locale))}</h2>
-          <p class="review-header__hint">${escapeHtml(t('reviewReadOnlyHint', locale))}</p>
-        </div>
-        <button type="button" class="text-button" data-action="close">${escapeHtml(t('backToResults', locale))}</button>
-      </header>
-
-      <nav class="review-tabs" aria-label="${escapeHtml(t('grid', locale))}">
-        ${buildGridTabsHtml(roundState, reviewGridIndex, locale)}
-      </nav>
-
-      <div class="review-grid-nav">
+      <div class="game-theme-row">
         <button
           type="button"
-          class="review-nav-button"
-          data-action="prev"
-          ${hasPrevious ? '' : 'disabled'}
-          aria-label="${escapeHtml(t('previousGrid', locale))}"
+          class="stop-game-button"
+          data-action="close"
+          aria-label="${escapeHtml(t('backToResults', locale))}"
         >
-          ← ${escapeHtml(t('previousGrid', locale))}
-        </button>
-        <p class="review-grid-label" aria-live="polite">
-          ${escapeHtml(tFormat('gridWordsFoundSummary', locale, {
-            found: grid.placedWords.filter((word) => word.found).length,
-            total: grid.placedWords.length,
-          }))}
-          · ${gridNumber} – ${escapeHtml(grid.themeLabel)}
-        </p>
-        <button
-          type="button"
-          class="review-nav-button"
-          data-action="next"
-          ${hasNext ? '' : 'disabled'}
-          aria-label="${escapeHtml(t('nextGrid', locale))}"
-        >
-          ${escapeHtml(t('nextGrid', locale))} →
+          <span aria-hidden="true">✕</span>
         </button>
       </div>
 
       <div
         class="letter-grid letter-grid--review"
         role="grid"
-        aria-label="${escapeHtml(`${t('gridReview', locale)} ${gridNumber}`)}"
+        aria-label="${escapeHtml(`${t('gridReview', locale)} ${reviewGridIndex + 1}`)}"
         aria-readonly="true"
       >
         ${buildReviewLetterGridHtml(grid, locale)}
       </div>
 
-      <section class="review-words" aria-labelledby="review-words-title">
-        <h3 id="review-words-title" class="review-words__title">${escapeHtml(t('reviewAllWords', locale))}</h3>
-        <ul class="clue-list" aria-label="${escapeHtml(t('reviewAllWords', locale))}">
-          ${buildClueListHtml(grid, { locale })}
-        </ul>
-      </section>
+      <div class="grid-rank-badge">
+        <span class="grid-rank-badge__rank">${reviewGridIndex + 1}</span>
+        <span class="grid-rank-badge__separator" aria-hidden="true">–</span>
+        <span class="grid-rank-badge__category">${escapeHtml(grid.themeLabel)}</span>
+      </div>
+
+      <ul class="clue-list" aria-label="${escapeHtml(t('reviewAllWords', locale))}">
+        ${buildClueListHtml(grid, { locale, unfoundWordColors })}
+      </ul>
+
+      <div class="next-grid-row next-grid-row--review">
+        <button
+          type="button"
+          class="next-grid-button prev-grid-button${hasPrevious ? '' : ' next-grid-button--disabled'}"
+          data-action="prev"
+          ${hasPrevious ? '' : 'disabled'}
+          aria-label="${escapeHtml(t('previousGrid', locale))}"
+        >
+          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path fill="currentColor" d="M14.6 6.6 8.2 12l6.4 5.4V6.6z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="next-grid-button${hasNext ? '' : ' next-grid-button--disabled'}"
+          data-action="next"
+          ${hasNext ? '' : 'disabled'}
+          aria-label="${escapeHtml(t('nextGrid', locale))}"
+        >
+          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path fill="currentColor" d="M9.4 6.6 15.8 12l-6.4 5.4V6.6z" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="word-gauge" aria-label="${escapeHtml(getGaugeSummaryText(grid, locale))}">
+        ${buildGaugeHtml(grid)}
+      </div>
     </section>
   `;
 }
@@ -123,15 +165,6 @@ export function renderReviewScreen(container: HTMLElement, options: ReviewScreen
     'click',
     options.onClose,
   );
-
-  container.querySelectorAll<HTMLButtonElement>('[data-grid-index]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const index = Number(button.dataset.gridIndex);
-      if (!Number.isNaN(index)) {
-        options.onChangeGrid(index);
-      }
-    });
-  });
 
   const { reviewGridIndex } = options;
   const hasPrevious = reviewGridIndex > 0;
@@ -154,59 +187,4 @@ export function renderReviewScreen(container: HTMLElement, options: ReviewScreen
       }
     },
   );
-}
-
-function buildGridTabsHtml(
-  roundState: RoundState,
-  reviewGridIndex: number,
-  locale: UiLocale,
-): string {
-  return roundState.round.grids
-    .map((entry, index) => {
-      const selected = index === reviewGridIndex;
-      const selectedClass = selected ? ' review-tab--active' : '';
-      const completed = entry.placedWords.every((word) => word.found)
-        ? ' review-tab--complete'
-        : '';
-      const missed = entry.placedWords.some((word) => !word.found)
-        ? ' review-tab--has-missed'
-        : '';
-      const ariaCurrent = selected ? ' aria-current="page"' : '';
-      const missedCount = entry.placedWords.filter((word) => !word.found).length;
-      const ariaLabel = buildReviewTabAriaLabel(index, {
-        selected,
-        completed: missedCount === 0,
-        missedCount,
-        locale,
-      });
-
-      return `<button type="button" class="review-tab${selectedClass}${completed}${missed}" data-grid-index="${index}" aria-label="${escapeHtml(ariaLabel)}"${ariaCurrent}>${index + 1}</button>`;
-    })
-    .join('');
-}
-
-function buildReviewTabAriaLabel(
-  index: number,
-  options: {
-    selected: boolean;
-    completed: boolean;
-    missedCount: number;
-    locale: UiLocale;
-  },
-): string {
-  const parts = [`${t('grid', options.locale)} ${index + 1}`];
-
-  if (options.selected) {
-    parts.push(t('reviewTabSelected', options.locale));
-  }
-
-  if (options.completed) {
-    parts.push(t('complete', options.locale));
-  } else if (options.missedCount > 0) {
-    parts.push(tFormat('reviewTabWordsMissed', options.locale, { count: options.missedCount }));
-  } else {
-    parts.push(t('incomplete', options.locale));
-  }
-
-  return parts.join(', ');
 }

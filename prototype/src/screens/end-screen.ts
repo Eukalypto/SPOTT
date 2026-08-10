@@ -2,7 +2,7 @@ import type { RoundState } from '@spott/engine';
 
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { escapeHtml } from '../utils/html.js';
-import { getRoundStats, shouldShowTimeBonus } from '../utils/round-stats.js';
+import { getOptimalScore, getRoundStats, shouldShowTimeBonus } from '../utils/round-stats.js';
 
 export type EndScreenGameMode = 'solo' | 'challenge';
 
@@ -71,6 +71,16 @@ export function buildEndScreenHtml(options: EndScreenOptions): string {
         <h3 id="end-stats-placeholder-title" class="end-stats-placeholder__title">
           ${escapeHtml(t('playerStatistics', locale))}
         </h3>
+        <dl class="profile-stats__list">
+          <div class="profile-stats__row">
+            <dt>${escapeHtml(t('statsWordsFoundOfTotal', locale))}</dt>
+            <dd>${stats.wordsFound}/${stats.totalWords}</dd>
+          </div>
+          <div class="profile-stats__row">
+            <dt>${escapeHtml(t('statsOptimalScore', locale))}</dt>
+            <dd>${getOptimalScore(options.roundState)}</dd>
+          </div>
+        </dl>
       </section>
 
       <button type="button" class="primary-button end-home-button" data-action="back-to-start">

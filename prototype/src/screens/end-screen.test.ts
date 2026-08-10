@@ -26,6 +26,8 @@ function createRoundState(
         placedWords: Array.from({ length: 6 }, (_, wordIndex) => ({
           id: `g${index}-w${wordIndex}`,
           found: wordIndex < grid.foundCount,
+          length: 4,
+          maskType: 'none',
         })),
       })),
     },
@@ -136,7 +138,7 @@ describe('buildEndScreenHtml', () => {
     expect(html).toContain(t('home', 'en'));
   });
 
-  it('shows an empty Player Statistics placeholder and nothing else', () => {
+  it('shows the Player Statistics section without leaking grid theme labels', () => {
     const html = buildEndScreenHtml({
       locale: 'en',
       roundState: createRoundState({
@@ -153,5 +155,27 @@ describe('buildEndScreenHtml', () => {
     expect(html).toContain(t('playerStatistics', 'en'));
     expect(html).not.toContain('Forest');
     expect(html).not.toContain('Ocean');
+  });
+
+  it('shows words found out of the round total and the optimal possible score (fb#3d)', () => {
+    const html = buildEndScreenHtml({
+      locale: 'en',
+      roundState: createRoundState({
+        grids: [
+          { themeLabel: 'Forest', foundCount: 6 },
+          { themeLabel: 'Ocean', foundCount: 2 },
+        ],
+      }),
+      onReviewGrids: () => {},
+      onStartAnotherRound: () => {},
+      onBackToStart: () => {},
+    });
+
+    expect(html).toContain(t('statsWordsFoundOfTotal', 'en'));
+    expect(html).toContain('8/12');
+    expect(html).toContain(t('statsOptimalScore', 'en'));
+    // Every word is length 4, mask 'none' (multiplier 1): weights [4,4,4,4,4,4]
+    // -> optimal per grid = 4*(1+2+3+4+5+6) = 84, x2 grids = 168.
+    expect(html).toContain('168');
   });
 });

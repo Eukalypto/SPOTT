@@ -65,6 +65,8 @@
   --color-danger: #b42318;
   --color-danger-soft: #fee4e2;
   --color-success: #2d6a4f;
+  --color-warning: #b45309;
+  --color-warning-soft: #fef3e0;
   --color-focus: #2d6a4f;
   --color-disabled-bg: #e8e4dc;
   --color-disabled-text: #7a7a7a;
@@ -718,7 +720,7 @@ body {
 
 @media (max-height: 40rem) {
   .letter-grid {
-    width: min(calc(100% + 2 * var(--screen-pad-x)), calc(100dvh - 11.5rem));
+    width: min(100%, calc(100dvh - 11.5rem));
   }
 
   .screen--game .clue-list,
@@ -729,7 +731,7 @@ body {
 
 @media (max-height: 32rem) {
   .letter-grid {
-    width: min(calc(100% + 2 * var(--screen-pad-x)), calc(100dvh - 10rem));
+    width: min(100%, calc(100dvh - 10rem));
   }
 }
 
@@ -833,8 +835,6 @@ body {
 .secondary-button:focus-visible,
 .text-button:focus-visible,
 .next-grid-button:focus-visible,
-.review-tab:focus-visible,
-.review-nav-button:focus-visible,
 .debug-button:focus-visible {
   outline: 2px solid var(--color-focus);
   outline-offset: 3px;
@@ -1042,6 +1042,10 @@ body {
   .grid-cell--invalid {
     animation: none;
   }
+
+  .confirm-dialog__hourglass {
+    animation: none;
+  }
 }
 
 .game-theme-row {
@@ -1062,21 +1066,24 @@ body {
   gap: 0.3rem;
 }
 
+/* Sizes are the original A2e values scaled 150% larger (fb#1e), i.e. x2.5. */
 .grid-rank-badge__category {
   color: var(--color-text-muted);
-  font-size: clamp(0.8rem, 2.6vw, 0.9rem);
-  line-height: 1.3;
+  font-size: clamp(2rem, 6.5vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.15;
 }
 
 .grid-rank-badge__rank {
   color: var(--color-text-muted);
-  font-size: clamp(0.75rem, 2.2vw, 0.8125rem);
+  font-size: clamp(1.875rem, 5.5vw, 2.03125rem);
   font-weight: 700;
 }
 
 .grid-rank-badge__separator {
   color: var(--color-text-muted);
-  font-size: clamp(0.75rem, 2.2vw, 0.8125rem);
+  font-size: clamp(1.875rem, 5.5vw, 2.03125rem);
+  font-weight: 700;
 }
 
 .stop-game-button {
@@ -1115,9 +1122,28 @@ body {
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  max-width: 22rem;
-  padding: var(--space-5);
+  max-width: 26rem;
+  padding: var(--space-6) var(--space-5);
   width: 100%;
+}
+
+/** Fills the enlarged stop-game panel (fb#1c) with a turning hourglass. */
+.confirm-dialog__hourglass {
+  animation: confirm-dialog-hourglass-turn 2.2s linear infinite;
+  color: var(--color-accent);
+  display: block;
+  height: 5.5rem;
+  margin: 0 auto var(--space-5);
+  width: 5.5rem;
+}
+
+@keyframes confirm-dialog-hourglass-turn {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .confirm-dialog__message {
@@ -1153,7 +1179,12 @@ body {
   background: var(--notch-color, var(--color-border));
 }
 
-/** Full-bleed, edge-to-edge grid (fb#5), breaking out of the screen's side padding like .word-gauge. */
+/**
+ * Sized to stay within the screen's normal side padding (fb#1a): a fully
+ * edge-to-edge grid put the swipe area right at the phone's physical edge,
+ * which kept triggering the OS's edge-swipe gestures (back nav, control
+ * center) instead of registering as a letter drag.
+ */
 .letter-grid {
   align-self: center;
   aspect-ratio: 1;
@@ -1167,13 +1198,13 @@ body {
   flex-direction: column;
   flex-shrink: 0;
   gap: clamp(0.15rem, 1vw, 0.25rem);
-  margin-inline: calc(-1 * var(--screen-pad-x));
+  margin-inline: auto;
   padding: clamp(0.35rem, 1.5vw, 0.5rem);
   touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-  width: min(calc(100% + 2 * var(--screen-pad-x)), calc(100dvh - 14rem));
+  width: min(100%, calc(100dvh - 14rem));
 }
 
 .letter-grid--selecting {
@@ -1191,6 +1222,34 @@ body {
 
 .game-stat__value--paused {
   color: var(--color-text-muted);
+}
+
+/* Review page (fb#2i): the timer slot shows how the round ended instead of ticking. */
+.game-stat__value--review-completed {
+  color: var(--color-success);
+}
+
+.game-stat__value--review-stopped {
+  color: var(--color-danger);
+}
+
+.game-stat__value--review-expired {
+  color: var(--color-warning);
+}
+
+.game-stat__badge--review-completed {
+  background: var(--color-accent-soft);
+  color: var(--color-success);
+}
+
+.game-stat__badge--review-stopped {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+
+.game-stat__badge--review-expired {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
 }
 
 .clue-item--revealed {
@@ -1271,10 +1330,10 @@ body {
 }
 
 .grid-cell__letter {
-  height: 62%;
+  height: 68%;
   object-fit: contain;
   pointer-events: none;
-  width: 62%;
+  width: 68%;
 }
 
 .grid-cell--selected {
@@ -1378,6 +1437,16 @@ body {
   color: var(--color-text);
 }
 
+/** Review-only (fb#2j): each missed word gets one of the gauge's unused colors, dimmed. */
+.clue-item--unfound-colored {
+  opacity: 0.5;
+}
+
+.clue-item--unfound-colored .clue-item__text,
+.clue-item--unfound-colored .clue-mask {
+  color: var(--clue-accent, var(--color-text));
+}
+
 .clue-item--empty {
   color: var(--color-text-muted);
   display: block;
@@ -1391,6 +1460,11 @@ body {
   display: flex;
   flex-shrink: 0;
   justify-content: flex-end;
+}
+
+/** Review page (fb#2e): previous arrow on the left, next arrow on the right, symmetric. */
+.next-grid-row--review {
+  justify-content: space-between;
 }
 
 .next-grid-button {
@@ -1489,9 +1563,13 @@ body {
 }
 
 .end-stats-placeholder {
-  background: var(--color-border);
+  align-content: start;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
+  display: grid;
   flex: 1;
+  gap: var(--space-4);
   min-height: 10rem;
   padding: 1rem;
 }
@@ -1522,169 +1600,5 @@ body {
 
 .grid-cell--review-missed {
   box-shadow: inset 0 0 0 2px var(--color-danger);
-}
-
-.review-grid-nav {
-  align-items: center;
-  display: grid;
-  flex-shrink: 0;
-  gap: var(--space-2);
-  grid-template-columns: auto 1fr auto;
-}
-
-.review-grid-label {
-  color: var(--color-text-muted);
-  font-size: clamp(0.78rem, 2.5vw, 0.9rem);
-  line-height: 1.25;
-  margin: 0;
-  overflow-wrap: anywhere;
-  text-align: center;
-}
-
-.review-nav-button {
-  appearance: none;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-sm);
-  color: var(--color-text);
-  cursor: pointer;
-  font: inherit;
-  font-size: clamp(0.8125rem, 2.4vw, 0.875rem);
-  font-weight: 600;
-  min-height: var(--tap-min);
-  padding: 0.5rem 0.75rem;
-  white-space: nowrap;
-}
-
-.review-nav-button:hover:not(:disabled) {
-  background: var(--color-surface-muted);
-}
-
-@media (max-width: 24rem) {
-  .review-grid-nav {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      'label label'
-      'prev next';
-  }
-
-  .review-grid-label {
-    grid-area: label;
-  }
-
-  .review-nav-button[data-action='prev'] {
-    grid-area: prev;
-    justify-self: stretch;
-    text-align: center;
-  }
-
-  .review-nav-button[data-action='next'] {
-    grid-area: next;
-    justify-self: stretch;
-    text-align: center;
-  }
-}
-
-.review-nav-button:disabled {
-  background: var(--color-disabled-bg);
-  box-shadow: none;
-  color: var(--color-disabled-text);
-  cursor: not-allowed;
-}
-
-.review-tab--has-missed:not(.review-tab--active):not(.review-tab--complete) {
-  border-color: var(--color-danger);
-}
-
-.review-tab--has-missed:not(.review-tab--active):not(.review-tab--complete)::after {
-  color: var(--color-danger);
-  content: '·';
-  font-weight: 800;
-  margin-left: 0.1rem;
-}
-
-.review-header {
-  align-items: flex-start;
-  display: flex;
-  flex-shrink: 0;
-  gap: var(--space-3);
-  justify-content: space-between;
-}
-
-.review-header__titles {
-  display: grid;
-  gap: 0.25rem;
-}
-
-.review-header__hint {
-  color: var(--color-text-muted);
-  font-size: 0.82rem;
-  line-height: 1.35;
-  margin: 0;
-  max-width: 16rem;
-}
-
-.review-header h2 {
-  font-size: clamp(1.05rem, 4vw, 1.25rem);
-  margin: 0;
-}
-
-.review-header .text-button {
-  flex-shrink: 0;
-  min-height: var(--tap-min);
-}
-
-.review-tabs {
-  display: grid;
-  flex-shrink: 0;
-  gap: clamp(0.2rem, 1vw, 0.25rem);
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-}
-
-.review-tab {
-  appearance: none;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  color: var(--color-text);
-  cursor: pointer;
-  font: inherit;
-  font-size: clamp(0.8125rem, 2.6vw, 0.875rem);
-  font-weight: 700;
-  min-height: var(--tap-min);
-  min-width: 0;
-  padding: clamp(0.45rem, 1.5vw, 0.55rem) 0.2rem;
-}
-
-.review-tab:hover:not(.review-tab--active) {
-  background: var(--color-surface-muted);
-}
-
-.review-tab--active {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
-  color: var(--color-text-on-accent);
-}
-
-.review-tab--complete:not(.review-tab--active) {
-  border-color: var(--color-success);
-}
-
-.screen--review .letter-grid {
-  flex-shrink: 0;
-}
-
-.review-words {
-  display: grid;
-  flex-shrink: 0;
-  gap: 0.45rem;
-}
-
-.review-words__title {
-  font-size: 0.9rem;
-  font-weight: 700;
-  margin: 0;
 }
 

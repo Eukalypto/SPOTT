@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getGridSummaries, getRoundStats, shouldShowTimeBonus } from './round-stats.js';
+import { getGridSummaries, getOptimalScore, getRoundStats, shouldShowTimeBonus } from './round-stats.js';
 
 function createRoundState(
   grids: Array<{
@@ -108,5 +108,58 @@ describe('round stats', () => {
 
     expect(shouldShowTimeBonus(completed)).toBe(true);
     expect(shouldShowTimeBonus(expired)).toBe(false);
+  });
+});
+
+describe('getOptimalScore (fb#3d)', () => {
+  it('pairs the smallest (length x mask multiplier) with findOrder 1, largest with the last findOrder', () => {
+    // weights: A=4x1=4, B=7x3=21, C=5x2=10 -> sorted [4,10,21] paired with [1,2,3]
+    // = 4*1 + 10*2 + 21*3 = 4 + 20 + 63 = 87
+    const roundState = {
+      round: {
+        grids: [
+          {
+            placedWords: [
+              { length: 4, maskType: 'none' },
+              { length: 7, maskType: 'full' },
+              { length: 5, maskType: 'partial' },
+            ],
+          },
+        ],
+      },
+    } as never;
+
+    expect(getOptimalScore(roundState)).toBe(87);
+  });
+
+  it('sums the optimal score across every grid in the round', () => {
+    const roundState = {
+      round: {
+        grids: [
+          { placedWords: [{ length: 4, maskType: 'none' }] }, // 4*1 = 4
+          { placedWords: [{ length: 4, maskType: 'none' }, { length: 4, maskType: 'none' }] }, // 4*1 + 4*2 = 12
+        ],
+      },
+    } as never;
+
+    expect(getOptimalScore(roundState)).toBe(16);
+  });
+
+  it('is unaffected by the actual found order or found state', () => {
+    const roundState = {
+      round: {
+        grids: [
+          {
+            placedWords: [
+              { length: 4, maskType: 'none', found: true, findOrder: 3 },
+              { length: 7, maskType: 'full', found: false, findOrder: null },
+            ],
+          },
+        ],
+      },
+    } as never;
+
+    // weights [4, 21] -> 4*1 + 21*2 = 4 + 42 = 46, regardless of actual findOrder/found.
+    expect(getOptimalScore(roundState)).toBe(46);
   });
 });
