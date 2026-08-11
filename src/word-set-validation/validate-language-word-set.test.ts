@@ -102,7 +102,13 @@ describe('validateLanguageWordSet — valid sets', () => {
     const result = validateLanguageWordSet(createValidEnglishWordSet());
     expect(result.isValid).toBe(true);
     expect(result.errors).toEqual([]);
-    expect(result.warnings).toEqual([]);
+    // fb#3e: each theme's spare word gives its 6-letter bucket genuine
+    // surplus, which is enough for computeWordLengthComposition to legally
+    // redistribute a slot away from the standard shape for variety — that's
+    // an informational (non-standard composition) warning, not a defect.
+    expect(result.warnings.every((warning) => warning.includes('non-standard word-length composition'))).toBe(
+      true,
+    );
   });
 
   it('accepts valid French word sets with accent normalization', () => {
@@ -229,18 +235,43 @@ describe('validateLanguageWordSet — theme composition', () => {
     });
 
     expect(result.isValid).toBe(true);
-    expect(result.warnings).toHaveLength(1);
+    // Theme A1 has exactly the baseline count of every length (no spare) and
+    // gets the original bare-minimum warning; every other theme has a spare
+    // 6-letter word, which is enough surplus for fb#3e's redistribution to
+    // legally reshape it away from the standard composition (a separate,
+    // informational warning — see the "accepts a fully valid" test above).
     expect(result.warnings[0]).toContain('Theme A1');
     expect(result.warnings[0]).toContain('bare minimum');
+    expect(result.warnings.slice(1).every((warning) => warning.includes('non-standard word-length composition'))).toBe(
+      true,
+    );
   });
 
-  it('rejects themes missing required word-length counts', () => {
+  it('redistributes a theme entirely missing a length instead of rejecting it (fb#3e)', () => {
     const wordSet = createValidEnglishWordSet();
+    // Removing the only 7-letter word still leaves exactly six words
+    // (2×4, 2×5, 2×6 via the spare) — enough to redistribute into a valid,
+    // non-standard composition rather than fail outright.
     wordSet.themes[0].words = uniqueThemeWords(0).filter((word) => word !== 'country');
 
     const result = validateLanguageWordSet(wordSet);
+    expect(result.isValid).toBe(true);
+    expect(result.errors).toEqual([]);
+    expect(result.warnings[0]).toContain('Theme A1');
+    expect(result.warnings[0]).toContain('non-standard word-length composition');
+  });
+
+  it('rejects a theme with too few words overall to fill a grid', () => {
+    const wordSet = createValidEnglishWordSet();
+    // Remove the only 7-letter word and the spare: five words left, one
+    // short of the six a grid needs — no redistribution can invent a sixth.
+    wordSet.themes[0].words = uniqueThemeWords(0).filter(
+      (word) => word !== 'country' && word !== 'sparex',
+    );
+
+    const result = validateLanguageWordSet(wordSet);
     expect(result.isValid).toBe(false);
-    expect(result.errors.some((error) => error.includes('length 7'))).toBe(true);
+    expect(result.errors.some((error) => error.includes('cannot assemble'))).toBe(true);
   });
 });
 

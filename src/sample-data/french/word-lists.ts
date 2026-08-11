@@ -150,6 +150,18 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
     },
   },
   {
+    themeId: "fr-b-habitations-humaines",
+    label: "Habitations Humaines",
+    difficultyTier: "B",
+    wordsByLength: {
+      4: ["TOUR"],
+      5: ["ASILE","GEÔLE","HÔTEL","HUTTE","IGLOO","MOTEL","RANCH","TENTE","VILLA"],
+      6: ["ABBAYE","CABANE","CHALET","DUPLEX","FAVELA","MAISON","MANOIR","PALAIS","PRISON","REFUGE"],
+      7: ["CHÂTEAU","COTTAGE"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
+  },
+  {
     themeId: "fr-b-boissons-alcoolisees",
     label: "Boissons alcoolisées",
     difficultyTier: "B",
@@ -170,6 +182,7 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["NECTAR"],
       7: ["TONIQUE"],
     },
+    wordLengthComposition: [{"length":4,"count":3},{"length":5,"count":1},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "fr-b-boite-a-outil",
@@ -192,6 +205,18 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["BUFFET","BUREAU","CANAPÉ","CHAISE","COFFRE"],
       7: ["ARMOIRE","BERCEAU","COMMODE","ÉTAGÈRE","PLACARD"],
     },
+  },
+  {
+    themeId: "fr-b-vaisselles-et-couverts",
+    label: "Vaisselles et Couverts",
+    difficultyTier: "B",
+    wordsByLength: {
+      4: ["RÂPE"],
+      5: ["FOUET","PIQUE","POÊLE","TAMIS","TASSE","VERRE"],
+      6: ["CARAFE","LOUCHE","MOULIN","PICHET"],
+      7: ["CISEAUX","COUTEAU","GOBELET","MARMITE","PLANCHE","PLATEAU","SPATULE","THÉIÈRE"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "fr-b-equipement-sportif",
@@ -238,6 +263,30 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
     },
   },
   {
+    themeId: "fr-c-outils-de-jardinage",
+    label: "Outils de jardinage",
+    difficultyTier: "C",
+    wordsByLength: {
+      4: ["HOUE"],
+      5: ["BÊCHE","PELLE","SERPE"],
+      6: ["GRIFFE","PIOCHE","RÂTEAU"],
+      7: ["BINETTE","FOURCHE"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
+  },
+  {
+    themeId: "fr-c-materiel-de-menage",
+    label: "Matériel de ménage",
+    difficultyTier: "C",
+    wordsByLength: {
+      4: ["SEAU"],
+      5: ["BALAI","GANTS","JAVEL","SAVON","SPRAY"],
+      6: ["BROSSE","CIRAGE"],
+      7: ["BASSINE","CHIFFON","LAVETTE","LESSIVE","PLUMEAU","TORCHON"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
+  },
+  {
     themeId: "fr-c-arbres",
     label: "Arbres",
     difficultyTier: "C",
@@ -258,6 +307,18 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["FLÈCHE"],
       7: ["FLEURET","MISSILE","MORTIER"],
     },
+  },
+  {
+    themeId: "fr-c-desserts-et-sucreries",
+    label: "Desserts et sucreries",
+    difficultyTier: "C",
+    wordsByLength: {
+      4: ["FLAN"],
+      5: ["CRÊPE","DONUT","FUDGE","GELÉE","GLACE","SABLÉ","SCONE","TARTE"],
+      6: ["BONBON","CHURRO","COOKIE","GAUFRE","MOUSSE","MUFFIN","NOUGAT","SORBET","ÉCLAIR"],
+      7: ["BAKLAVA","BEIGNET","BISCUIT","BROWNIE","CANNELÉ","CARAMEL","COMPOTE","CRUMBLE","CUPCAKE","MACARON","PARFAIT","PRALINE","PUDDING","SOUFFLÉ","STRUDEL"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "fr-c-le-temps-et-ses-mesures",
@@ -348,6 +409,30 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
     },
   },
   {
+    themeId: "fr-d-bebes-animaux",
+    label: "Bébés animaux",
+    difficultyTier: "D",
+    wordsByLength: {
+      4: ["FAON"],
+      5: ["CHIOT","LARVE","OISON","TACON"],
+      6: ["AIGLON","ALEVIN","CHATON","NYMPHE","OURSON","TÊTARD"],
+      7: ["AGNELET","ASTICOT","CANETON","CIVELLE","CYGNEAU","GIRAFON","LEVRAUT","POULAIN","POUSSIN"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
+  },
+  {
+    themeId: "fr-d-climat-meteo",
+    label: "Climat & Météo",
+    difficultyTier: "D",
+    wordsByLength: {
+      4: ["VENT"],
+      5: ["BRUME","FROID","GIVRE","GRÊLE","NEIGE","NUAGE","ORAGE","PLUIE"],
+      6: ["BRUINE","RAFALE","TYPHON"],
+      7: ["CHALEUR","CYCLONE","OURAGAN","TEMPÊTE","TORNADE","VERGLAS"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
+  },
+  {
     themeId: "fr-d-marques-celebres",
     label: "Marques Célèbres",
     difficultyTier: "D",
@@ -381,6 +466,30 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
     },
   },
   {
+    themeId: "fr-e-conteneurs-de-liquides",
+    label: "Conteneurs de liquides",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["VASE"],
+      5: ["BARIL","BIDON","CHOPE","FIOLE","JARRE","OUTRE"],
+      6: ["BÉCHER","CRUCHE","FLACON","GOURDE"],
+      7: ["AMPHORE","BURETTE","CITERNE","CUVETTE","PIPETTE","TONNEAU"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
+  },
+  {
+    themeId: "fr-e-conteneurs-de-solides",
+    label: "Conteneurs de solides",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["ÉTUI"],
+      5: ["COLIS","MALLE"],
+      6: ["BAGAGE","CAISSE","CARTON","CASIER","PAQUET","TIROIR"],
+      7: [],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":2},{"length":6,"count":3}],
+  },
+  {
     themeId: "fr-e-couleurs",
     label: "Couleurs",
     difficultyTier: "E",
@@ -412,6 +521,19 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["COUVÉE","ESSAIM","HARDÉE","PORTÉE","TROUPE"],
       7: ["COLONIE"],
     },
+    wordLengthComposition: [{"length":5,"count":3},{"length":6,"count":3}],
+  },
+  {
+    themeId: "fr-e-uvres-d-art",
+    label: "Œuvres d'art",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["FILM"],
+      5: ["ALBUM","DANSE","PHOTO","PIÈCE","POÈME","PROSE","ROMAN"],
+      6: ["BALLET","DESSIN","PSAUME","SONNET","STATUE","ÉLÉGIE","ÉPOPÉE"],
+      7: ["COMÉDIE","CROQUIS","EFFIGIE","FRESQUE","GRAVURE","REQUIEM"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "fr-e-cours-d-eau",
@@ -480,6 +602,18 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
     },
   },
   {
+    themeId: "fr-e-villes-sud-americaines",
+    label: "Villes sud-américaines",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["CALI"],
+      5: ["BÉLEM","CUZCO","NATAL"],
+      6: ["MANAUS","RECIFE","SANTOS"],
+      7: ["IQUIQUE","MARACAY","MENDOZA","ROSARIO"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
+  },
+  {
     themeId: "fr-e-villes-du-monde",
     label: "Villes du monde",
     difficultyTier: "E",
@@ -489,6 +623,18 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["ASMARA","ASTANA","BILBAO","BISSAU","LUANDA","MANAMA","MAPUTO","MASERU","MECQUE","OXFORD","RHODES","SYDNEY","ZAGREB"],
       7: ["CAYENNE","CHESTER","KOLKATA","LARNACA","MYKONOS","PAPEETE","YEREVAN"],
     },
+  },
+  {
+    themeId: "fr-e-capitales-du-monde",
+    label: "Capitales du monde",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: [],
+      5: ["ABUJA","ALOFI","PRAIA","VADUZ"],
+      6: ["AVARUA","SKOPJE","TIRANA"],
+      7: [],
+    },
+    wordLengthComposition: [{"length":5,"count":4},{"length":6,"count":2}],
   },
   {
     themeId: "fr-e-dieux-deesses",
@@ -511,6 +657,7 @@ export const FRENCH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["EAGLES","PIXIES","WEEZER"],
       7: ["BAUHAUS","GARBAGE","GENESIS","JOURNEY","MISFITS","NIRVANA","PANTERA","PLACEBO","RAINBOW","RAMONES","ROXETTE","SEETHER"],
     },
+    wordLengthComposition: [{"length":4,"count":3},{"length":6,"count":2},{"length":7,"count":1}],
   },
   {
     themeId: "fr-e-marques-de-voiture",

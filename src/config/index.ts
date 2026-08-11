@@ -32,3 +32,9 @@ export {
   getGridMaskingPolicy,
   getUnmaskedWordCount,
 } from './masking-config.js';
+
+export {
+  computeWordLengthComposition,
+  MAX_WORDS_PER_LENGTH,
+  type WordLengthCounts,
+} from './word-length-composition.js';

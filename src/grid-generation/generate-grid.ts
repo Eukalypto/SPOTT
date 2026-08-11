@@ -3,6 +3,7 @@ import {
   FILLER_ALPHABET,
   GAME_CONFIG,
   getGridMaskingPolicy,
+  MAX_WORDS_PER_LENGTH,
   type WordLengthCompositionEntry,
 } from '../config/index.js';
 import { toDisplayUpperCase } from '../display/to-display-uppercase.js';
@@ -73,7 +74,13 @@ export const DEFAULT_GRID_CONFIG: GenerateGridConfig = {
 export function generateGrid(options: GenerateGridOptions): GridGenerationResult {
   const config = options.config ?? DEFAULT_GRID_CONFIG;
   const random = options.random ?? Math.random;
-  const { gridSize, wordLengthComposition } = config.game;
+  const { gridSize } = config.game;
+  // fb#3e: a theme carries its own build-time-validated composition when the
+  // standard shape doesn't fit its word pool (see
+  // scripts/generate-word-lists.mjs); generateGrid never derives one live
+  // from word counts, since an unvalidated shape can be slow or impossible to
+  // place and this runs on every round.
+  const wordLengthComposition = options.themeWordSet.wordLengthComposition ?? config.game.wordLengthComposition;
 
   if (config.directions.length !== GAME_CONFIG.wordsPerGrid) {
     return { success: false, reason: 'invalid-word-set' };
@@ -192,6 +199,19 @@ function* selectWordCombinations(
   }
 }
 
+/**
+ * Bounds a single backtrackPlacement search. Most compositions place within a
+ * handful of recursive calls; a composition that's geometrically borderline
+ * (e.g. several same-length words competing for the same few valid
+ * positions) can otherwise explore an enormous number of dead-end branches
+ * before conceding defeat — observed taking 60-95 seconds for a single call
+ * on some fb#3e candidate compositions. Capping node visits makes a failed
+ * search fail fast and deterministically instead of scaling with how
+ * pathological the word pool happens to be; generateGrid still retries with
+ * up to MAX_WORD_COMBINATION_ATTEMPTS different word selections afterward.
+ */
+const MAX_BACKTRACK_SEARCH_NODES = 20_000;
+
 function backtrackPlacement(
   words: WordCandidate[],
   directions: readonly DirectionDefinition[],
@@ -199,12 +219,18 @@ function backtrackPlacement(
   random: () => number,
 ): PendingPlacement[] | null {
   const occupied = new Set<string>();
+  let nodesVisited = 0;
 
   function search(
     directionIndex: number,
     remaining: WordCandidate[],
     placements: PendingPlacement[],
   ): PendingPlacement[] | null {
+    nodesVisited += 1;
+    if (nodesVisited > MAX_BACKTRACK_SEARCH_NODES) {
+      return null;
+    }
+
     if (directionIndex === directions.length) {
       return placements;
     }
@@ -379,7 +405,7 @@ function randomLetter(alphabet: string, random: () => number): string {
 
 /** @internal Exported for tests. */
 export function assertGeneratedGridInvariants(grid: GridData, config = DEFAULT_GRID_CONFIG): void {
-  const { gridSize, wordLengthComposition } = config.game;
+  const { gridSize } = config.game;
 
   if (grid.size !== gridSize || grid.cells.length !== gridSize) {
     throw new Error(`Expected ${gridSize}×${gridSize} grid`);
@@ -428,9 +454,12 @@ export function assertGeneratedGridInvariants(grid: GridData, config = DEFAULT_G
     }
   }
 
-  for (const { length, count } of wordLengthComposition) {
-    if ((lengthCounts.get(length) ?? 0) !== count) {
-      throw new Error(`Expected ${count} words of length ${length}`);
+  // fb#3e: composition varies per theme (see computeWordLengthComposition), so
+  // there's no single fixed distribution to check exact equality against here
+  // — only that no length exceeds the empirically-safe placement cap.
+  for (const [length, count] of lengthCounts) {
+    if (count > MAX_WORDS_PER_LENGTH[length]) {
+      throw new Error(`Too many words of length ${length}: ${count} exceeds the placement cap of ${MAX_WORDS_PER_LENGTH[length]}`);
     }
   }
 

@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from '../config/index.js';
+import { computeWordLengthComposition, GAME_CONFIG } from '../config/index.js';
 import { isPalindromeNormalized, normalizeWord } from '../normalization/index.js';
 import type { DifficultyTier } from '../types/difficulty.js';
 import type { LanguageCode } from '../types/language.js';
@@ -123,25 +123,58 @@ function validateThemeWordCounts(
   warnings: string[],
 ): void {
   const lengthCounts = countNormalizedWordLengths(theme, language);
+  const available: Record<WordLength, number> = {
+    4: lengthCounts.get(4) ?? 0,
+    5: lengthCounts.get(5) ?? 0,
+    6: lengthCounts.get(6) ?? 0,
+    7: lengthCounts.get(7) ?? 0,
+  };
+
+  // fb#3e: a theme that already carries a build-time-validated composition is
+  // checked against that shape; otherwise fall back to whatever
+  // computeWordLengthComposition can derive from the words it actually has.
+  const composition = theme.wordLengthComposition ?? computeWordLengthComposition(available);
+
+  if (!composition) {
+    errors.push(
+      `Theme "${theme.label}" (${theme.themeId}): cannot assemble ${GAME_CONFIG.wordsPerGrid} words from its available word lengths (4:${available[4]}, 5:${available[5]}, 6:${available[6]}, 7:${available[7]})`,
+    );
+    return;
+  }
+
   let atExactMinimum = true;
 
-  for (const { length, count: minimum } of GAME_CONFIG.wordLengthComposition) {
-    const actual = lengthCounts.get(length) ?? 0;
+  for (const { length, count: required } of composition) {
+    const actual = available[length] ?? 0;
 
-    if (actual < minimum) {
+    if (actual < required) {
       errors.push(
-        `Theme "${theme.label}" (${theme.themeId}): has ${actual} word(s) of length ${length}, requires at least ${minimum}`,
+        `Theme "${theme.label}" (${theme.themeId}): has ${actual} word(s) of length ${length}, requires at least ${required}`,
       );
       atExactMinimum = false;
       continue;
     }
 
-    if (actual > minimum) {
+    if (actual > required) {
       atExactMinimum = false;
     }
   }
 
-  if (atExactMinimum) {
+  const isStandardComposition =
+    composition.length === GAME_CONFIG.wordLengthComposition.length &&
+    composition.every((entry) =>
+      GAME_CONFIG.wordLengthComposition.some(
+        (standard) => standard.length === entry.length && standard.count === entry.count,
+      ),
+    );
+
+  if (!isStandardComposition) {
+    warnings.push(
+      `Theme "${theme.label}" (${theme.themeId}): uses a non-standard word-length composition (fb#3e) — ${composition
+        .map((entry) => `${entry.count}×${entry.length}`)
+        .join(', ')}`,
+    );
+  } else if (atExactMinimum) {
     warnings.push(
       `Theme "${theme.label}" (${theme.themeId}): has only the bare minimum word counts (2×4, 2×5, 1×6, 1×7); grid generation may fail more often`,
     );

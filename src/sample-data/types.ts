@@ -1,3 +1,4 @@
+import type { WordLengthCompositionEntry } from '../config/game-config.js';
 import type { DifficultyTier } from '../types/difficulty.js';
 import type { LanguageCode } from '../types/language.js';
 import type { LanguageWordSet, ThemeWordSet, WordLength } from '../types/word.js';
@@ -8,6 +9,8 @@ export interface SampleThemeWords {
   label: string;
   difficultyTier: DifficultyTier;
   wordsByLength: Readonly<Record<WordLength, readonly string[]>>;
+  /** fb#3e: build-time-validated composition; absent means the standard shape. */
+  wordLengthComposition?: readonly WordLengthCompositionEntry[];
 }
 
 /** Flatten length-grouped words into a {@link ThemeWordSet}. */
@@ -22,6 +25,7 @@ export function toThemeWordSet(theme: SampleThemeWords): ThemeWordSet {
       ...theme.wordsByLength[6],
       ...theme.wordsByLength[7],
     ],
+    ...(theme.wordLengthComposition ? { wordLengthComposition: theme.wordLengthComposition } : {}),
   };
 }
 

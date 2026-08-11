@@ -30,7 +30,10 @@ function expectValidWordSet(
   expect(byTier.E?.length ?? 0).toBeGreaterThanOrEqual(1);
 
   for (const theme of themes) {
-    for (const { length, count } of GAME_CONFIG.wordLengthComposition) {
+    // fb#3e: a theme with a build-time-validated composition override is
+    // checked against that shape, not blindly against the standard one.
+    const composition = theme.wordLengthComposition ?? GAME_CONFIG.wordLengthComposition;
+    for (const { length, count } of composition) {
       expect(theme.wordsByLength[length].length).toBeGreaterThanOrEqual(count);
     }
   }

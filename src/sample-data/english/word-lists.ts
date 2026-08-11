@@ -104,6 +104,7 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["AIKIDO","BASKET","BIKING","BOXING","DIVING","HOCKEY","KARATE","RACING","ROWING","SKIING","SOCCER","SPRINT","TENNIS"],
       7: ["ARCHERY","BOWLING","CROQUET","CURLING","CYCLING","FENCING","FISHING","HURLING","NETBALL","PARKOUR","RUNNING","SAILING","SKATING","SNOOKER","SURFING"],
     },
+    wordLengthComposition: [{"length":4,"count":3},{"length":6,"count":2},{"length":7,"count":1}],
   },
   {
     themeId: "en-a-modes-of-transport",
@@ -161,6 +162,18 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
     },
   },
   {
+    themeId: "en-b-human-habitats",
+    label: "Human Habitats",
+    difficultyTier: "B",
+    wordsByLength: {
+      4: ["JAIL"],
+      5: ["ABBEY","CABIN","HOTEL","HOUSE","IGLOO","LODGE","MANOR","MOTEL","RANCH","TOWER","VILLA"],
+      6: ["ASYLUM","CASTLE","CHALET","DUPLEX","FAVELA","HOSTEL","PALACE","PRISON"],
+      7: ["COTTAGE","SHELTER"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
+  },
+  {
     themeId: "en-b-alcoholic-beverages",
     label: "Alcoholic Beverages",
     difficultyTier: "B",
@@ -170,6 +183,30 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["BRANDY","COGNAC","GRAPPA","KIRSCH","LIQUOR","PASTIS","SHERRY"],
       7: ["BOURBON","CACHACA","MARTINI","MASTIKA","SAMBUCA","SANGRIA","TEQUILA","WHISKEY"],
     },
+  },
+  {
+    themeId: "en-b-non-alcoholic-beverages",
+    label: "Non-Alcoholic Beverages",
+    difficultyTier: "B",
+    wordsByLength: {
+      4: ["CHAI","COLA","MATE","SODA"],
+      5: ["BROTH","JUICE","LASSI","LATTE","MOCHA","PUNCH","SHAKE","SLUSH","SYRUP","TONIC","WATER"],
+      6: ["COFFEE","MATCHA","NECTAR"],
+      7: [],
+    },
+    wordLengthComposition: [{"length":4,"count":3},{"length":5,"count":2},{"length":6,"count":1}],
+  },
+  {
+    themeId: "en-b-hand-tools",
+    label: "Hand Tools",
+    difficultyTier: "B",
+    wordsByLength: {
+      4: ["FILE"],
+      5: ["CLAMP","DRILL","RULER"],
+      6: ["CHISEL","HAMMER","JIGSAW","MALLET","PLIERS","SOCKET","TROWEL","WRENCH"],
+      7: ["HACKSAW","SCRAPER","SPANNER","STAPLER"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "en-b-furniture",
@@ -225,6 +262,7 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["COURSE"],
       7: ["CIRCUIT","STADIUM"],
     },
+    wordLengthComposition: [{"length":4,"count":3},{"length":5,"count":2},{"length":7,"count":1}],
   },
   {
     themeId: "en-c-jewelry",
@@ -236,6 +274,30 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["AMULET","ANKLET","CHOKER","DIADEM","GARNET","JASPER","LOCKET","SIGNET","SPINEL","ZIRCON"],
       7: ["APATITE","CITRINE","DIAMOND","EMERALD","PENDANT"],
     },
+  },
+  {
+    themeId: "en-c-garden-tools",
+    label: "Garden Tools",
+    difficultyTier: "C",
+    wordsByLength: {
+      4: ["HOSE","RAKE"],
+      5: ["EDGER","MOWER","SPADE"],
+      6: ["LOPPER","PRUNER","SHEARS","SHOVEL","SICKLE","WEEDER"],
+      7: [],
+    },
+    wordLengthComposition: [{"length":5,"count":3},{"length":6,"count":3}],
+  },
+  {
+    themeId: "en-c-cleaning-supplies",
+    label: "Cleaning Supplies",
+    difficultyTier: "C",
+    wordsByLength: {
+      4: ["SOAP"],
+      5: ["BROOM","BRUSH","CLOTH","SPRAY","WIPES"],
+      6: ["BLEACH","BUCKET","DUSTER","GLOVES","POLISH","TISSUE","VACUUM"],
+      7: ["DUSTPAN","PLUNGER","SCOURER"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "en-c-trees",
@@ -258,6 +320,18 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["BULLET","CANNON","DAGGER","MORTAR","MUSKET","PISTOL"],
       7: ["BAYONET","GRENADE","MISSILE","TORPEDO"],
     },
+  },
+  {
+    themeId: "en-c-sweets-and-desserts",
+    label: "Sweets and Desserts",
+    difficultyTier: "C",
+    wordsByLength: {
+      4: ["FLAN"],
+      5: ["CANDY","CREPE","DONUT","FUDGE","JELLY","SCONE","TORTE"],
+      6: ["CHURRO","COOKIE","ECLAIR","GELATO","MOUSSE","MUFFIN","NOUGAT","PASTRY","SUNDAE","TOFFEE","WAFFLE"],
+      7: ["BAKLAVA","BISCUIT","BROWNIE","CANNOLI","CUPCAKE","FRITTER","MACARON","PARFAIT","POPOVER","PRALINE","PUDDING","SHERBET","SOUFFLE","SPUMONI","STRUDEL"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "en-c-time-timekeeping",
@@ -315,6 +389,18 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
     },
   },
   {
+    themeId: "en-d-leaders",
+    label: "Leaders",
+    difficultyTier: "D",
+    wordsByLength: {
+      4: ["DOGE","EMIR","GURU","KHAN","POPE","SHAH","TSAR"],
+      5: ["SHEIK"],
+      6: ["CALIPH","REGENT","SHOGUN","SULTAN","VIZIER"],
+      7: ["CZARINA","EMPRESS","MONARCH","PHARAOH","TSARINA"],
+    },
+    wordLengthComposition: [{"length":4,"count":3},{"length":5,"count":1},{"length":6,"count":1},{"length":7,"count":1}],
+  },
+  {
     themeId: "en-d-car-parts",
     label: "Car Parts",
     difficultyTier: "D",
@@ -335,6 +421,7 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["SCALES"],
       7: ["ANTENNA","CUTICLE","FEATHER","FLIPPER","STINGER"],
     },
+    wordLengthComposition: [{"length":4,"count":3},{"length":5,"count":2},{"length":7,"count":1}],
   },
   {
     themeId: "en-d-animal-babies",
@@ -368,6 +455,19 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["BREEZE"],
       7: ["CYCLONE","DROUGHT","TEMPEST","THUNDER","TORNADO","TWISTER","TYPHOON"],
     },
+    wordLengthComposition: [{"length":4,"count":3},{"length":5,"count":2},{"length":7,"count":1}],
+  },
+  {
+    themeId: "en-d-fish",
+    label: "Fish",
+    difficultyTier: "D",
+    wordsByLength: {
+      4: ["CARP","PIKE","SOLE"],
+      5: ["PERCH"],
+      6: ["MARLIN","TURBOT"],
+      7: ["ANCHOVY","CATFISH","HADDOCK","HERRING"],
+    },
+    wordLengthComposition: [{"length":4,"count":3},{"length":5,"count":1},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "en-d-famous-brands",
@@ -414,6 +514,18 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
     },
   },
   {
+    themeId: "en-e-solid-containers",
+    label: "Solid Containers",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["CASE"],
+      5: ["CADDY","CHEST","CRATE"],
+      6: ["CARTON","DRAWER","PACKET","PARCEL","SACHET"],
+      7: ["LUGGAGE"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":2}],
+  },
+  {
     themeId: "en-e-colors",
     label: "Colors",
     difficultyTier: "E",
@@ -423,6 +535,7 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["COPPER","INDIGO","MAROON","PURPLE","SILVER","YELLOW"],
       7: ["MAGENTA"],
     },
+    wordLengthComposition: [{"length":4,"count":3},{"length":5,"count":2},{"length":6,"count":1}],
   },
   {
     themeId: "en-e-chemical-elements",
@@ -434,6 +547,30 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["BARIUM","CARBON","CERIUM","COBALT","CURIUM","ERBIUM","HELIUM","INDIUM","IODINE","NICKEL","OSMIUM","OXYGEN","RADIUM","SODIUM","SULFUR"],
       7: ["ARSENIC","BISMUTH","BOHRIUM","BROMINE","CADMIUM","CALCIUM","DUBNIUM","GALLIUM","HAFNIUM","IRIDIUM","KRYPTON","LITHIUM","MERCURY","SILICON","THORIUM","URANIUM"],
     },
+  },
+  {
+    themeId: "en-e-animal-groups",
+    label: "Animal Groups",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["BEVY","HERD","PACK"],
+      5: ["BROOD","FLOCK","HORDE","PRIDE","SHOAL","SWARM","TROOP"],
+      6: ["COLONY"],
+      7: [],
+    },
+    wordLengthComposition: [{"length":4,"count":3},{"length":5,"count":3}],
+  },
+  {
+    themeId: "en-e-human-bones",
+    label: "Human Bones",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["RIBS"],
+      5: ["INCUS","SKULL","TALUS","VOMER"],
+      6: ["COCCYX","SACRUM","STAPES"],
+      7: ["MALLEUS","MAXILLA","SCAPULA"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "en-e-works-of-art",
@@ -491,6 +628,18 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
     },
   },
   {
+    themeId: "en-e-asian-cities",
+    label: "Asian Cities",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["XIAN"],
+      5: ["DELHI","DUBAI","KYOTO","MACAU","MOSUL","OSAKA","SANAA","SURAT","WUHAN"],
+      6: ["ALEPPO","BOMBAY","JAIPUR","JEDDAH","LAHORE","MADRAS","TAIPEI"],
+      7: ["BANGKOK","BISHKEK","KARACHI","MASHHAD","RANGOON","TIANJIN"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
+  },
+  {
     themeId: "en-e-european-cities",
     label: "European Cities",
     difficultyTier: "E",
@@ -500,6 +649,18 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["ANGERS","BOLTON","BREMEN","BRUGES","CANNES","DUDLEY","FOGGIA","KAUNAS","KRAKOW","MALAGA","MUNICH","NAPOLI","ODESSA","RENNES","RIJEKA","SLOUGH","TORINO","TOULON","VENICE","VERONA","ZURICH"],
       7: ["BELFAST","BOLOGNA","BRESCIA","BRISTOL","CARDIFF","CATANIA","COLOGNE","CORDOBA","CRAIOVA","DRESDEN","GLASGOW","GRANADA","HAARLEM","HAMBURG","HANOVER","LEIPZIG","NEWPORT","NICOSIA","PALERMO","RAVENNA","ROSTOCK","SALERNO","SEVILLE","TALLINN","TAMPERE","VILNIUS"],
     },
+  },
+  {
+    themeId: "en-e-south-american-cities",
+    label: "South-American Cities",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["CALI"],
+      5: ["BELEM","CUSCO","NATAL"],
+      6: ["MANAUS","RECIFE","SANTOS"],
+      7: ["MARACAY","MENDOZA","ROSARIO"],
+    },
+    wordLengthComposition: [{"length":4,"count":1},{"length":5,"count":3},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "en-e-world-cities",
@@ -513,6 +674,18 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
     },
   },
   {
+    themeId: "en-e-world-capitals",
+    label: "World Capitals",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["APIA","BAKU","DILI","SUVA"],
+      5: ["ALOFI","PRAIA"],
+      6: ["AVARUA","MUSCAT","SKOPJE","TIRANA"],
+      7: [],
+    },
+    wordLengthComposition: [{"length":4,"count":4},{"length":6,"count":2}],
+  },
+  {
     themeId: "en-e-god-goddesses",
     label: "God & Goddesses",
     difficultyTier: "E",
@@ -522,6 +695,18 @@ export const ENGLISH_WORD_LIST_THEMES: readonly SampleThemeWords[] = [
       6: ["APOLLO","ATHENA","HESTIA","ISHTAR","OSIRIS","SATURN","VISHNU","VULCAN"],
       7: ["ARTEMIS","DEMETER","JUPITER","KRISHNA","MINERVA","NEPTUNE"],
     },
+  },
+  {
+    themeId: "en-e-famous-bands",
+    label: "Famous Bands",
+    difficultyTier: "E",
+    wordsByLength: {
+      4: ["BLUR","KISS","MUSE"],
+      5: ["WILCO"],
+      6: ["EAGLES","PIXIES","WEEZER"],
+      7: ["BAUHAUS","GARBAGE","GENESIS","MISFITS","NIRVANA","PANTERA","PLACEBO","RAINBOW","RAMONES","ROXETTE","SEETHER"],
+    },
+    wordLengthComposition: [{"length":4,"count":3},{"length":5,"count":1},{"length":6,"count":1},{"length":7,"count":1}],
   },
   {
     themeId: "en-e-car-manufacturers",

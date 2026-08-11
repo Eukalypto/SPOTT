@@ -316,6 +316,59 @@ describe('selectThemesForRound', () => {
 
     expect(themes?.find((entry) => entry.difficultyTier === 'C')?.themeId).toBe('theme-c');
   });
+
+  it('picks a flexible-composition theme (fb#3e) exactly as often as a standard one', () => {
+    // Three B-tier candidates competing for the sequence's two B slots — one
+    // carries a build-time-baked wordLengthComposition override. The user's
+    // explicit fb#3e requirement is that this must not shift how often it's
+    // chosen relative to the two plain-standard candidates.
+    const wordSet: LanguageWordSet = {
+      language: 'en',
+      themes: [
+        theme('theme-a1', 'A1', 'A'),
+        theme('theme-a2', 'A2', 'A'),
+        theme('theme-b-standard-1', 'B Standard 1', 'B'),
+        theme('theme-b-standard-2', 'B Standard 2', 'B'),
+        {
+          ...theme('theme-b-flexible', 'B Flexible', 'B'),
+          wordLengthComposition: [
+            { length: 4, count: 3 },
+            { length: 6, count: 2 },
+            { length: 7, count: 1 },
+          ],
+        },
+        theme('theme-c', 'C', 'C'),
+        theme('theme-d', 'D', 'D'),
+        theme('theme-e', 'E', 'E'),
+      ],
+    };
+
+    // With 3 candidates filling 2 of the sequence's B slots each round, every
+    // candidate should be chosen (into either slot) in ~2/3 of trials if
+    // selection is composition-blind.
+    const trials = 400;
+    const picks = { 'theme-b-standard-1': 0, 'theme-b-standard-2': 0, 'theme-b-flexible': 0 };
+    for (let seed = 1; seed <= trials; seed++) {
+      const themes = selectThemesForRound(wordSet, DIFFICULTY_SEQUENCE, createSeededRandom(seed));
+      const bThemeIds = new Set(themes?.filter((entry) => entry.difficultyTier === 'B').map((entry) => entry.themeId));
+      for (const id of Object.keys(picks)) {
+        if (bThemeIds.has(id)) {
+          picks[id as keyof typeof picks] += 1;
+        }
+      }
+    }
+
+    const rates = Object.values(picks).map((count) => count / trials);
+    for (const rate of rates) {
+      expect(rate).toBeGreaterThan(0.5);
+      expect(rate).toBeLessThan(0.85);
+    }
+    // The flexible candidate's rate shouldn't be a statistical outlier next
+    // to the two standard candidates.
+    const [standard1, standard2, flexible] = rates;
+    expect(Math.abs(flexible - standard1)).toBeLessThan(0.2);
+    expect(Math.abs(flexible - standard2)).toBeLessThan(0.2);
+  });
 });
 
 function theme(themeId: string, label: string, difficultyTier: DifficultyTier): ThemeWordSet {

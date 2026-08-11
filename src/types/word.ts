@@ -3,6 +3,7 @@ import type { DirectionName } from './direction.js';
 import type { DifficultyTier } from './difficulty.js';
 import type { LanguageCode } from './language.js';
 import type { MaskType } from './masking.js';
+import type { WordLengthCompositionEntry } from '../config/game-config.js';
 
 export type WordLength = 4 | 5 | 6 | 7;
 
@@ -36,6 +37,15 @@ export interface ThemeWordSet {
   /** Difficulty tier this theme is eligible for during Classic round assignment. */
   difficultyTier: DifficultyTier;
   words: readonly string[];
+  /**
+   * Per-theme word-length composition (fb#3e), pre-computed and empirically
+   * validated at word-list generation time (see
+   * scripts/generate-word-lists.mjs). Falls back to the standard
+   * GAME_CONFIG.wordLengthComposition when absent. generateGrid never derives
+   * a composition live from theme word counts — only a build-time-validated
+   * shape is trusted for real gameplay.
+   */
+  wordLengthComposition?: readonly WordLengthCompositionEntry[];
 }
 
 /** All themed word pools available for a language. */

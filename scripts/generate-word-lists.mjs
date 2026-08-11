@@ -2,7 +2,8 @@
 // into validated SampleThemeWords TypeScript modules under src/sample-data.
 //
 // Run `npm run build` first (this imports the compiled engine from dist/ so
-// normalization/palindrome/validation logic always matches the real runtime).
+// normalization/palindrome/validation/grid-generation logic always matches
+// the real runtime).
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 import { normalizeWord } from '../dist/normalization/normalize-word.js';
 import { isPalindromeNormalized } from '../dist/normalization/is-palindrome-normalized.js';
 import { validateLanguageWordSet } from '../dist/word-set-validation/validate-language-word-set.js';
+import { computeWordLengthComposition } from '../dist/config/word-length-composition.js';
+import { generateGrid } from '../dist/grid-generation/generate-grid.js';
 import { GAME_CONFIG } from '../dist/config/game-config.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -17,6 +20,17 @@ const TIERS = ['A', 'B', 'C', 'D', 'E'];
 const REQUIRED_COUNTS = Object.fromEntries(
   GAME_CONFIG.wordLengthComposition.map(({ length, count }) => [length, count]),
 );
+
+// fb#3e: a computed composition that differs from the standard shape is only
+// ever trusted after it reliably produces a real, placeable grid — this
+// mirrors the threshold used in the original feasibility study.
+const VALIDATION_TRIALS = 30;
+// Live rounds never retry a failed grid generation — a composition that
+// fails even occasionally in validation WILL eventually fail a real player's
+// round. Only a composition with zero observed failures across every trial
+// is trusted; anything else falls back to the standard shape (if the theme
+// has one) or is excluded.
+const VALIDATION_SUCCESS_THRESHOLD = 1;
 
 function slugify(label) {
   return label
@@ -32,10 +46,86 @@ function loadTier(language, tier) {
   return JSON.parse(readFileSync(filePath, 'utf8'));
 }
 
-/** Build every candidate theme for a language, applying global cross-theme dedup on normalized words. */
+function compositionsEqual(a, b) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  const byLength = new Map(a.map((entry) => [entry.length, entry.count]));
+  return b.every((entry) => byLength.get(entry.length) === entry.count);
+}
+
+// A genuinely infeasible composition doesn't fail fast — generateGrid
+// exhausts up to 40 word combinations, each with a full backtracking search,
+// before conceding. Once enough trials have failed that the success
+// threshold is mathematically out of reach, stop early rather than grinding
+// through the remaining (equally doomed, equally slow) trials.
+const MAX_FAILURES_BEFORE_ABORT = VALIDATION_TRIALS - Math.ceil(VALIDATION_TRIALS * VALIDATION_SUCCESS_THRESHOLD);
+
+// Backstop for the case the failure-count abort doesn't catch: a composition
+// that mostly succeeds but where every individual attempt (success or
+// failure) is expensive. This can't preempt a single in-flight generateGrid
+// call (synchronous, single-threaded), but it stops the NEXT trial from
+// starting once a theme has already eaten an unreasonable amount of wall
+// time, bounding the whole script's worst case to roughly
+// (non-standard theme count) × this budget instead of being unbounded.
+const MAX_VALIDATION_MS_PER_THEME = 10_000;
+
+/** Run real grid-generation trials to confirm a proposed composition is actually placeable, not just arithmetically valid. */
+function empiricallyValidateComposition(themeId, label, difficultyTier, wordsByLength, composition, language) {
+  const words = [4, 5, 6, 7].flatMap((length) => wordsByLength[length]);
+  const themeWordSet = { themeId, label, difficultyTier, words, wordLengthComposition: composition };
+
+  let successes = 0;
+  let failures = 0;
+  let trialsRun = 0;
+  const startedAt = Date.now();
+
+  for (let trial = 0; trial < VALIDATION_TRIALS; trial++) {
+    trialsRun += 1;
+    const result = generateGrid({
+      id: `validate-${themeId}-${trial}`,
+      index: 0,
+      themeWordSet,
+      difficulty: difficultyTier,
+      language,
+    });
+
+    if (result.success) {
+      successes += 1;
+    } else {
+      failures += 1;
+      if (failures > MAX_FAILURES_BEFORE_ABORT) {
+        break;
+      }
+    }
+
+    if (Date.now() - startedAt > MAX_VALIDATION_MS_PER_THEME) {
+      break;
+    }
+  }
+
+  return successes / trialsRun;
+}
+
+/**
+ * Build every candidate theme for a language, applying global cross-theme
+ * dedup on normalized words, then deciding each theme's word-length
+ * composition (fb#3e):
+ * - Themes whose computed composition already equals the standard shape use
+ *   it directly, unchanged from pre-3e behavior.
+ * - Themes whose computed composition differs (either because the standard
+ *   shape doesn't fit, or because a bucket was merged away for variety) are
+ *   only included with that composition if it empirically survives repeated
+ *   real grid-generation trials; a theme that already had a working standard
+ *   shape falls back to it instead of losing the theme outright.
+ * - Themes with no viable composition at all, standard or otherwise, are
+ *   excluded and reported.
+ */
 function buildThemes(language) {
   const usedNormalized = new Map();
   const themes = [];
+  const excluded = [];
+  const flexible = [];
 
   for (const tier of TIERS) {
     const categories = loadTier(language, tier);
@@ -59,24 +149,73 @@ function buildThemes(language) {
         wordsByLength[normalized.length].push(rawWord.trim());
       }
 
-      const meetsMinimum = Object.entries(REQUIRED_COUNTS).every(
-        ([length, required]) => wordsByLength[length].length >= required,
+      const available = {
+        4: wordsByLength[4].length,
+        5: wordsByLength[5].length,
+        6: wordsByLength[6].length,
+        7: wordsByLength[7].length,
+      };
+      const meetsStandard = Object.entries(REQUIRED_COUNTS).every(
+        ([length, required]) => available[length] >= required,
       );
+      const candidate = computeWordLengthComposition(available);
 
-      if (!meetsMinimum) {
+      if (!candidate) {
+        excluded.push({
+          label: category.category,
+          tier,
+          reason: 'no composition can assemble a full grid',
+          available,
+        });
         continue;
       }
 
-      themes.push({
+      const isStandard = compositionsEqual(candidate, GAME_CONFIG.wordLengthComposition);
+
+      if (isStandard) {
+        themes.push({ themeId, label: category.category, difficultyTier: tier, wordsByLength });
+        continue;
+      }
+
+      const successRate = empiricallyValidateComposition(
         themeId,
-        label: category.category,
-        difficultyTier: tier,
+        category.category,
+        tier,
         wordsByLength,
+        candidate,
+        language,
+      );
+
+      if (successRate >= VALIDATION_SUCCESS_THRESHOLD) {
+        themes.push({
+          themeId,
+          label: category.category,
+          difficultyTier: tier,
+          wordsByLength,
+          wordLengthComposition: candidate,
+        });
+        flexible.push({ label: category.category, tier, composition: candidate, successRate });
+        continue;
+      }
+
+      if (meetsStandard) {
+        // The flexible/variety composition didn't hold up, but the plain
+        // standard shape already works fine for this theme — keep it rather
+        // than lose an otherwise-good category.
+        themes.push({ themeId, label: category.category, difficultyTier: tier, wordsByLength });
+        continue;
+      }
+
+      excluded.push({
+        label: category.category,
+        tier,
+        reason: `composition ${candidate.map((entry) => `${entry.count}×${entry.length}`).join(', ')} only placed successfully in ${Math.round(successRate * 100)}% of ${VALIDATION_TRIALS} trials (needs ${Math.round(VALIDATION_SUCCESS_THRESHOLD * 100)}%)`,
+        available,
       });
     }
   }
 
-  return themes;
+  return { themes, excluded, flexible };
 }
 
 function toLanguageWordSetForValidation(language, themes) {
@@ -87,6 +226,7 @@ function toLanguageWordSetForValidation(language, themes) {
       label: theme.label,
       difficultyTier: theme.difficultyTier,
       words: [4, 5, 6, 7].flatMap((length) => theme.wordsByLength[length]),
+      ...(theme.wordLengthComposition ? { wordLengthComposition: theme.wordLengthComposition } : {}),
     })),
   };
 }
@@ -97,7 +237,10 @@ function formatThemesTs(constantName, themes) {
       const byLength = [4, 5, 6, 7]
         .map((length) => `      ${length}: ${JSON.stringify(theme.wordsByLength[length])},`)
         .join('\n');
-      return `  {\n    themeId: ${JSON.stringify(theme.themeId)},\n    label: ${JSON.stringify(theme.label)},\n    difficultyTier: ${JSON.stringify(theme.difficultyTier)},\n    wordsByLength: {\n${byLength}\n    },\n  },`;
+      const compositionField = theme.wordLengthComposition
+        ? `\n    wordLengthComposition: ${JSON.stringify(theme.wordLengthComposition)},`
+        : '';
+      return `  {\n    themeId: ${JSON.stringify(theme.themeId)},\n    label: ${JSON.stringify(theme.label)},\n    difficultyTier: ${JSON.stringify(theme.difficultyTier)},\n    wordsByLength: {\n${byLength}\n    },${compositionField}\n  },`;
     })
     .join('\n');
 
@@ -115,7 +258,7 @@ ${entries}
 }
 
 function generateForLanguage(language, constantName, outFile) {
-  const themes = buildThemes(language);
+  const { themes, excluded, flexible } = buildThemes(language);
   const wordSet = toLanguageWordSetForValidation(language, themes);
   const result = validateLanguageWordSet(wordSet);
 
@@ -125,6 +268,22 @@ function generateForLanguage(language, constantName, outFile) {
     (tier) => `${tier}=${themes.filter((theme) => theme.difficultyTier === tier).length}`,
   ).join(', ');
   console.log(`By tier: ${byTier}`);
+
+  if (flexible.length > 0) {
+    console.log(`Flexible compositions (fb#3e), ${flexible.length}:`);
+    for (const entry of flexible) {
+      const shape = entry.composition.map((e) => `${e.count}×${e.length}`).join(', ');
+      console.log(`  [${entry.tier}] ${entry.label}: ${shape} (${Math.round(entry.successRate * 100)}% placement success)`);
+    }
+  }
+
+  if (excluded.length > 0) {
+    console.log(`Excluded categories, ${excluded.length}:`);
+    for (const entry of excluded) {
+      console.log(`  [${entry.tier}] ${entry.label}: ${entry.reason} (available 4:${entry.available[4]} 5:${entry.available[5]} 6:${entry.available[6]} 7:${entry.available[7]})`);
+    }
+  }
+
   console.log(`Valid: ${result.isValid}`);
   if (result.errors.length > 0) {
     console.log(`Errors (${result.errors.length}):`);
