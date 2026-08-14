@@ -71,9 +71,16 @@ const MAX_FAILURES_BEFORE_ABORT = VALIDATION_TRIALS - Math.ceil(VALIDATION_TRIAL
 const MAX_VALIDATION_MS_PER_THEME = 10_000;
 
 /** Run real grid-generation trials to confirm a proposed composition is actually placeable, not just arithmetically valid. */
-function empiricallyValidateComposition(themeId, label, difficultyTier, wordsByLength, composition, language) {
+function empiricallyValidateComposition(themeId, label, difficultyTier, wordsByLength, composition, language, freeDirections = false) {
   const words = [4, 5, 6, 7].flatMap((length) => wordsByLength[length]);
-  const themeWordSet = { themeId, label, difficultyTier, words, wordLengthComposition: composition };
+  const themeWordSet = {
+    themeId,
+    label,
+    difficultyTier,
+    words,
+    wordLengthComposition: composition,
+    ...(freeDirections ? { allowFreeDirections: true } : {}),
+  };
 
   let successes = 0;
   let failures = 0;
@@ -108,9 +115,8 @@ function empiricallyValidateComposition(themeId, label, difficultyTier, wordsByL
 }
 
 /**
- * Build every candidate theme for a language, applying global cross-theme
- * dedup on normalized words, then deciding each theme's word-length
- * composition (fb#3e):
+ * Build every candidate theme for a language, then decide each theme's
+ * word-length composition (fb#3e):
  * - Themes whose computed composition already equals the standard shape use
  *   it directly, unchanged from pre-3e behavior.
  * - Themes whose computed composition differs (either because the standard
@@ -120,9 +126,17 @@ function empiricallyValidateComposition(themeId, label, difficultyTier, wordsByL
  *   shape falls back to it instead of losing the theme outright.
  * - Themes with no viable composition at all, standard or otherwise, are
  *   excluded and reported.
+ *
+ * Categories are NOT deduped against each other (fb 260814/2d): an earlier
+ * design claimed a word for whichever category was processed first (tier
+ * order, then array order), which silently hollowed out narrower categories
+ * (e.g. "Birds", "Metals") in favor of broader ones that legitimately
+ * overlap them (e.g. "Animals", "Chemical Elements") — those categories
+ * turned out to have plenty of real words, just none left to claim. The
+ * accepted tradeoff is a small chance the same target word appears in two
+ * different grids within one round.
  */
 function buildThemes(language) {
-  const usedNormalized = new Map();
   const themes = [];
   const excluded = [];
   const flexible = [];
@@ -133,6 +147,7 @@ function buildThemes(language) {
     for (const category of categories) {
       const themeId = `${language}-${tier.toLowerCase()}-${slugify(category.category)}`;
       const wordsByLength = { 4: [], 5: [], 6: [], 7: [] };
+      const seenInCategory = new Set();
 
       for (const rawWord of category.words) {
         const normalized = normalizeWord(rawWord, language);
@@ -142,10 +157,10 @@ function buildThemes(language) {
         if (isPalindromeNormalized(normalized)) {
           continue;
         }
-        if (usedNormalized.has(normalized)) {
+        if (seenInCategory.has(normalized)) {
           continue;
         }
-        usedNormalized.set(normalized, themeId);
+        seenInCategory.add(normalized);
         wordsByLength[normalized.length].push(rawWord.trim());
       }
 
@@ -198,10 +213,44 @@ function buildThemes(language) {
         continue;
       }
 
+      // fb 260814/2d: strict placement (exactly one word per direction)
+      // failed — retry the SAME composition with free directions, which
+      // removes the forced single-cell overlaps that make multiple
+      // same-length long words hard to place under strict geometry.
+      const freeSuccessRate = empiricallyValidateComposition(
+        themeId,
+        category.category,
+        tier,
+        wordsByLength,
+        candidate,
+        language,
+        true,
+      );
+
+      if (freeSuccessRate >= VALIDATION_SUCCESS_THRESHOLD) {
+        themes.push({
+          themeId,
+          label: category.category,
+          difficultyTier: tier,
+          wordsByLength,
+          wordLengthComposition: candidate,
+          allowFreeDirections: true,
+        });
+        flexible.push({
+          label: category.category,
+          tier,
+          composition: candidate,
+          successRate: freeSuccessRate,
+          allowFreeDirections: true,
+        });
+        continue;
+      }
+
       if (meetsStandard) {
-        // The flexible/variety composition didn't hold up, but the plain
-        // standard shape already works fine for this theme — keep it rather
-        // than lose an otherwise-good category.
+        // Neither strict nor free-direction placement held up for the
+        // flexible/variety composition, but the plain standard shape already
+        // works fine for this theme — keep it rather than lose an
+        // otherwise-good category.
         themes.push({ themeId, label: category.category, difficultyTier: tier, wordsByLength });
         continue;
       }
@@ -209,7 +258,7 @@ function buildThemes(language) {
       excluded.push({
         label: category.category,
         tier,
-        reason: `composition ${candidate.map((entry) => `${entry.count}×${entry.length}`).join(', ')} only placed successfully in ${Math.round(successRate * 100)}% of ${VALIDATION_TRIALS} trials (needs ${Math.round(VALIDATION_SUCCESS_THRESHOLD * 100)}%)`,
+        reason: `composition ${candidate.map((entry) => `${entry.count}×${entry.length}`).join(', ')} only placed successfully in ${Math.round(successRate * 100)}% of ${VALIDATION_TRIALS} trials strict / ${Math.round(freeSuccessRate * 100)}% free-direction (needs ${Math.round(VALIDATION_SUCCESS_THRESHOLD * 100)}%)`,
         available,
       });
     }
@@ -227,6 +276,7 @@ function toLanguageWordSetForValidation(language, themes) {
       difficultyTier: theme.difficultyTier,
       words: [4, 5, 6, 7].flatMap((length) => theme.wordsByLength[length]),
       ...(theme.wordLengthComposition ? { wordLengthComposition: theme.wordLengthComposition } : {}),
+      ...(theme.allowFreeDirections ? { allowFreeDirections: true } : {}),
     })),
   };
 }
@@ -240,7 +290,8 @@ function formatThemesTs(constantName, themes) {
       const compositionField = theme.wordLengthComposition
         ? `\n    wordLengthComposition: ${JSON.stringify(theme.wordLengthComposition)},`
         : '';
-      return `  {\n    themeId: ${JSON.stringify(theme.themeId)},\n    label: ${JSON.stringify(theme.label)},\n    difficultyTier: ${JSON.stringify(theme.difficultyTier)},\n    wordsByLength: {\n${byLength}\n    },${compositionField}\n  },`;
+      const freeDirectionsField = theme.allowFreeDirections ? `\n    allowFreeDirections: true,` : '';
+      return `  {\n    themeId: ${JSON.stringify(theme.themeId)},\n    label: ${JSON.stringify(theme.label)},\n    difficultyTier: ${JSON.stringify(theme.difficultyTier)},\n    wordsByLength: {\n${byLength}\n    },${compositionField}${freeDirectionsField}\n  },`;
     })
     .join('\n');
 
@@ -273,7 +324,8 @@ function generateForLanguage(language, constantName, outFile) {
     console.log(`Flexible compositions (fb#3e), ${flexible.length}:`);
     for (const entry of flexible) {
       const shape = entry.composition.map((e) => `${e.count}×${e.length}`).join(', ');
-      console.log(`  [${entry.tier}] ${entry.label}: ${shape} (${Math.round(entry.successRate * 100)}% placement success)`);
+      const freeNote = entry.allowFreeDirections ? ' (free directions)' : '';
+      console.log(`  [${entry.tier}] ${entry.label}: ${shape}${freeNote} (${Math.round(entry.successRate * 100)}% placement success)`);
     }
   }
 

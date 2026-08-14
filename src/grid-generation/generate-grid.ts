@@ -91,6 +91,10 @@ export function generateGrid(options: GenerateGridOptions): GridGenerationResult
     return { success: false, reason: 'invalid-word-set' };
   }
 
+  // fb 260814/2d: like wordLengthComposition, only ever a build-time-baked,
+  // pre-validated per-theme flag — never inferred live.
+  const freeDirections = options.themeWordSet.allowFreeDirections ?? false;
+
   const combinations = [...selectWordCombinations(buckets, wordLengthComposition, random)];
 
   for (const selection of combinations) {
@@ -99,6 +103,7 @@ export function generateGrid(options: GenerateGridOptions): GridGenerationResult
       shuffleCopy(config.directions, random),
       gridSize,
       random,
+      freeDirections,
     );
     if (!placement) {
       continue;
@@ -200,7 +205,7 @@ function* selectWordCombinations(
 }
 
 /**
- * Bounds a single backtrackPlacement search. Most compositions place within a
+ * Bounds a single strict-mode search. Most compositions place within a
  * handful of recursive calls; a composition that's geometrically borderline
  * (e.g. several same-length words competing for the same few valid
  * positions) can otherwise explore an enormous number of dead-end branches
@@ -212,7 +217,34 @@ function* selectWordCombinations(
  */
 const MAX_BACKTRACK_SEARCH_NODES = 20_000;
 
+/**
+ * Free-direction search (fb 260814/2d) tries every direction per word instead
+ * of one fixed direction per recursion level, so each node does up to ~6× the
+ * work of a strict-mode node before conceding. Capped lower to keep
+ * worst-case wall time in the same ballpark as MAX_BACKTRACK_SEARCH_NODES's
+ * proven-acceptable strict-mode cap — an empirical starting point, not a
+ * derived constant.
+ */
+const MAX_FREE_BACKTRACK_SEARCH_NODES = 5_000;
+
+/**
+ * Dispatches to strict (exactly one word per direction, the original
+ * geometry) or free (any word may use any direction, gated per-theme by
+ * ThemeWordSet.allowFreeDirections — see generateGrid) placement search.
+ */
 function backtrackPlacement(
+  words: WordCandidate[],
+  directions: readonly DirectionDefinition[],
+  gridSize: number,
+  random: () => number,
+  freeDirections: boolean,
+): PendingPlacement[] | null {
+  return freeDirections
+    ? searchFreeDirections(words, directions, gridSize, random)
+    : searchStrictDirections(words, directions, gridSize, random);
+}
+
+function searchStrictDirections(
   words: WordCandidate[],
   directions: readonly DirectionDefinition[],
   gridSize: number,
@@ -270,6 +302,76 @@ function backtrackPlacement(
   }
 
   return search(0, words, []);
+}
+
+/**
+ * Same cell-overlap machinery as searchStrictDirections, but recurses over
+ * word index rather than direction index: each word may try every direction
+ * (re-shuffled per recursion node, same as the word order) instead of being
+ * locked to one fixed direction slot. Two words legitimately sharing a
+ * direction (different rows/columns/diagonals) is exactly the point — only
+ * canOccupy's real cell-overlap check can reject a placement.
+ */
+function searchFreeDirections(
+  words: WordCandidate[],
+  directions: readonly DirectionDefinition[],
+  gridSize: number,
+  random: () => number,
+): PendingPlacement[] | null {
+  const occupied = new Set<string>();
+  let nodesVisited = 0;
+
+  function search(
+    remaining: WordCandidate[],
+    placements: PendingPlacement[],
+  ): PendingPlacement[] | null {
+    nodesVisited += 1;
+    if (nodesVisited > MAX_FREE_BACKTRACK_SEARCH_NODES) {
+      return null;
+    }
+
+    if (remaining.length === 0) {
+      return placements;
+    }
+
+    const orderedWords = shuffleCopy(remaining, random);
+
+    for (const candidate of orderedWords) {
+      const nextRemaining = remaining.filter((word) => word !== candidate);
+      const orderedDirections = shuffleCopy(directions, random);
+
+      for (const direction of orderedDirections) {
+        const starts = shuffleCopy(listCandidateStarts(candidate, direction, gridSize), random);
+
+        for (const start of starts) {
+          const cells = buildCellPath(start, direction, candidate.normalized.length, gridSize);
+          if (!cells || !canOccupy(cells, occupied)) {
+            continue;
+          }
+
+          occupy(cells, occupied);
+          placements.push({
+            candidate,
+            direction: direction.name,
+            start,
+            cells,
+          });
+
+          const result = search(nextRemaining, placements);
+          if (result) {
+            return result;
+          }
+
+          placements.pop();
+          release(cells, occupied);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  return search(words, []);
 }
 
 function listCandidateStarts(
@@ -404,7 +506,11 @@ function randomLetter(alphabet: string, random: () => number): string {
 }
 
 /** @internal Exported for tests. */
-export function assertGeneratedGridInvariants(grid: GridData, config = DEFAULT_GRID_CONFIG): void {
+export function assertGeneratedGridInvariants(
+  grid: GridData,
+  config = DEFAULT_GRID_CONFIG,
+  invariantOptions: { allowRepeatedDirections?: boolean } = {},
+): void {
   const { gridSize } = config.game;
 
   if (grid.size !== gridSize || grid.cells.length !== gridSize) {
@@ -423,10 +529,15 @@ export function assertGeneratedGridInvariants(grid: GridData, config = DEFAULT_G
 
   const lengthCounts = new Map<WordLength, number>();
   const directions = new Set<DirectionName>();
+  const validDirectionNames = new Set(config.directions.map((direction) => direction.name));
 
   for (const placedWord of grid.placedWords) {
     lengthCounts.set(placedWord.length, (lengthCounts.get(placedWord.length) ?? 0) + 1);
     directions.add(placedWord.direction);
+
+    if (!validDirectionNames.has(placedWord.direction)) {
+      throw new Error(`Unknown direction ${placedWord.direction}`);
+    }
 
     if (placedWord.cells.length !== placedWord.length) {
       throw new Error('Cell path length does not match word length');
@@ -463,13 +574,15 @@ export function assertGeneratedGridInvariants(grid: GridData, config = DEFAULT_G
     }
   }
 
-  if (directions.size !== config.directions.length) {
-    throw new Error('Expected each direction to be used exactly once');
-  }
+  if (!invariantOptions.allowRepeatedDirections) {
+    if (directions.size !== config.directions.length) {
+      throw new Error('Expected each direction to be used exactly once');
+    }
 
-  for (const direction of config.directions) {
-    if (!directions.has(direction.name)) {
-      throw new Error(`Missing direction ${direction.name}`);
+    for (const direction of config.directions) {
+      if (!directions.has(direction.name)) {
+        throw new Error(`Missing direction ${direction.name}`);
+      }
     }
   }
 

@@ -39,7 +39,7 @@ export function validateLanguageWordSet(
     validateThemeWordCounts(theme, language, errors, warnings);
   }
 
-  validateCrossThemeDuplicates(language, normalizedOccurrences, errors);
+  validateCrossThemeDuplicates(language, normalizedOccurrences, warnings);
   validateUniqueThemeIds(wordSet.themes, errors);
   validateDifficultyTierCoverage(wordSet.themes, errors);
   validateMinimumThemeCount(wordSet.themes, errors);
@@ -92,10 +92,19 @@ function validateThemeWords(
   }
 }
 
+/**
+ * A word shared by two themes (e.g. "Animals" and "Birds" both containing
+ * EAGLE) is informational, not an error (fb 260814/2d) — the design
+ * previously deduped these away entirely at word-list generation time, which
+ * turned out to silently hollow out narrower categories in favor of whichever
+ * broader category happened to be processed first. The accepted tradeoff is
+ * a small chance the same target word appears in two different grids within
+ * one round.
+ */
 function validateCrossThemeDuplicates(
   language: LanguageCode,
   normalizedOccurrences: Map<string, NormalizedWordOccurrence[]>,
-  errors: string[],
+  warnings: string[],
 ): void {
   for (const [normalized, occurrences] of normalizedOccurrences) {
     if (occurrences.length < 2) {
@@ -110,7 +119,7 @@ function validateCrossThemeDuplicates(
     const locations = occurrences
       .map((entry) => `"${entry.rawWord}" (${entry.themeLabel})`)
       .join(', ');
-    errors.push(
+    warnings.push(
       `Duplicate normalized form "${normalized}" across themes in language "${language}": ${locations}`,
     );
   }

@@ -198,13 +198,14 @@ describe('validateLanguageWordSet — word rules', () => {
     expect(result.errors.some((error) => error.includes('within theme'))).toBe(true);
   });
 
-  it('rejects duplicate normalized words across themes', () => {
+  it('warns (but does not reject) duplicate normalized words across themes (fb 260814/2d)', () => {
     const wordSet = createValidEnglishWordSet();
     wordSet.themes[1].words = [...uniqueThemeWords(1), ' BEAR '];
 
     const result = validateLanguageWordSet(wordSet);
-    expect(result.isValid).toBe(false);
-    expect(result.errors.some((error) => error.includes('across themes'))).toBe(true);
+    expect(result.isValid).toBe(true);
+    expect(result.errors).toEqual([]);
+    expect(result.warnings.some((warning) => warning.includes('across themes'))).toBe(true);
   });
 
   it('treats Spanish ñ distinctly for duplicate detection', () => {

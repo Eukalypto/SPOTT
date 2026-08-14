@@ -194,3 +194,111 @@ describe('assertGeneratedGridInvariants', () => {
     expect(() => assertGeneratedGridInvariants(broken)).toThrow('Placed words overlap');
   });
 });
+
+describe('generateGrid free directions (fb 260814/2d)', () => {
+  // Two 7-letter words forced into different directions always cross at
+  // exactly one cell (a horizontal/vertical pair always shares one cell; the
+  // two diagonals always cross at the grid center) — free directions lets
+  // them share a direction on different rows/columns instead, avoiding the
+  // forced overlap entirely.
+  const FREE_DIRECTIONS_THEME = {
+    themeId: 'free-directions-test',
+    label: 'Free Directions',
+    difficultyTier: 'A' as const,
+    words: ['lion', 'wolf', 'tiger', 'eagle', 'country', 'village'],
+    wordLengthComposition: [
+      { length: 4 as const, count: 2 },
+      { length: 5 as const, count: 2 },
+      { length: 7 as const, count: 2 },
+    ],
+    allowFreeDirections: true,
+  };
+
+  it('places successfully and lets two words share a direction', () => {
+    let sawSharedDirection = false;
+
+    for (let seed = 1; seed <= 20 && !sawSharedDirection; seed++) {
+      const result = generateGrid({
+        id: `free-${seed}`,
+        index: 0,
+        themeWordSet: FREE_DIRECTIONS_THEME,
+        difficulty: 'A',
+        language: 'en',
+        random: createSeededRandom(seed),
+      });
+
+      expect(result.success).toBe(true);
+      if (!result.success) {
+        continue;
+      }
+
+      assertGeneratedGridInvariants(result.grid, DEFAULT_GRID_CONFIG, {
+        allowRepeatedDirections: true,
+      });
+
+      const directionCounts = new Map<string, number>();
+      for (const word of result.grid.placedWords) {
+        directionCounts.set(word.direction, (directionCounts.get(word.direction) ?? 0) + 1);
+      }
+      if ([...directionCounts.values()].some((count) => count >= 2)) {
+        sawSharedDirection = true;
+      }
+    }
+
+    expect(sawSharedDirection).toBe(true);
+  });
+
+  it('still enforces the standard exactly-once-per-direction invariant when not opted in', () => {
+    const result = generateGrid({
+      id: 'free-invariant-check',
+      index: 0,
+      themeWordSet: FREE_DIRECTIONS_THEME,
+      difficulty: 'A',
+      language: 'en',
+      random: createSeededRandom(7),
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) {
+      return;
+    }
+
+    // Without allowRepeatedDirections, a free-direction grid that happens to
+    // reuse a direction correctly trips the strict invariant check.
+    const directionCounts = new Map<string, number>();
+    for (const word of result.grid.placedWords) {
+      directionCounts.set(word.direction, (directionCounts.get(word.direction) ?? 0) + 1);
+    }
+    if ([...directionCounts.values()].every((count) => count === 1)) {
+      return; // this particular seed didn't happen to share a direction — not what this test checks
+    }
+    expect(() => assertGeneratedGridInvariants(result.grid)).toThrow(
+      'Expected each direction to be used exactly once',
+    );
+  });
+
+  it('returns placement-impossible (not a hang) when free-direction search is genuinely unplaceable', () => {
+    const tinyConfig: GenerateGridConfig = {
+      game: {
+        gridSize: 3,
+        wordLengthComposition: GAME_CONFIG.wordLengthComposition,
+      },
+      directions: DIRECTIONS,
+      fillerAlphabet: FILLER_ALPHABET,
+    };
+
+    const start = Date.now();
+    const result = generateGrid({
+      id: 'free-tiny',
+      index: 0,
+      themeWordSet: FREE_DIRECTIONS_THEME,
+      difficulty: 'A',
+      language: 'en',
+      config: tinyConfig,
+    });
+    const elapsedMs = Date.now() - start;
+
+    expect(result).toEqual({ success: false, reason: 'placement-impossible' });
+    expect(elapsedMs).toBeLessThan(5000);
+  });
+});

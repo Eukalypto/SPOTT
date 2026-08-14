@@ -11,6 +11,8 @@ export interface SampleThemeWords {
   wordsByLength: Readonly<Record<WordLength, readonly string[]>>;
   /** fb#3e: build-time-validated composition; absent means the standard shape. */
   wordLengthComposition?: readonly WordLengthCompositionEntry[];
+  /** fb 260814/2d: build-time-validated free-direction placement flag; absent means strict placement. */
+  allowFreeDirections?: boolean;
 }
 
 /** Flatten length-grouped words into a {@link ThemeWordSet}. */
@@ -26,6 +28,7 @@ export function toThemeWordSet(theme: SampleThemeWords): ThemeWordSet {
       ...theme.wordsByLength[7],
     ],
     ...(theme.wordLengthComposition ? { wordLengthComposition: theme.wordLengthComposition } : {}),
+    ...(theme.allowFreeDirections ? { allowFreeDirections: theme.allowFreeDirections } : {}),
   };
 }
 

@@ -46,6 +46,15 @@ export interface ThemeWordSet {
    * shape is trusted for real gameplay.
    */
   wordLengthComposition?: readonly WordLengthCompositionEntry[];
+  /**
+   * Whether generateGrid may place more than one word per direction for this
+   * theme (fb 260814/2d), same build-time-baked/empirically-validated
+   * contract as wordLengthComposition — never inferred live. Only themes
+   * whose standard-direction placement failed validation but a free-direction
+   * retry succeeded carry this; every other theme keeps the original
+   * exactly-one-word-per-direction geometry unchanged.
+   */
+  allowFreeDirections?: boolean;
 }
 
 /** All themed word pools available for a language. */
