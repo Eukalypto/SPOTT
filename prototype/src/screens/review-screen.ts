@@ -2,7 +2,7 @@ import type { RoundState } from '@spott/engine';
 
 import { buildClueListHtml } from '../components/clue-list.js';
 import { buildGaugeHtml, getGaugeSummaryText } from '../components/word-gauge.js';
-import { buildReviewLetterGridHtml, getUnfoundWordColors } from '../components/grid-review.js';
+import { buildReviewLetterGridHtml } from '../components/grid-review.js';
 import { t, tFormat, type UiLocale } from '../i18n/index.js';
 import { GENERIC_AVATAR_ICON } from '../utils/avatar-assets.js';
 import { escapeHtml } from '../utils/html.js';
@@ -87,9 +87,6 @@ function buildReviewHeaderHtml(options: ReviewScreenOptions): string {
 export function buildReviewScreenHtml(options: ReviewScreenOptions): string {
   const { roundState, reviewGridIndex, locale } = options;
   const grid = roundState.round.grids[reviewGridIndex];
-  const hasPrevious = reviewGridIndex > 0;
-  const hasNext = reviewGridIndex < roundState.round.grids.length - 1;
-  const unfoundWordColors = getUnfoundWordColors(grid);
 
   return `
     <section class="screen screen--review" aria-label="${escapeHtml(t('gridReview', locale))}">
@@ -106,13 +103,15 @@ export function buildReviewScreenHtml(options: ReviewScreenOptions): string {
         </button>
       </div>
 
-      <div
-        class="letter-grid letter-grid--review"
-        role="grid"
-        aria-label="${escapeHtml(`${t('gridReview', locale)} ${reviewGridIndex + 1}`)}"
-        aria-readonly="true"
-      >
-        ${buildReviewLetterGridHtml(grid, locale)}
+      <div class="letter-grid-wrap">
+        <div
+          class="letter-grid letter-grid--review"
+          role="grid"
+          aria-label="${escapeHtml(`${t('gridReview', locale)} ${reviewGridIndex + 1}`)}"
+          aria-readonly="true"
+        >
+          ${buildReviewLetterGridHtml(grid, locale)}
+        </div>
       </div>
 
       <div class="grid-rank-badge">
@@ -122,15 +121,14 @@ export function buildReviewScreenHtml(options: ReviewScreenOptions): string {
       </div>
 
       <ul class="clue-list" aria-label="${escapeHtml(t('reviewAllWords', locale))}">
-        ${buildClueListHtml(grid, { locale, unfoundWordColors })}
+        ${buildClueListHtml(grid, { locale })}
       </ul>
 
       <div class="next-grid-row next-grid-row--review">
         <button
           type="button"
-          class="next-grid-button prev-grid-button${hasPrevious ? '' : ' next-grid-button--disabled'}"
+          class="next-grid-button prev-grid-button"
           data-action="prev"
-          ${hasPrevious ? '' : 'disabled'}
           aria-label="${escapeHtml(t('previousGrid', locale))}"
         >
           <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
@@ -139,9 +137,8 @@ export function buildReviewScreenHtml(options: ReviewScreenOptions): string {
         </button>
         <button
           type="button"
-          class="next-grid-button${hasNext ? '' : ' next-grid-button--disabled'}"
+          class="next-grid-button"
           data-action="next"
-          ${hasNext ? '' : 'disabled'}
           aria-label="${escapeHtml(t('nextGrid', locale))}"
         >
           <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
@@ -167,24 +164,21 @@ export function renderReviewScreen(container: HTMLElement, options: ReviewScreen
   );
 
   const { reviewGridIndex } = options;
-  const hasPrevious = reviewGridIndex > 0;
-  const hasNext = reviewGridIndex < options.roundState.round.grids.length - 1;
+  const totalGrids = options.roundState.round.grids.length;
 
+  // fb 260814/4b: circular navigation — grid 1's previous wraps to the last
+  // grid and the last grid's next wraps back to grid 1.
   container.querySelector<HTMLButtonElement>('[data-action="prev"]')?.addEventListener(
     'click',
     () => {
-      if (hasPrevious) {
-        options.onChangeGrid(reviewGridIndex - 1);
-      }
+      options.onChangeGrid((reviewGridIndex - 1 + totalGrids) % totalGrids);
     },
   );
 
   container.querySelector<HTMLButtonElement>('[data-action="next"]')?.addEventListener(
     'click',
     () => {
-      if (hasNext) {
-        options.onChangeGrid(reviewGridIndex + 1);
-      }
+      options.onChangeGrid((reviewGridIndex + 1) % totalGrids);
     },
   );
 }

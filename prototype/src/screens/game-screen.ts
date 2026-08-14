@@ -270,8 +270,36 @@ function buildGameScreenHtml(
         </button>
       </div>
 
-      <div class="letter-grid" data-letter-grid role="grid" aria-label="${escapeHtml(t('letterGridAria', locale))}">
-        ${buildLetterGridHtml(grid)}
+      <div class="letter-grid-wrap">
+        <div class="letter-grid" data-letter-grid role="grid" aria-label="${escapeHtml(t('letterGridAria', locale))}">
+          ${buildLetterGridHtml(grid)}
+        </div>
+
+        <div
+          class="confirm-dialog"
+          data-stop-game-dialog
+          hidden
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="stop-game-dialog-message"
+        >
+          <div class="confirm-dialog__panel">
+            <svg class="confirm-dialog__hourglass" viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+              <path fill="currentColor" d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zM12 11.5l-4-4V4h8v3.5l-4 4z" />
+            </svg>
+            <p id="stop-game-dialog-message" class="confirm-dialog__message">
+              ${escapeHtml(t('confirmStopGameMessage', locale))}
+            </p>
+            <div class="confirm-dialog__actions">
+              <button type="button" class="secondary-button" data-action="stop-game-cancel">
+                ${escapeHtml(t('confirmStopGameCancel', locale))}
+              </button>
+              <button type="button" class="primary-button" data-action="stop-game-confirm">
+                ${escapeHtml(t('confirmStopGameConfirm', locale))}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="grid-rank-badge">
@@ -300,32 +328,6 @@ function buildGameScreenHtml(
 
       <div class="word-gauge" data-gauge aria-label="${escapeHtml(getGaugeSummaryText(grid, locale))}">
         ${buildGaugeHtml(grid)}
-      </div>
-
-      <div
-        class="confirm-dialog"
-        data-stop-game-dialog
-        hidden
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="stop-game-dialog-message"
-      >
-        <div class="confirm-dialog__panel">
-          <svg class="confirm-dialog__hourglass" viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-            <path fill="currentColor" d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zM12 11.5l-4-4V4h8v3.5l-4 4z" />
-          </svg>
-          <p id="stop-game-dialog-message" class="confirm-dialog__message">
-            ${escapeHtml(t('confirmStopGameMessage', locale))}
-          </p>
-          <div class="confirm-dialog__actions">
-            <button type="button" class="secondary-button" data-action="stop-game-cancel">
-              ${escapeHtml(t('confirmStopGameCancel', locale))}
-            </button>
-            <button type="button" class="primary-button" data-action="stop-game-confirm">
-              ${escapeHtml(t('confirmStopGameConfirm', locale))}
-            </button>
-          </div>
-        </div>
       </div>
     </section>
   `;

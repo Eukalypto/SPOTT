@@ -9,12 +9,6 @@ export interface ClueListOptions {
   locale?: UiLocale;
   /** Dev-only visual aid: show full target words instead of masked clues. */
   revealWords?: boolean;
-  /**
-   * Review-only (fb#2j): explicit highlight color per not-found word id, so
-   * each missed word reads distinctly instead of blending together. Shown at
-   * 50% opacity to keep it visually secondary to found words.
-   */
-  unfoundWordColors?: ReadonlyMap<string, string>;
 }
 
 /**
@@ -50,14 +44,10 @@ function buildClueItemHtml(word: PlacedWord, options: ClueListOptions, locale: U
   const revealedClass = options.revealWords && !word.found ? ' clue-item--revealed' : '';
   const colorIndex = word.colorIndex ?? null;
   const accentColor = colorIndex !== null ? getWordHighlightColor(colorIndex) : null;
-  const unfoundColor = !word.found ? options.unfoundWordColors?.get(word.id) : undefined;
-  const unfoundClass = unfoundColor ? ' clue-item--unfound-colored' : '';
   const colorStyle =
     word.found && accentColor !== null
       ? ` style="--clue-accent: ${accentColor}; border-left-color: ${accentColor}"`
-      : unfoundColor
-        ? ` style="--clue-accent: ${unfoundColor}; border-left-color: ${unfoundColor}"`
-        : '';
+      : '';
   const statusLabel = word.found
     ? t('found', locale)
     : options.revealWords
@@ -67,7 +57,7 @@ function buildClueItemHtml(word: PlacedWord, options: ClueListOptions, locale: U
 
   return `
     <li
-      class="clue-item${foundClass}${revealedClass}${unfoundClass}"
+      class="clue-item${foundClass}${revealedClass}"
       data-word-id="${escapeHtml(word.id)}"
       aria-label="${escapeHtml(ariaLabel)}"
       ${colorStyle}

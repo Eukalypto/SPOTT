@@ -46,11 +46,12 @@ export function buildEndScreenHtml(options: EndScreenOptions): string {
   const playAgainLabel =
     gameMode === 'challenge' ? t('challengeSameOpponent', locale) : t('playSoloAgain', locale);
 
+  const showTimeBonusStat = shouldShowTimeBonus(options.roundState);
+
   return `
     <section class="screen screen--end" aria-labelledby="end-status-title">
       <header class="end-status-block">
-        <h2 id="end-status-title" class="end-status-block__title">${escapeHtml(t('finishedGameStatus', locale))}</h2>
-        <p class="end-status-block__value">${escapeHtml(getFinishedStatusText(options))}</p>
+        <p id="end-status-title" class="end-status-block__value">${escapeHtml(getFinishedStatusText(options))}</p>
       </header>
 
       <section class="end-score-block" aria-labelledby="end-score-title">
@@ -80,6 +81,16 @@ export function buildEndScreenHtml(options: EndScreenOptions): string {
             <dt>${escapeHtml(t('statsOptimalScore', locale))}</dt>
             <dd>${getOptimalScore(options.roundState)}</dd>
           </div>
+          ${
+            showTimeBonusStat
+              ? `
+          <div class="profile-stats__row">
+            <dt>${escapeHtml(t('statsOptimalScoreWithBonus', locale))}</dt>
+            <dd>${getOptimalScore(options.roundState) + options.roundState.score.timeBonus}</dd>
+          </div>
+          `
+              : ''
+          }
         </dl>
       </section>
 

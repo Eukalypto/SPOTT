@@ -79,21 +79,78 @@ describe('buildReviewScreenHtml', () => {
     expect(html).toContain(formatClueDisplayHtml('WORD0'));
   });
 
-  it('colors not-found words instead of leaving them plain (fb#2j)', () => {
+  it('colors not-found words in the grid cells, dimmed, and leaves the clue list plain (fb 260814/4d)', () => {
+    // fb#2j originally colored the clue list; the correction moves that
+    // coloring to the grid cells themselves and reverts the list to plain
+    // found/unfound styling — so this fixture needs real cell positions
+    // (unlike createRoundState's placedWords, which use empty cells arrays
+    // since they only ever exercised the clue list).
+    const roundState = {
+      remainingSeconds: 42,
+      foundWordIds: new Set(['g0-w0']),
+      score: { total: 100, wordPoints: 100, timeBonus: 0, entries: [] },
+      round: {
+        status: 'completed',
+        grids: [
+          {
+            id: 'grid-0',
+            index: 0,
+            themeLabel: 'Theme 1',
+            cells: [
+              [{ letter: 'L', wordId: 'g0-w0' }, { letter: 'I', wordId: 'g0-w0' }],
+              [{ letter: 'B', wordId: 'g0-w1' }, { letter: 'E', wordId: 'g0-w1' }],
+            ],
+            placedWords: [
+              {
+                id: 'g0-w0',
+                text: 'li',
+                normalizedText: 'li',
+                length: 2,
+                direction: 'horizontal-right',
+                start: { row: 0, col: 0 },
+                end: { row: 0, col: 1 },
+                cells: [{ row: 0, col: 0 }, { row: 0, col: 1 }],
+                maskType: 'none',
+                found: true,
+                findOrder: 1,
+                colorIndex: 0,
+              },
+              {
+                id: 'g0-w1',
+                text: 'be',
+                normalizedText: 'be',
+                length: 2,
+                direction: 'vertical-down',
+                start: { row: 1, col: 0 },
+                end: { row: 1, col: 1 },
+                cells: [{ row: 1, col: 0 }, { row: 1, col: 1 }],
+                maskType: 'none',
+                found: false,
+                findOrder: null,
+                colorIndex: null,
+              },
+            ],
+          },
+        ],
+      },
+    } as never;
+
     const html = buildReviewScreenHtml({
       locale: 'en',
-      roundState: createRoundState(),
+      roundState,
       playerName: 'Tester',
-      reviewGridIndex: 1, // grid 1 (index 1) has 2 found, 4 unfound
+      reviewGridIndex: 0,
       onChangeGrid: () => {},
       onClose: () => {},
     });
 
-    expect(html).toContain('clue-item--unfound-colored');
+    expect(html).toContain('grid-cell--review-found');
+    expect(html).toContain('grid-cell--review-missed');
+    expect(html).not.toContain('clue-item--unfound-colored');
   });
 
-  it('provides symmetric previous and next grid arrows (fb#2d, fb#2e)', () => {
-    const html = buildReviewScreenHtml({
+  it('provides symmetric previous and next grid arrows, never disabled (fb#2d, fb#2e, circular nav fb 260814/4b)', () => {
+    const firstGrid = buildReviewScreenHtml({
       locale: 'en',
       roundState: createRoundState(),
       playerName: 'Tester',
@@ -101,11 +158,22 @@ describe('buildReviewScreenHtml', () => {
       onChangeGrid: () => {},
       onClose: () => {},
     });
+    const lastGrid = buildReviewScreenHtml({
+      locale: 'en',
+      roundState: createRoundState(),
+      playerName: 'Tester',
+      reviewGridIndex: GAME_CONFIG.gridsPerRound - 1,
+      onChangeGrid: () => {},
+      onClose: () => {},
+    });
 
-    expect(html).toContain('data-action="prev"');
-    expect(html).toContain('data-action="next"');
-    expect(html).toContain('disabled');
-    expect(html).toContain('next-grid-row--review');
+    for (const html of [firstGrid, lastGrid]) {
+      expect(html).toContain('data-action="prev"');
+      expect(html).toContain('data-action="next"');
+      expect(html).not.toContain('disabled');
+      expect(html).not.toContain('next-grid-button--disabled');
+      expect(html).toContain('next-grid-row--review');
+    }
   });
 
   it('shows an X button that closes straight to results, no confirmation (fb#2f)', () => {

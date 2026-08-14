@@ -47,7 +47,7 @@ function createRoundState(
 }
 
 describe('buildEndScreenHtml', () => {
-  it('shows the Finished Game Status heading and the final score', () => {
+  it('shows the status value without a separate heading (fb 260814/3a), and the final score', () => {
     const html = buildEndScreenHtml({
       locale: 'en',
       roundState: createRoundState({ total: 280 }),
@@ -56,12 +56,12 @@ describe('buildEndScreenHtml', () => {
       onBackToStart: () => {},
     });
 
-    expect(html).toContain(t('finishedGameStatus', 'en'));
+    expect(html).not.toContain('Finished Game Status');
     expect(html).toContain(t('finalScore', 'en'));
     expect(html).toContain('>280<');
   });
 
-  it('shows "Time is up" when the round expired', () => {
+  it('shows "Time Elapsed" when the round expired', () => {
     const html = buildEndScreenHtml({
       locale: 'en',
       roundState: createRoundState({ status: 'expired' }),
@@ -71,9 +71,10 @@ describe('buildEndScreenHtml', () => {
     });
 
     expect(html).toContain(t('timeIsUp', 'en'));
+    expect(html).toContain('Time Elapsed');
   });
 
-  it('shows "Grids completed" without a bonus when there is none', () => {
+  it('shows "All Spotted!" without a bonus when there is none', () => {
     const html = buildEndScreenHtml({
       locale: 'en',
       roundState: createRoundState({ status: 'completed', timeBonus: 0 }),
@@ -83,10 +84,10 @@ describe('buildEndScreenHtml', () => {
     });
 
     expect(html).toContain(t('statusGridsCompleted', 'en'));
-    expect(html).not.toContain('bonus =');
+    expect(html).not.toContain('Bonus:');
   });
 
-  it('shows the seconds-spared and bonus format when grids finish with time to spare', () => {
+  it('shows the seconds-spared and bonus format when grids finish with time to spare (fb 260814/3c)', () => {
     const html = buildEndScreenHtml({
       locale: 'en',
       roundState: createRoundState({ status: 'completed', remainingSeconds: 15, timeBonus: 225 }),
@@ -98,6 +99,7 @@ describe('buildEndScreenHtml', () => {
     expect(html).toContain(
       tFormat('statusGridsCompletedWithBonus', 'en', { seconds: 15, bonus: 225 }),
     );
+    expect(html).toContain('All Spotted! +15″ Bonus: 225');
   });
 
   it('shows "Play Solo Again" for solo games and "Challenge the same opponent" for challenges', () => {
@@ -177,5 +179,30 @@ describe('buildEndScreenHtml', () => {
     // Every word is length 4, mask 'none' (multiplier 1): weights [4,4,4,4,4,4]
     // -> optimal per grid = 4*(1+2+3+4+5+6) = 84, x2 grids = 168.
     expect(html).toContain('168');
+  });
+
+  it('shows the optimal-score-plus-bonus stat only when a time bonus applies (fb 260814/3d)', () => {
+    const withBonus = buildEndScreenHtml({
+      locale: 'en',
+      roundState: createRoundState({ status: 'completed', remainingSeconds: 15, timeBonus: 225 }),
+      onReviewGrids: () => {},
+      onStartAnotherRound: () => {},
+      onBackToStart: () => {},
+    });
+
+    expect(withBonus).toContain(t('statsOptimalScoreWithBonus', 'en'));
+    // Default fixture: 6 words per grid, length 4, mask 'none' -> optimal per
+    // grid = 4*(1+2+3+4+5+6) = 84, x7 grids = 588, + 225 bonus = 813.
+    expect(withBonus).toContain('813');
+
+    const withoutBonus = buildEndScreenHtml({
+      locale: 'en',
+      roundState: createRoundState({ status: 'expired', timeBonus: 0 }),
+      onReviewGrids: () => {},
+      onStartAnotherRound: () => {},
+      onBackToStart: () => {},
+    });
+
+    expect(withoutBonus).not.toContain(t('statsOptimalScoreWithBonus', 'en'));
   });
 });

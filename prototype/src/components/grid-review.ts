@@ -9,7 +9,7 @@ import {
 } from '../utils/grid-display.js';
 import { escapeHtml } from '../utils/html.js';
 import { getCellTileUrl } from '../utils/tile-assets.js';
-import { getWordHighlightColor, WORDS_PER_GRID } from '../utils/word-colors.js';
+import { WORDS_PER_GRID } from '../utils/word-colors.js';
 
 export interface ReviewWordEntry {
   word: PlacedWord;
@@ -35,16 +35,21 @@ export function revealWordText(word: PlacedWord): string {
 
 export function buildReviewLetterGridHtml(grid: GridData, locale: UiLocale = 'en'): string {
   const entries = getReviewWordEntries(grid);
+  const unfoundColorIndexes = getUnfoundWordColorIndexes(grid);
   const cellMeta = new Map<
     string,
     { colorIndex: number | null; found: boolean }
   >();
 
   entries.forEach((entry) => {
-    // Only found words carry a real colorIndex (their find-order color); unfound
-    // words get the neutral default tile — a fallback based on array position
-    // could collide with an actual found word's colorIndex (fb#12).
-    const colorIndex = entry.word.found ? entry.word.colorIndex : null;
+    // Found words carry their real colorIndex (find-order color). Unfound
+    // words get a color too (fb 260814/4d) — assigned collision-safely by
+    // getUnfoundWordColorIndexes so it can never match an actual found word's
+    // colorIndex in the same grid (fb#12) — and rendered at reduced opacity
+    // (.grid-cell--review-missed) so found vs. missed still reads clearly.
+    const colorIndex = entry.word.found
+      ? entry.word.colorIndex
+      : (unfoundColorIndexes.get(entry.word.id) ?? null);
 
     for (const cell of entry.word.cells) {
       cellMeta.set(cellKey(cell.row, cell.col), {
@@ -103,12 +108,13 @@ function seededShuffle<T>(items: readonly T[], seed: number): T[] {
 }
 
 /**
- * Assign each not-found word one of the gauge's unused colors (fb#2j), in a
- * random-but-stable order (seeded by grid id, so it doesn't reshuffle on
+ * Assign each not-found word one of the gauge's unused colorIndexes (fb#2j,
+ * moved from the clue list to the grid cells themselves in fb 260814/4d), in
+ * a random-but-stable order (seeded by grid id, so it doesn't reshuffle on
  * re-render) — the remaining colors always exactly cover the missed words,
  * since found + missed always add up to all 6 gauge colors.
  */
-export function getUnfoundWordColors(grid: GridData): Map<string, string> {
+export function getUnfoundWordColorIndexes(grid: GridData): Map<string, number> {
   const usedColorIndexes = new Set(
     grid.placedWords
       .filter((word): word is PlacedWord & { colorIndex: number } => word.found && word.colorIndex !== null)
@@ -120,13 +126,13 @@ export function getUnfoundWordColors(grid: GridData): Map<string, string> {
   const unfoundWords = grid.placedWords.filter((word) => !word.found);
   const shuffledColorIndexes = seededShuffle(remainingColorIndexes, hashString(grid.id));
 
-  const colors = new Map<string, string>();
+  const colorIndexes = new Map<string, number>();
   unfoundWords.forEach((word, index) => {
     const colorIndex = shuffledColorIndexes[index % shuffledColorIndexes.length];
     if (colorIndex !== undefined) {
-      colors.set(word.id, getWordHighlightColor(colorIndex));
+      colorIndexes.set(word.id, colorIndex);
     }
   });
 
-  return colors;
+  return colorIndexes;
 }

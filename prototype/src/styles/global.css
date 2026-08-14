@@ -719,7 +719,7 @@ body {
 }
 
 @media (max-height: 40rem) {
-  .letter-grid {
+  .letter-grid-wrap {
     width: min(100%, calc(100dvh - 11.5rem));
   }
 
@@ -730,7 +730,7 @@ body {
 }
 
 @media (max-height: 32rem) {
-  .letter-grid {
+  .letter-grid-wrap {
     width: min(100%, calc(100dvh - 10rem));
   }
 }
@@ -1066,23 +1066,23 @@ body {
   gap: 0.3rem;
 }
 
-/* Sizes are the original A2e values scaled 150% larger (fb#1e), i.e. x2.5. */
+/* Sizes are the original A2e values scaled 50% larger (fb#1e, corrected 260814 — the original "150%" wording meant x1.5, not x2.5). */
 .grid-rank-badge__category {
   color: var(--color-text-muted);
-  font-size: clamp(2rem, 6.5vw, 2.25rem);
+  font-size: clamp(1.2rem, 3.9vw, 1.35rem);
   font-weight: 700;
   line-height: 1.15;
 }
 
 .grid-rank-badge__rank {
   color: var(--color-text-muted);
-  font-size: clamp(1.875rem, 5.5vw, 2.03125rem);
+  font-size: clamp(1.125rem, 3.3vw, 1.21875rem);
   font-weight: 700;
 }
 
 .grid-rank-badge__separator {
   color: var(--color-text-muted);
-  font-size: clamp(1.875rem, 5.5vw, 2.03125rem);
+  font-size: clamp(1.125rem, 3.3vw, 1.21875rem);
   font-weight: 700;
 }
 
@@ -1118,23 +1118,28 @@ body {
   display: none;
 }
 
+/** Fills the grid's own box exactly (fb 260814/2b), not just a centered card within it. */
 .confirm-dialog__panel {
+  align-items: center;
   background: var(--color-surface);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
   padding: var(--space-6) var(--space-5);
   width: 100%;
 }
 
-/** Fills the enlarged stop-game panel (fb#1c) with a turning hourglass. */
+/** Fills the empty space in the now grid-sized panel (fb#1c, enlarged 260814/2b) with a turning hourglass. */
 .confirm-dialog__hourglass {
   animation: confirm-dialog-hourglass-turn 2.2s linear infinite;
   color: var(--color-accent);
   display: block;
-  height: 5.5rem;
+  height: 8rem;
   margin: 0 auto var(--space-5);
-  width: 5.5rem;
+  width: 8rem;
 }
 
 @keyframes confirm-dialog-hourglass-turn {
@@ -1184,10 +1189,22 @@ body {
  * edge-to-edge grid put the swipe area right at the phone's physical edge,
  * which kept triggering the OS's edge-swipe gestures (back nav, control
  * center) instead of registering as a letter drag.
+ *
+ * Sizing/self-alignment live on the wrapper (not .letter-grid itself) so the
+ * stop-game dialog (fb 260814/2b), positioned absolutely inside the wrapper,
+ * can cover exactly the grid's box by filling its positioned ancestor —
+ * .letter-grid just fills the wrapper completely.
  */
-.letter-grid {
+.letter-grid-wrap {
   align-self: center;
   aspect-ratio: 1;
+  flex-shrink: 0;
+  margin-inline: auto;
+  position: relative;
+  width: min(100%, calc(100dvh - 14rem));
+}
+
+.letter-grid {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -1196,15 +1213,14 @@ body {
   cursor: grab;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
   gap: clamp(0.15rem, 1vw, 0.25rem);
-  margin-inline: auto;
+  height: 100%;
   padding: clamp(0.35rem, 1.5vw, 0.5rem);
   touch-action: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
-  width: min(100%, calc(100dvh - 14rem));
+  width: 100%;
 }
 
 .letter-grid--selecting {
@@ -1250,6 +1266,23 @@ body {
 .game-stat__badge--review-expired {
   background: var(--color-warning-soft);
   color: var(--color-warning);
+}
+
+/**
+ * Center the frozen review status block (fb 260814/4c) — the live game
+ * header's timer stays left-aligned (ticking value, no long status text), but
+ * review's status can be a full phrase ("All Spotted!"), so it's centered
+ * within its own column and allowed to wrap onto two lines instead of
+ * truncating.
+ */
+.screen--review .game-stat__timer {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.screen--review .game-stat__badge {
+  white-space: normal;
 }
 
 .clue-item--revealed {
@@ -1437,16 +1470,6 @@ body {
   color: var(--color-text);
 }
 
-/** Review-only (fb#2j): each missed word gets one of the gauge's unused colors, dimmed. */
-.clue-item--unfound-colored {
-  opacity: 0.5;
-}
-
-.clue-item--unfound-colored .clue-item__text,
-.clue-item--unfound-colored .clue-mask {
-  color: var(--clue-accent, var(--color-text));
-}
-
 .clue-item--empty {
   color: var(--color-text-muted);
   display: block;
@@ -1598,7 +1621,12 @@ body {
   font-weight: 800;
 }
 
+/**
+ * Every word's cells are colored in review mode now (fb 260814/4d) — missed
+ * words get the same gauge-color treatment as found ones, just dimmed to
+ * read as secondary instead of a separate red-outline treatment.
+ */
 .grid-cell--review-missed {
-  box-shadow: inset 0 0 0 2px var(--color-danger);
+  opacity: 0.5;
 }
 

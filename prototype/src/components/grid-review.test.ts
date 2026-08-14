@@ -50,23 +50,25 @@ describe('grid review', () => {
     expect(revealWordText(asPlacedWord({ text: 'señor', maskType: 'full' }))).toBe('SEÑOR');
   });
 
-  it('gives an unfound word the neutral default tile, not a colored one', () => {
+  it('gives an unfound word a real color, dimmed rather than left neutral (fb 260814/4d)', () => {
     const grid = {
-      cells: [
-        [{ letter: 'L', wordId: 'w1' }, { letter: 'I', wordId: 'w1' }],
-        [{ letter: 'X', wordId: null }, { letter: 'X', wordId: null }],
-      ],
+      id: 'grid-unfound-colored',
+      cells: [[{ letter: 'L', wordId: 'w1' }, { letter: 'I', wordId: 'w1' }]],
       placedWords: [createWord({ cells: [{ row: 0, col: 0 }, { row: 0, col: 1 }], found: false })],
     } as never;
 
     const html = buildReviewLetterGridHtml(grid);
 
     expect(html).toContain('grid-cell--review-missed');
-    expect(html).toContain(`--cell-tile-url:url('${getCellTileUrl(null)}')`);
+    // No filler cells in this fixture, so the neutral tile appearing at all
+    // would mean the unfound word's own cells fell back to it instead of a
+    // real assigned color.
+    expect(html).not.toContain(`--cell-tile-url:url('${getCellTileUrl(null)}')`);
   });
 
   it('gives a found word its real find-order color', () => {
     const grid = {
+      id: 'grid-found-color',
       cells: [[{ letter: 'L', wordId: 'w1' }, { letter: 'I', wordId: 'w1' }]],
       placedWords: [
         createWord({ cells: [{ row: 0, col: 0 }, { row: 0, col: 1 }], found: true, colorIndex: 3 }),
@@ -87,6 +89,7 @@ describe('grid review', () => {
     // unfound word (array position 2) would have collided under the old
     // `wordIndex % WORDS_PER_GRID` formula (2 % 6 = 2).
     const grid = {
+      id: 'grid-fb12-collision',
       cells: [
         [{ letter: 'L', wordId: 'w1' }, { letter: 'I', wordId: 'w1' }],
         [{ letter: 'B', wordId: 'w3' }, { letter: 'E', wordId: 'w3' }],
