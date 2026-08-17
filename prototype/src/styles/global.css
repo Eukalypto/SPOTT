@@ -1194,6 +1194,13 @@ body {
  * stop-game dialog (fb 260814/2b), positioned absolutely inside the wrapper,
  * can cover exactly the grid's box by filling its positioned ancestor —
  * .letter-grid just fills the wrapper completely.
+ *
+ * touch-action/user-select are repeated here, not just on .letter-grid (fb
+ * 260815/2): the swipe listener's own target still has them, but Android
+ * Chrome's gesture arbitration for an initial touch considers the ancestor
+ * chain, not just the immediate target — leaving this wrapper at the default
+ * touch-action: auto let some Android versions interpret an early swipe as a
+ * page scroll/selection gesture before script ever saw the pointer event.
  */
 .letter-grid-wrap {
   align-self: center;
@@ -1201,6 +1208,10 @@ body {
   flex-shrink: 0;
   margin-inline: auto;
   position: relative;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
   width: min(100%, calc(100dvh - 14rem));
 }
 
